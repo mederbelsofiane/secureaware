@@ -1,0 +1,39 @@
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: secaware-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: security_awareness
+      POSTGRES_USER: secadmin
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-SuperSecret123!}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U secadmin -d security_awareness"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: secaware-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://secadmin:${POSTGRES_PASSWORD:-SuperSecret123!}@db:5432/security_awareness
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-change-me-in-production-use-random-string}
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:
