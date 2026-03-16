@@ -91,7 +91,7 @@ const rowVariants = {
 export default function LeaderboardPage() {
   const { user } = useAuth();
   const { data: users, loading, error, refetch } =
-    useFetch<LeaderboardUser[]>('/api/users?all=true&sortBy=riskScore&sortOrder=asc');
+    useFetch<LeaderboardUser[]>('/api/leaderboard');
 
   const rankedUsers = useMemo(() => {
     if (!users) return [];
