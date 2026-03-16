@@ -1,5 +1,5 @@
 import { PrismaClient, UserRole, UserStatus, Difficulty, ModuleCategory, LessonType, QuizStatus, CampaignStatus, CampaignType, ContactStatus, ActivityType, BadgeColor } from "@prisma/client";
-import * as bcrypt from "bcrypt";
+import * as bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
