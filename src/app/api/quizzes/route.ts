@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
       if (returnAll) return success(items);
       return success({ items, total, page, limit, totalPages: Math.ceil(total / limit) });
     } else {
-      // Employee: only assigned & published quizzes
+      // Employee: all published quizzes (with assignment info attached)
       const assignments = await prisma.quizAssignment.findMany({
         where: { userId: user.id },
         select: { quizId: true, dueDate: true, assignedAt: true },
@@ -70,12 +70,7 @@ export async function GET(req: NextRequest) {
         departmentQuizIds = deptAssignments.map((d) => d.quizId);
       }
 
-      const assignedQuizIds = [
-        ...Array.from(new Set([...assignments.map((a) => a.quizId), ...departmentQuizIds])),
-      ];
-
       const where: Record<string, unknown> = {
-        id: { in: assignedQuizIds },
         status: "PUBLISHED",
       };
       if (search) {

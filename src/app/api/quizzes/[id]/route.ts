@@ -47,25 +47,9 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     }
 
     if (user.role !== "ADMIN") {
-      // Employee: must be assigned and published
+      // Employee: can view any published quiz
       if (quiz.status !== "PUBLISHED") {
         return notFound("Quiz not found");
-      }
-
-      const isAssigned = await prisma.quizAssignment.findUnique({
-        where: { quizId_userId: { quizId: id, userId: user.id } },
-      });
-
-      let isDeptAssigned = false;
-      if (!isAssigned && user.departmentId) {
-        const deptAssignment = await prisma.quizDepartment.findUnique({
-          where: { quizId_departmentId: { quizId: id, departmentId: user.departmentId } },
-        });
-        isDeptAssigned = !!deptAssignment;
-      }
-
-      if (!isAssigned && !isDeptAssigned) {
-        return forbidden();
       }
 
       // Hide correct answers from employees

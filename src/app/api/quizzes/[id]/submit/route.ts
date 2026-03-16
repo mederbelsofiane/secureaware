@@ -52,23 +52,6 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       return badRequest("This quiz is not available for submission");
     }
 
-    // Verify user is assigned
-    const isDirectlyAssigned = await prisma.quizAssignment.findUnique({
-      where: { quizId_userId: { quizId, userId: user.id } },
-    });
-
-    let isDeptAssigned = false;
-    if (!isDirectlyAssigned && user.departmentId) {
-      const deptAssignment = await prisma.quizDepartment.findUnique({
-        where: { quizId_departmentId: { quizId, departmentId: user.departmentId } },
-      });
-      isDeptAssigned = !!deptAssignment;
-    }
-
-    if (!isDirectlyAssigned && !isDeptAssigned) {
-      return forbidden();
-    }
-
     // Calculate score
     const totalQuestions = quiz.questions.length;
     if (totalQuestions === 0) {
@@ -150,7 +133,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       totalQuestions,
       correctAnswers,
       passingScore: quiz.passingScore,
-      answerDetails,
+      answers: answerDetails,
     }, 201);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
