@@ -19,6 +19,7 @@ import {
   Circle,
   AlertTriangle,
   ArrowLeft,
+  ArrowRight,
   Play,
   FileText,
   Video,
@@ -230,43 +231,43 @@ export default function ModuleDetailPage() {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className={`flex items-center gap-4 p-4 rounded-lg transition-colors ${
-                  lesson.completed
-                    ? 'bg-emerald-500/5 border border-emerald-500/20'
-                    : 'bg-slate-800/50 border border-transparent hover:border-slate-700'
-                }`}
               >
-                <button
-                  onClick={() => handleToggleLesson(lesson.id, !!lesson.completed)}
-                  disabled={!!lesson.completed || completingLesson === lesson.id}
-                  className="flex-shrink-0 focus:outline-none"
-                  title={lesson.completed ? 'Completed' : 'Mark as complete'}
+                <Link
+                  href={`/dashboard/modules/${moduleId}/lessons/${lesson.id}`}
+                  className={`flex items-center gap-4 p-4 rounded-lg transition-all group ${
+                    lesson.completed
+                      ? 'bg-emerald-500/5 border border-emerald-500/20 hover:border-emerald-500/40'
+                      : 'bg-slate-800/50 border border-transparent hover:border-cyan-500/30 hover:bg-slate-800'
+                  }`}
                 >
-                  {completingLesson === lesson.id ? (
-                    <Loader2 className="w-6 h-6 text-cyan-400 animate-spin" />
-                  ) : lesson.completed ? (
-                    <CheckCircle2 className="w-6 h-6 text-emerald-400" />
-                  ) : (
-                    <Circle className="w-6 h-6 text-gray-600 hover:text-cyan-400 transition-colors" />
-                  )}
-                </button>
+                  <div className="flex-shrink-0">
+                    {lesson.completed ? (
+                      <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+                    ) : (
+                      <Circle className="w-6 h-6 text-gray-600 group-hover:text-cyan-400 transition-colors" />
+                    )}
+                  </div>
 
-                <div className={`flex-shrink-0 ${lesson.completed ? 'text-emerald-400' : 'text-gray-500'}`}>
-                  {getLessonIcon(lesson.type)}
-                </div>
+                  <div className={`flex-shrink-0 ${lesson.completed ? 'text-emerald-400' : 'text-gray-500 group-hover:text-cyan-400'} transition-colors`}>
+                    {getLessonIcon(lesson.type)}
+                  </div>
 
-                <div className="flex-1 min-w-0">
-                  <p className={`font-medium truncate ${lesson.completed ? 'text-gray-300' : 'text-white'}`}>
-                    {lesson.title}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    Lesson {lesson.order} &bull; {lesson.type.replace(/_/g, ' ')}
-                  </p>
-                </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={`font-medium truncate ${lesson.completed ? 'text-gray-300' : 'text-white group-hover:text-cyan-400'} transition-colors`}>
+                      {lesson.title}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Lesson {lesson.order} &bull; {lesson.type.replace(/_/g, ' ')} &bull; {lesson.durationMins || 10} min
+                    </p>
+                  </div>
 
-                <span className="text-xs text-gray-600 flex-shrink-0">
-                  {index + 1}/{totalLessons}
-                </span>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <span className="text-xs text-gray-600">
+                      {index + 1}/{totalLessons}
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-cyan-400 transition-colors" />
+                  </div>
+                </Link>
               </motion.div>
             ))}
           </div>
