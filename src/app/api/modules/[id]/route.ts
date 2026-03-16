@@ -82,10 +82,17 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       });
     }
 
+    // Map lesson completion status onto each lesson
+    const completedLessonIds = new Set(lessonProgress.filter(lp => lp.isCompleted).map(lp => lp.lessonId));
+    const lessonsWithProgress = trainingModule.lessons.map(lesson => ({
+      ...lesson,
+      completed: completedLessonIds.has(lesson.id),
+    }));
+
     return success({
       ...trainingModule,
-      userProgress,
-      lessonProgress,
+      lessons: lessonsWithProgress,
+      progress: userProgress,
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
