@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireAuth, unauthorized, badRequest, notFound, serverError, success } from "@/lib/server-auth";
+import { requireAuth, unauthorized, forbidden, badRequest, notFound, serverError, success } from "@/lib/server-auth";
 import { z } from "zod";
 
 const progressSchema = z.object({
@@ -148,8 +148,10 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       progressPercent,
     });
   } catch (error: unknown) {
+    console.error("Progress API error:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
-    return serverError();
+    if (message === "FORBIDDEN") return forbidden();
+    return serverError(message);
   }
 }
