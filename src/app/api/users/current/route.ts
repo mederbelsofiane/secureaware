@@ -21,6 +21,27 @@ export async function GET() {
         department: { select: { id: true, name: true } },
         lastLoginAt: true,
         createdAt: true,
+        certificates: {
+          orderBy: { issuedAt: "desc" },
+        },
+        badges: {
+          include: {
+            badge: true,
+          },
+          orderBy: { earnedAt: "desc" },
+        },
+        activities: {
+          orderBy: { createdAt: "desc" },
+          take: 20,
+        },
+        _count: {
+          select: {
+            quizResults: true,
+            moduleProgress: true,
+            certificates: true,
+            badges: true,
+          },
+        },
       },
     });
 
