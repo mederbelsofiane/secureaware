@@ -2,24 +2,37 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Shield, Menu, X, Sun, Moon } from "lucide-react";
+import { Shield, Menu, X, Sun, Moon, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/use-theme";
-
-const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/features", label: "Features" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
-];
+import { useLanguage } from "@/hooks/use-language";
+import { type Locale, locales } from "@/i18n";
 
 export function Navbar() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const { theme, toggleTheme } = useTheme();
+  const { locale, setLocale, t } = useLanguage();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const langRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (langRef.current && !langRef.current.contains(e.target as Node)) setLangOpen(false);
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const navLinks = [
+    { href: "/", label: t.nav.home },
+    { href: "/features", label: t.nav.features },
+    { href: "/about", label: t.nav.about },
+    { href: "/contact", label: t.nav.contact },
+  ];
 
   return (
     <nav className={cn(
@@ -55,17 +68,53 @@ export function Navbar() {
             ))}
           </div>
 
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2">
+            {/* Language switcher */}
+            <div ref={langRef} className="relative">
+              <button
+                onClick={() => setLangOpen(!langOpen)}
+                className={cn(
+                  "p-2 rounded-lg transition-all duration-300 hover:scale-110 flex items-center gap-1.5",
+                  theme === "dark" ? "bg-dark-800 hover:bg-dark-700" : "bg-gray-100 hover:bg-gray-200"
+                )}
+                title={t.common.language}
+              >
+                <span className="text-sm">{locales[locale].flag}</span>
+                <Globe className="w-4 h-4" />
+              </button>
+              {langOpen && (
+                <div className={cn(
+                  "absolute top-full mt-1 right-0 rounded-lg border shadow-xl z-50 min-w-[160px] overflow-hidden",
+                  theme === "dark" ? "bg-dark-800 border-gray-700" : "bg-white border-gray-200"
+                )}>
+                  {(Object.keys(locales) as Locale[]).map((loc) => (
+                    <button
+                      key={loc}
+                      onClick={() => { setLocale(loc); setLangOpen(false); }}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-2.5 text-sm w-full transition-colors",
+                        locale === loc
+                          ? "bg-accent-blue/10 text-accent-blue"
+                          : theme === "dark" ? "text-gray-300 hover:bg-dark-700" : "text-gray-700 hover:bg-gray-50"
+                      )}
+                    >
+                      <span className="text-lg">{locales[loc].flag}</span>
+                      <span className="font-medium">{locales[loc].nativeName}</span>
+                      {locale === loc && <span className="ml-auto text-accent-blue">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
               className={cn(
                 "p-2 rounded-lg transition-all duration-300 hover:scale-110",
-                theme === "dark"
-                  ? "bg-dark-800 text-yellow-400 hover:bg-dark-700"
-                  : "bg-gray-100 text-indigo-600 hover:bg-gray-200"
+                theme === "dark" ? "bg-dark-800 text-yellow-400 hover:bg-dark-700" : "bg-gray-100 text-indigo-600 hover:bg-gray-200"
               )}
-              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+              aria-label={theme === "dark" ? t.common.lightMode : t.common.darkMode}
             >
               {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
@@ -75,12 +124,12 @@ export function Navbar() {
                 href={session.user?.role === "ADMIN" ? "/admin" : "/dashboard"}
                 className="btn-primary text-sm"
               >
-                Dashboard
+                {t.nav.dashboard}
               </Link>
             ) : (
               <>
-                <Link href="/login" className="btn-ghost text-sm">Sign In</Link>
-                <Link href="/contact" className="btn-primary text-sm">Request Demo</Link>
+                <Link href="/login" className="btn-ghost text-sm">{t.nav.signIn}</Link>
+                <Link href="/contact" className="btn-primary text-sm">{t.nav.requestDemo}</Link>
               </>
             )}
           </div>
@@ -89,10 +138,7 @@ export function Navbar() {
           <div className="flex md:hidden items-center gap-2">
             <button
               onClick={toggleTheme}
-              className={cn(
-                "p-2 rounded-lg transition-colors",
-                theme === "dark" ? "text-yellow-400" : "text-indigo-600"
-              )}
+              className={cn("p-2 rounded-lg transition-colors", theme === "dark" ? "text-yellow-400" : "text-indigo-600")}
             >
               {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
@@ -128,13 +174,32 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
+            {/* Mobile language switcher */}
+            <div className={cn("pt-2 border-t mt-2", theme === "dark" ? "border-gray-800" : "border-gray-200")}>
+              <div className="flex gap-2 px-4">
+                {(Object.keys(locales) as Locale[]).map((loc) => (
+                  <button
+                    key={loc}
+                    onClick={() => { setLocale(loc); setMobileOpen(false); }}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm transition-colors",
+                      locale === loc ? "bg-accent-blue/10 text-accent-blue border border-accent-blue/20" :
+                        theme === "dark" ? "text-gray-400 hover:bg-dark-700" : "text-gray-600 hover:bg-gray-100"
+                    )}
+                  >
+                    <span>{locales[loc].flag}</span>
+                    <span>{locales[loc].nativeName}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className={cn("pt-3 border-t mt-3 space-y-2", theme === "dark" ? "border-gray-800" : "border-gray-200")}>
               {session ? (
-                <Link href="/dashboard" className="btn-primary text-sm w-full text-center block" onClick={() => setMobileOpen(false)}>Dashboard</Link>
+                <Link href="/dashboard" className="btn-primary text-sm w-full text-center block" onClick={() => setMobileOpen(false)}>{t.nav.dashboard}</Link>
               ) : (
                 <>
-                  <Link href="/login" className="btn-secondary text-sm w-full text-center block" onClick={() => setMobileOpen(false)}>Sign In</Link>
-                  <Link href="/contact" className="btn-primary text-sm w-full text-center block" onClick={() => setMobileOpen(false)}>Request Demo</Link>
+                  <Link href="/login" className="btn-secondary text-sm w-full text-center block" onClick={() => setMobileOpen(false)}>{t.nav.signIn}</Link>
+                  <Link href="/contact" className="btn-primary text-sm w-full text-center block" onClick={() => setMobileOpen(false)}>{t.nav.requestDemo}</Link>
                 </>
               )}
             </div>

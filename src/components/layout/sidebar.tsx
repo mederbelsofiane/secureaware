@@ -12,33 +12,37 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "@/hooks/use-theme";
+import { useLanguage } from "@/hooks/use-language";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { useState } from "react";
-
-const employeeLinks = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/modules", label: "Training Modules", icon: BookOpen },
-  { href: "/dashboard/quizzes", label: "My Quizzes", icon: FileQuestion },
-  { href: "/dashboard/phishing", label: "Phishing Training", icon: Fish },
-  { href: "/dashboard/leaderboard", label: "Leaderboard", icon: Trophy },
-  { href: "/dashboard/certificates", label: "Certificates", icon: Award },
-  { href: "/dashboard/profile", label: "Profile", icon: User },
-];
-
-const adminLinks = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/users", label: "User Management", icon: Users },
-  { href: "/admin/campaigns", label: "Campaigns", icon: Megaphone },
-  { href: "/admin/quizzes", label: "Quiz Manager", icon: PenTool },
-  { href: "/admin/reports", label: "Reports", icon: BarChart3 },
-  { href: "/admin/contacts", label: "Contact Requests", icon: MessageSquare },
-  { href: "/admin/settings", label: "Settings", icon: Settings },
-];
 
 export function Sidebar() {
   const pathname = usePathname();
   const { isAdmin } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { t, isRTL } = useLanguage();
   const [collapsed, setCollapsed] = useState(false);
+
+  const employeeLinks = [
+    { href: "/dashboard", label: t.sidebar.dashboard, icon: LayoutDashboard },
+    { href: "/dashboard/modules", label: t.sidebar.trainingModules, icon: BookOpen },
+    { href: "/dashboard/quizzes", label: t.sidebar.myQuizzes, icon: FileQuestion },
+    { href: "/dashboard/phishing", label: t.sidebar.phishingTraining, icon: Fish },
+    { href: "/dashboard/leaderboard", label: t.sidebar.leaderboard, icon: Trophy },
+    { href: "/dashboard/certificates", label: t.sidebar.certificates, icon: Award },
+    { href: "/dashboard/profile", label: t.sidebar.profile, icon: User },
+  ];
+
+  const adminLinks = [
+    { href: "/admin", label: t.sidebar.dashboard, icon: LayoutDashboard },
+    { href: "/admin/users", label: t.sidebar.userManagement, icon: Users },
+    { href: "/admin/campaigns", label: t.sidebar.campaigns, icon: Megaphone },
+    { href: "/admin/quizzes", label: t.sidebar.quizManager, icon: PenTool },
+    { href: "/admin/reports", label: t.sidebar.reports, icon: BarChart3 },
+    { href: "/admin/contacts", label: t.sidebar.contactRequests, icon: MessageSquare },
+    { href: "/admin/settings", label: t.sidebar.settings, icon: Settings },
+  ];
+
   const links = isAdmin && pathname.startsWith("/admin") ? adminLinks : employeeLinks;
 
   const isActive = (href: string) => {
@@ -48,10 +52,11 @@ export function Sidebar() {
 
   return (
     <aside className={cn(
-      "fixed left-0 top-0 h-full backdrop-blur-xl border-r z-40 transition-all duration-300 flex flex-col",
+      "fixed top-0 h-full backdrop-blur-xl border-r z-40 transition-all duration-300 flex flex-col",
+      isRTL ? "right-0 border-l border-r-0" : "left-0",
       theme === "dark" ? "bg-dark-900/95 border-gray-800/50" : "bg-white/97 border-gray-200",
       collapsed ? "w-16" : "w-64"
-    )}>
+    )} style={isRTL ? { borderRight: "none" } : undefined}>
       {/* Logo */}
       <div className={cn("h-16 flex items-center px-4 border-b", theme === "dark" ? "border-gray-800/50" : "border-gray-200")}>
         <Link href="/" className="flex items-center gap-2">
@@ -79,7 +84,7 @@ export function Sidebar() {
                   : theme === "dark" ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-900"
               )}
             >
-              Admin
+              {t.sidebar.admin}
             </Link>
             <Link
               href="/dashboard"
@@ -90,7 +95,7 @@ export function Sidebar() {
                   : theme === "dark" ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-900"
               )}
             >
-              Employee
+              {t.sidebar.employee}
             </Link>
           </div>
         </div>
@@ -121,6 +126,9 @@ export function Sidebar() {
 
       {/* Bottom section */}
       <div className={cn("p-3 border-t space-y-1", theme === "dark" ? "border-gray-800/50" : "border-gray-200")}>
+        {/* Language switcher */}
+        <LanguageSwitcher collapsed={collapsed} />
+
         {/* Theme toggle */}
         <button
           onClick={toggleTheme}
@@ -130,14 +138,14 @@ export function Sidebar() {
               ? "text-yellow-400 hover:bg-dark-700/50"
               : "text-indigo-600 hover:bg-gray-100"
           )}
-          title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+          title={theme === "dark" ? t.common.lightMode : t.common.darkMode}
         >
           {theme === "dark" ? (
             <Sun className="w-5 h-5 flex-shrink-0" />
           ) : (
             <Moon className="w-5 h-5 flex-shrink-0" />
           )}
-          {!collapsed && <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>}
+          {!collapsed && <span>{theme === "dark" ? t.common.lightMode : t.common.darkMode}</span>}
         </button>
 
         <button
@@ -147,7 +155,10 @@ export function Sidebar() {
             theme === "dark" ? "text-gray-500 hover:text-gray-300 hover:bg-dark-700/50" : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
           )}
         >
-          {collapsed ? <ChevronRight className="w-5 h-5" /> : <><ChevronLeft className="w-5 h-5" /><span>Collapse</span></>}
+          {collapsed
+            ? (isRTL ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />)
+            : <>{isRTL ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}<span>{t.common.collapse}</span></>
+          }
         </button>
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
@@ -157,7 +168,7 @@ export function Sidebar() {
           )}
         >
           <LogOut className="w-5 h-5 flex-shrink-0" />
-          {!collapsed && <span>Sign Out</span>}
+          {!collapsed && <span>{t.common.signOut}</span>}
         </button>
       </div>
     </aside>

@@ -3,6 +3,7 @@
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "react-hot-toast";
 import { ThemeProvider, useTheme } from "@/hooks/use-theme";
+import { LanguageProvider } from "@/hooks/use-language";
 
 function ThemedToaster() {
   const { theme } = useTheme();
@@ -32,8 +33,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
       <ThemeProvider>
-        {children}
-        <ThemedToaster />
+        <LanguageProvider>
+          {children}
+          <ThemedToaster />
+        </LanguageProvider>
       </ThemeProvider>
     </SessionProvider>
   );
