@@ -6,6 +6,10 @@ export default withAuth(
     const { pathname } = req.nextUrl;
     const token = req.nextauth.token;
 
+    // Set pathname header for use by server components (e.g., root layout maintenance check)
+    const response = NextResponse.next();
+    response.headers.set("x-pathname", pathname);
+
     // Admin page routes require ADMIN role
     if (pathname.startsWith("/admin")) {
       if (token?.role !== "ADMIN") {
@@ -20,7 +24,7 @@ export default withAuth(
       }
     }
 
-    return NextResponse.next();
+    return response;
   },
   {
     callbacks: {
@@ -53,5 +57,8 @@ export const config = {
     "/login",
     "/register",
     "/maintenance",
+    "/about",
+    "/features",
+    "/contact",
   ],
 };

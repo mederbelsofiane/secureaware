@@ -5,6 +5,7 @@ import Providers from "@/components/providers";
 import { isMaintenanceMode } from "@/lib/maintenance";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { headers } from "next/headers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -13,18 +14,32 @@ export const metadata: Metadata = {
   description: "Enterprise security awareness training platform to protect your organization against phishing, social engineering, and human-risk security threats.",
 };
 
+// Routes always accessible during maintenance (so admin can log back in)
+const MAINTENANCE_BYPASS = ["/login", "/register", "/maintenance"];
+
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [maintenance, session] = await Promise.all([
+  const [maintenance, session, headersList] = await Promise.all([
     isMaintenanceMode(),
     getServerSession(authOptions),
+    headers(),
   ]);
 
   const isAdmin = (session?.user as { role?: string })?.role === "ADMIN";
-  const showMaintenance = maintenance && !isAdmin;
+
+  // Read pathname set by middleware
+  const pathname = headersList.get("x-pathname") || "/";
+
+  // Bypass maintenance for login/register so admins can log back in
+  const isBypassPath = MAINTENANCE_BYPASS.some(
+    (p) => pathname === p || pathname.startsWith(p + "/")
+  );
+
+  // Show maintenance ONLY if enabled AND not admin AND not on bypass path
+  const showMaintenance = maintenance && !isAdmin && !isBypassPath;
 
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
@@ -48,9 +63,14 @@ export default async function RootLayout({
                     <span className="font-medium">Maintenance in progress...</span>
                   </div>
                 </div>
-                <p className="text-gray-500 text-sm">
-                  🛡️ SecureAware - Security Awareness Training Platform
-                </p>
+                <div className="space-y-2">
+                  <p className="text-gray-500 text-sm">
+                    🛡️ SecureAware - Security Awareness Training Platform
+                  </p>
+                  <a href="/login" className="text-cyan-400 hover:text-cyan-300 text-sm underline">
+                    Admin Login
+                  </a>
+                </div>
               </div>
             </div>
           ) : (
