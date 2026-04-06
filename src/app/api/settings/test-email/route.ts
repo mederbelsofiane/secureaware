@@ -1,31 +1,31 @@
 import { NextRequest } from 'next/server';
 import { requireRole, unauthorized, forbidden, badRequest, serverError, success } from '@/lib/server-auth';
 import { emailService } from '@/lib/services/email';
+import { z } from 'zod';
 
-// POST /api/settings/test-email - Send test email (admin only)
+const testEmailSchema = z.object({
+  to: z.string().email('Invalid email address'),
+});
+
 export async function POST(req: NextRequest) {
   try {
-    await requireRole(['ADMIN']);
-  } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : '';
-    if (msg === 'UNAUTHORIZED') return unauthorized();
-    if (msg === 'FORBIDDEN') return forbidden();
-  }
-
-  try {
+    const user = await requireRole(['ADMIN']);
     const body = await req.json();
-    const { to } = body;
-
-    if (!to || typeof to !== 'string' || !to.includes('@')) {
-      return badRequest('Valid email address is required');
+    const parsed = testEmailSchema.safeParse(body);
+    if (!parsed.success) {
+      return badRequest(parsed.error.errors.map(e => e.message).join(', '));
     }
 
-    await emailService.sendTestEmail(to);
+    // Invalidate config cache to pick up latest settings
+    emailService.invalidateConfig();
 
-    return success({ message: `Test email sent to ${to}` });
-  } catch (error) {
-    console.error('POST /api/settings/test-email error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return serverError(`Failed to send test email: ${errorMessage}`);
+    await emailService.sendTestEmail(parsed.data.to);
+    return success({ message: 'Test email sent successfully' });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    if (message === 'UNAUTHORIZED') return unauthorized();
+    if (message === 'FORBIDDEN') return forbidden();
+    console.error('Test email error:', message);
+    return serverError(message);
   }
 }

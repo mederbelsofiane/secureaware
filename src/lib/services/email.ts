@@ -67,22 +67,23 @@ class EmailService {
 
   /**
    * Get or create the nodemailer transporter
+   * Port-based TLS logic: 465 = implicit TLS (secure:true), other ports = STARTTLS (secure:false, requireTLS:true)
    */
   private async getTransporter(): Promise<Transporter> {
     const config = await this.loadConfig();
 
-    // Recreate transporter if config changed
     this.transporter = nodemailer.createTransport({
       host: config.host,
       port: config.port,
-      secure: config.port === 465, // true for 465, false for other ports
+      secure: config.port === 465,
       auth: {
         user: config.user,
         pass: config.pass,
       },
       tls: {
-        rejectUnauthorized: false, // Allow self-signed certs for Mailcow
+        rejectUnauthorized: false,
       },
+      ...(config.port !== 465 && { requireTLS: true }),
     });
 
     return this.transporter;
@@ -103,15 +104,21 @@ class EmailService {
   async sendEmail(to: string, subject: string, html: string): Promise<boolean> {
     try {
       const config = await this.loadConfig();
+      if (!config.user || !config.pass) {
+        throw new Error('SMTP credentials not configured. Please set SMTP user and password in Admin Settings.');
+      }
+      if (!config.host) {
+        throw new Error('SMTP host not configured. Please set SMTP host in Admin Settings.');
+      }
       const transporter = await this.getTransporter();
 
-      await transporter.sendMail({
+      const info = await transporter.sendMail({
         from: `"${config.fromName}" <${config.fromEmail}>`,
         to,
         subject,
         html,
       });
-
+      console.log('Email sent:', info.messageId);
       return true;
     } catch (error) {
       console.error('Email send error:', error);

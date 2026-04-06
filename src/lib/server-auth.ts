@@ -47,7 +47,7 @@ export function notFound(message = "Not found") {
 
 export function serverError(message = "Internal server error") {
   console.error("Server error:", message);
-  return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  return NextResponse.json({ error: message }, { status: 500 });
 }
 
 export function success<T>(data: T, status = 200) {
