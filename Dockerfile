@@ -40,6 +40,7 @@ COPY --from=builder /app/node_modules ./node_modules
 
 # Copy entrypoint
 COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN sed -i "s/\r//g" /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
 RUN chown -R nextjs:nodejs /app
