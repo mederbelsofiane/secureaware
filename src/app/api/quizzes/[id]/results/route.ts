@@ -18,12 +18,20 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
     const quiz = await prisma.quiz.findUnique({
       where: { id: quizId },
-      select: { id: true, title: true, passingScore: true },
+      select: { id: true, title: true, passingScore: true, timeLimitMins: true },
     });
 
     if (!quiz) {
       return notFound("Quiz not found");
     }
+
+    // Map to frontend expected shape
+    const quizData = {
+      id: quiz.id,
+      title: quiz.title,
+      passingScore: quiz.passingScore,
+      timeLimitMins: quiz.timeLimitMins ?? null,
+    };
 
     const returnAll = req.nextUrl.searchParams.get("all") === "true";
     const searchParams = Object.fromEntries(req.nextUrl.searchParams);
@@ -35,8 +43,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     const take = returnAll ? 10000 : limit;
 
     if (user.role === "ADMIN") {
-      // Admin: see all results for this quiz
-      const [items, total] = await Promise.all([
+      const [results, total] = await Promise.all([
         prisma.quizResult.findMany({
           where: { quizId },
           skip,
@@ -81,11 +88,9 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
           : 0,
       };
 
-      if (returnAll) return success({ quiz, items, stats: statsData });
-
       return success({
-        quiz,
-        items,
+        quiz: quizData,
+        results,
         total,
         page,
         limit,
@@ -93,8 +98,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         stats: statsData,
       });
     } else {
-      // Employee: own results only
-      const [items, total] = await Promise.all([
+      const [results, total] = await Promise.all([
         prisma.quizResult.findMany({
           where: { quizId, userId: user.id },
           skip,
@@ -104,11 +108,9 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         prisma.quizResult.count({ where: { quizId, userId: user.id } }),
       ]);
 
-      if (returnAll) return success({ quiz, items });
-
       return success({
-        quiz,
-        items,
+        quiz: quizData,
+        results,
         total,
         page,
         limit,
@@ -119,6 +121,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    console.error("Quiz results error:", error);
     return serverError();
   }
 }
