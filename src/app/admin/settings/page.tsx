@@ -98,7 +98,7 @@ export default function AdminSettingsPage() {
 
   const [general, setGeneral] = useState({
     platformName: "SecureAware",
-    companyName: "DTS Solution",
+    companyName: "SecureAware",
     supportEmail: "support@secureaware.online",
     timezone: "UTC",
     language: "en",

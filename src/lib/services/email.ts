@@ -147,7 +147,7 @@ class EmailService {
             <li>Earn badges and certificates</li>
           </ul>
         </div>
-        <p style="color: #64748b; font-size: 12px; margin-top: 30px; text-align: center;">© SecureAware - DTS Solution</p>
+        <p style="color: #64748b; font-size: 12px; margin-top: 30px; text-align: center;">© SecureAware</p>
       </div>
     `;
     return this.sendEmail(user.email, 'Welcome to SecureAware Platform', html);
@@ -169,7 +169,7 @@ class EmailService {
           <a href="${resetUrl}" style="background: #0891b2; color: white; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">Reset Password</a>
         </div>
         <p style="color: #94a3b8; font-size: 13px;">This link will expire in 1 hour. If you did not request this, please ignore this email.</p>
-        <p style="color: #64748b; font-size: 12px; margin-top: 30px; text-align: center;">© SecureAware - DTS Solution</p>
+        <p style="color: #64748b; font-size: 12px; margin-top: 30px; text-align: center;">© SecureAware</p>
       </div>
     `;
     return this.sendEmail(user.email, 'Reset Your SecureAware Password', html);
@@ -199,7 +199,7 @@ class EmailService {
           <p style="color: ${statusColor}; font-weight: bold; font-size: 18px; margin: 0;">${statusText}</p>
         </div>
         ${!passed ? '<p style="color: #94a3b8;">We recommend reviewing the training material and trying again.</p>' : '<p style="color: #94a3b8;">Great job! Keep up the good work in staying security-aware.</p>'}
-        <p style="color: #64748b; font-size: 12px; margin-top: 30px; text-align: center;">© SecureAware - DTS Solution</p>
+        <p style="color: #64748b; font-size: 12px; margin-top: 30px; text-align: center;">© SecureAware</p>
       </div>
     `;
     return this.sendEmail(user.email, `Quiz Result: ${quiz.title} - ${Math.round(score)}%`, html);
@@ -230,7 +230,7 @@ class EmailService {
           <p style="color: #cbd5e1; line-height: 1.6;">This is a test email from your SecureAware platform. If you received this, your SMTP settings are configured correctly.</p>
           <p style="color: #94a3b8; font-size: 13px; margin-bottom: 0;">Sent at: ${new Date().toISOString()}</p>
         </div>
-        <p style="color: #64748b; font-size: 12px; margin-top: 30px; text-align: center;">© SecureAware - DTS Solution</p>
+        <p style="color: #64748b; font-size: 12px; margin-top: 30px; text-align: center;">© SecureAware</p>
       </div>
     `;
     return this.sendEmail(to, 'SecureAware - Test Email', html);

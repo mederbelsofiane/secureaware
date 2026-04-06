@@ -51,7 +51,7 @@ export default function MaintenancePage() {
 
         {/* Footer */}
         <p className="text-gray-600 text-xs mt-6">
-          &copy; {new Date().getFullYear()} SecureAware &mdash; DTS Solution. All rights reserved.
+          &copy; {new Date().getFullYear()} SecureAware. All rights reserved.
         </p>
       </div>
     </div>
