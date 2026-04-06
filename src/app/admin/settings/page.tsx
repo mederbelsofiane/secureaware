@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { PageLoading } from "@/components/ui/loading";
 import { PageHeader } from "@/components/ui/page-header";
@@ -18,6 +18,8 @@ import {
   Clock,
   Database,
   CheckCircle2,
+  Send,
+  Loader2,
 } from "lucide-react";
 
 interface SettingsSection {
@@ -36,12 +38,64 @@ const SECTIONS: SettingsSection[] = [
   { id: "integrations", title: "Integrations", description: "Third-party service connections and API keys", icon: Link2, iconColor: "text-purple-400" },
 ];
 
+// Map local state keys to DB setting keys
+const SETTINGS_KEY_MAP: Record<string, string> = {
+  // General
+  platformName: "platform_name",
+  companyName: "company_name",
+  supportEmail: "support_email",
+  timezone: "timezone",
+  language: "language",
+  maintenanceMode: "maintenance_mode",
+  // Email
+  smtpHost: "smtp_host",
+  smtpPort: "smtp_port",
+  smtpUser: "smtp_user",
+  smtpPass: "smtp_pass",
+  fromEmail: "smtp_from_email",
+  fromName: "smtp_from_name",
+  enableTLS: "smtp_tls",
+  // Security
+  sessionTimeout: "session_timeout",
+  maxLoginAttempts: "max_login_attempts",
+  lockoutDuration: "lockout_duration",
+  minPasswordLength: "min_password_length",
+  requireUppercase: "require_uppercase",
+  requireNumbers: "require_numbers",
+  requireSpecialChars: "require_special_chars",
+  mfaEnabled: "mfa_enabled",
+  passwordExpiryDays: "password_expiry_days",
+  // Notifications
+  emailNotifications: "email_notifications",
+  campaignReminders: "campaign_reminders",
+  quizDeadlines: "quiz_deadlines",
+  securityAlerts: "security_alerts",
+  weeklyDigest: "weekly_digest",
+  reminderDaysBefore: "reminder_days_before",
+  // Integrations
+  ssoEnabled: "sso_enabled",
+  ssoProvider: "sso_provider",
+  ssoClientId: "sso_client_id",
+  ssoClientSecret: "sso_client_secret",
+  ldapEnabled: "ldap_enabled",
+  ldapUrl: "ldap_url",
+  webhookUrl: "webhook_url",
+  slackWebhook: "slack_webhook",
+};
+
+// Reverse map: DB key -> local key
+const REVERSE_KEY_MAP: Record<string, string> = Object.fromEntries(
+  Object.entries(SETTINGS_KEY_MAP).map(([k, v]) => [v, k])
+);
+
 export default function AdminSettingsPage() {
   const { isLoading: authLoading } = useAuth();
   const [activeSection, setActiveSection] = useState("general");
   const [saving, setSaving] = useState(false);
+  const [loadingSettings, setLoadingSettings] = useState(true);
+  const [sendingTest, setSendingTest] = useState(false);
+  const [testEmailAddress, setTestEmailAddress] = useState("");
 
-  // Local state for settings (no backend API yet)
   const [general, setGeneral] = useState({
     platformName: "SecureAware",
     companyName: "DTS Solution",
@@ -93,15 +147,155 @@ export default function AdminSettingsPage() {
     slackWebhook: "",
   });
 
-  const handleSave = async () => {
-    setSaving(true);
-    // Simulate save delay since no backend API exists yet
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setSaving(false);
-    toast.success("Settings saved successfully");
+  // Load settings from API on mount
+  const loadSettings = useCallback(async () => {
+    try {
+      const res = await fetch("/api/settings");
+      if (!res.ok) return;
+      const data = await res.json();
+
+      // Build a map from DB settings
+      const dbMap: Record<string, string> = {};
+      for (const s of data) {
+        dbMap[s.key] = s.value;
+      }
+
+      // Apply to local state
+      const boolVal = (v: string | undefined) => v === "true";
+
+      setGeneral((prev) => ({
+        platformName: dbMap["platform_name"] ?? prev.platformName,
+        companyName: dbMap["company_name"] ?? prev.companyName,
+        supportEmail: dbMap["support_email"] ?? prev.supportEmail,
+        timezone: dbMap["timezone"] ?? prev.timezone,
+        language: dbMap["language"] ?? prev.language,
+        maintenanceMode: dbMap["maintenance_mode"] !== undefined ? boolVal(dbMap["maintenance_mode"]) : prev.maintenanceMode,
+      }));
+
+      setEmail((prev) => ({
+        smtpHost: dbMap["smtp_host"] ?? prev.smtpHost,
+        smtpPort: dbMap["smtp_port"] ?? prev.smtpPort,
+        smtpUser: dbMap["smtp_user"] ?? prev.smtpUser,
+        smtpPass: dbMap["smtp_pass"] ?? prev.smtpPass,
+        fromEmail: dbMap["smtp_from_email"] ?? prev.fromEmail,
+        fromName: dbMap["smtp_from_name"] ?? prev.fromName,
+        enableTLS: dbMap["smtp_tls"] !== undefined ? boolVal(dbMap["smtp_tls"]) : prev.enableTLS,
+      }));
+
+      setSecurity((prev) => ({
+        sessionTimeout: dbMap["session_timeout"] ?? prev.sessionTimeout,
+        maxLoginAttempts: dbMap["max_login_attempts"] ?? prev.maxLoginAttempts,
+        lockoutDuration: dbMap["lockout_duration"] ?? prev.lockoutDuration,
+        minPasswordLength: dbMap["min_password_length"] ?? prev.minPasswordLength,
+        requireUppercase: dbMap["require_uppercase"] !== undefined ? boolVal(dbMap["require_uppercase"]) : prev.requireUppercase,
+        requireNumbers: dbMap["require_numbers"] !== undefined ? boolVal(dbMap["require_numbers"]) : prev.requireNumbers,
+        requireSpecialChars: dbMap["require_special_chars"] !== undefined ? boolVal(dbMap["require_special_chars"]) : prev.requireSpecialChars,
+        mfaEnabled: dbMap["mfa_enabled"] !== undefined ? boolVal(dbMap["mfa_enabled"]) : prev.mfaEnabled,
+        passwordExpiryDays: dbMap["password_expiry_days"] ?? prev.passwordExpiryDays,
+      }));
+
+      setNotifications((prev) => ({
+        emailNotifications: dbMap["email_notifications"] !== undefined ? boolVal(dbMap["email_notifications"]) : prev.emailNotifications,
+        campaignReminders: dbMap["campaign_reminders"] !== undefined ? boolVal(dbMap["campaign_reminders"]) : prev.campaignReminders,
+        quizDeadlines: dbMap["quiz_deadlines"] !== undefined ? boolVal(dbMap["quiz_deadlines"]) : prev.quizDeadlines,
+        securityAlerts: dbMap["security_alerts"] !== undefined ? boolVal(dbMap["security_alerts"]) : prev.securityAlerts,
+        weeklyDigest: dbMap["weekly_digest"] !== undefined ? boolVal(dbMap["weekly_digest"]) : prev.weeklyDigest,
+        reminderDaysBefore: dbMap["reminder_days_before"] ?? prev.reminderDaysBefore,
+      }));
+
+      setIntegrations((prev) => ({
+        ssoEnabled: dbMap["sso_enabled"] !== undefined ? boolVal(dbMap["sso_enabled"]) : prev.ssoEnabled,
+        ssoProvider: dbMap["sso_provider"] ?? prev.ssoProvider,
+        ssoClientId: dbMap["sso_client_id"] ?? prev.ssoClientId,
+        ssoClientSecret: dbMap["sso_client_secret"] ?? prev.ssoClientSecret,
+        ldapEnabled: dbMap["ldap_enabled"] !== undefined ? boolVal(dbMap["ldap_enabled"]) : prev.ldapEnabled,
+        ldapUrl: dbMap["ldap_url"] ?? prev.ldapUrl,
+        webhookUrl: dbMap["webhook_url"] ?? prev.webhookUrl,
+        slackWebhook: dbMap["slack_webhook"] ?? prev.slackWebhook,
+      }));
+    } catch (err) {
+      console.error("Failed to load settings:", err);
+    } finally {
+      setLoadingSettings(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
+
+  // Collect all settings into a flat array for saving
+  const collectAllSettings = (): { key: string; value: string }[] => {
+    const all: Record<string, unknown> = { ...general, ...email, ...security, ...notifications, ...integrations };
+    const settings: { key: string; value: string }[] = [];
+    for (const [localKey, value] of Object.entries(all)) {
+      const dbKey = SETTINGS_KEY_MAP[localKey];
+      if (!dbKey) continue;
+      settings.push({ key: dbKey, value: String(value) });
+    }
+    return settings;
   };
 
-  if (authLoading) return <PageLoading />;
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const settings = collectAllSettings();
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ settings }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to save");
+      }
+      toast.success("Settings saved successfully");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save settings");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleMaintenanceToggle = async (enabled: boolean) => {
+    setGeneral({ ...general, maintenanceMode: enabled });
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: "maintenance_mode", value: String(enabled) }),
+      });
+      if (!res.ok) throw new Error("Failed to update");
+      toast.success(enabled ? "Maintenance mode enabled" : "Maintenance mode disabled");
+    } catch {
+      setGeneral({ ...general, maintenanceMode: !enabled });
+      toast.error("Failed to toggle maintenance mode");
+    }
+  };
+
+  const handleSendTestEmail = async () => {
+    if (!testEmailAddress || !testEmailAddress.includes("@")) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    setSendingTest(true);
+    try {
+      const res = await fetch("/api/settings/test-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to: testEmailAddress }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to send");
+      toast.success(`Test email sent to ${testEmailAddress}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to send test email");
+    } finally {
+      setSendingTest(false);
+    }
+  };
+
+  if (authLoading || loadingSettings) return <PageLoading />;
 
   return (
     <div className="page-container">
@@ -111,7 +305,8 @@ export default function AdminSettingsPage() {
         icon={Settings}
         action={
           <button onClick={handleSave} className="btn-primary flex items-center gap-2" disabled={saving}>
-            <Save className="w-4 h-4" /> {saving ? "Saving..." : "Save All Settings"}
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            {saving ? "Saving..." : "Save All Settings"}
           </button>
         }
       />
@@ -220,10 +415,10 @@ export default function AdminSettingsPage() {
                     <input
                       type="checkbox"
                       checked={general.maintenanceMode}
-                      onChange={(e) => setGeneral({ ...general, maintenanceMode: e.target.checked })}
+                      onChange={(e) => handleMaintenanceToggle(e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-dark-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[&apos;&apos;] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-500"></div>
+                    <div className="w-11 h-6 bg-dark-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[\'\'] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-500"></div>
                   </label>
                   <span className="text-sm text-gray-400">Maintenance Mode</span>
                 </div>
@@ -278,7 +473,7 @@ export default function AdminSettingsPage() {
                     value={email.smtpPass}
                     onChange={(e) => setEmail({ ...email, smtpPass: e.target.value })}
                     className="input-field"
-                    placeholder="••••••••"
+                    placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
                   />
                 </div>
                 <div>
@@ -307,9 +502,34 @@ export default function AdminSettingsPage() {
                       onChange={(e) => setEmail({ ...email, enableTLS: e.target.checked })}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-dark-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[&apos;&apos;] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                    <div className="w-11 h-6 bg-dark-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[\'\'] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                   </label>
                   <span className="text-sm text-gray-400">Enable TLS/SSL</span>
+                </div>
+              </div>
+
+              {/* Send Test Email Section */}
+              <div className="mt-6 pt-6 border-t border-gray-700/50">
+                <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                  <Send className="w-4 h-4 text-blue-400" /> Send Test Email
+                </h4>
+                <p className="text-xs text-gray-500 mb-3">Verify your SMTP settings by sending a test email. Save your settings first before testing.</p>
+                <div className="flex gap-3">
+                  <input
+                    type="email"
+                    value={testEmailAddress}
+                    onChange={(e) => setTestEmailAddress(e.target.value)}
+                    className="input-field flex-1"
+                    placeholder="recipient@example.com"
+                  />
+                  <button
+                    onClick={handleSendTestEmail}
+                    disabled={sendingTest}
+                    className="btn-primary flex items-center gap-2 whitespace-nowrap"
+                  >
+                    {sendingTest ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                    {sendingTest ? "Sending..." : "Send Test"}
+                  </button>
                 </div>
               </div>
             </div>
@@ -384,11 +604,11 @@ export default function AdminSettingsPage() {
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
                           type="checkbox"
-                          checked={(security as any)[item.key]}
+                          checked={(security as Record<string, unknown>)[item.key] as boolean}
                           onChange={(e) => setSecurity({ ...security, [item.key]: e.target.checked })}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-dark-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[&apos;&apos;] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                        <div className="w-11 h-6 bg-dark-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[\'\'] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                       </label>
                       <span className="text-sm text-gray-400">{item.label}</span>
                     </div>
@@ -424,11 +644,11 @@ export default function AdminSettingsPage() {
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={(notifications as any)[item.key]}
+                        checked={(notifications as Record<string, unknown>)[item.key] as boolean}
                         onChange={(e) => setNotifications({ ...notifications, [item.key]: e.target.checked })}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-dark-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[&apos;&apos;] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-500"></div>
+                      <div className="w-11 h-6 bg-dark-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[\'\'] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-500"></div>
                     </label>
                   </div>
                 ))}
@@ -471,7 +691,7 @@ export default function AdminSettingsPage() {
                       onChange={(e) => setIntegrations({ ...integrations, ssoEnabled: e.target.checked })}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-dark-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[&apos;&apos;] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
+                    <div className="w-11 h-6 bg-dark-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[\'\'] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
                   </label>
                   <span className="text-sm text-gray-400">Enable SSO</span>
                 </div>
@@ -509,7 +729,7 @@ export default function AdminSettingsPage() {
                         value={integrations.ssoClientSecret}
                         onChange={(e) => setIntegrations({ ...integrations, ssoClientSecret: e.target.value })}
                         className="input-field"
-                        placeholder="••••••••"
+                        placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
                       />
                     </div>
                   </div>
@@ -529,7 +749,7 @@ export default function AdminSettingsPage() {
                       onChange={(e) => setIntegrations({ ...integrations, ldapEnabled: e.target.checked })}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-dark-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[&apos;&apos;] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                    <div className="w-11 h-6 bg-dark-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[\'\'] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
                   </label>
                   <span className="text-sm text-gray-400">Enable LDAP</span>
                 </div>
@@ -581,7 +801,8 @@ export default function AdminSettingsPage() {
           {/* Save Button at bottom */}
           <div className="mt-6 flex justify-end">
             <button onClick={handleSave} className="btn-primary flex items-center gap-2" disabled={saving}>
-              <Save className="w-4 h-4" /> {saving ? "Saving..." : "Save Settings"}
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {saving ? "Saving..." : "Save Settings"}
             </button>
           </div>
         </motion.div>
