@@ -197,12 +197,12 @@ export default function UserDetailPage() {
 
   if (!user) return <PageLoading />;
 
-  const completedModules = user.moduleProgress.filter((p) => p.isCompleted).length;
-  const totalModules = user.moduleProgress.length;
-  const passedQuizzes = user.quizResults.filter((r) => r.passed).length;
-  const totalQuizzes = user.quizResults.length;
+  const completedModules = (user.moduleProgress ?? []).filter((p) => p.isCompleted).length;
+  const totalModules = (user.moduleProgress ?? []).length;
+  const passedQuizzes = (user.quizResults ?? []).filter((r) => r.passed).length;
+  const totalQuizzes = (user.quizResults ?? []).length;
   const avgScore = totalQuizzes > 0
-    ? Math.round(user.quizResults.reduce((sum, r) => sum + r.score, 0) / totalQuizzes)
+    ? Math.round((user.quizResults ?? []).reduce((sum, r) => sum + r.score, 0) / totalQuizzes)
     : 0;
 
   return (
@@ -291,7 +291,7 @@ export default function UserDetailPage() {
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="glass-card p-4 text-center">
           <Award className="w-6 h-6 text-purple-400 mx-auto mb-1" />
-          <p className="text-2xl font-bold text-white">{user.badges.length}</p>
+          <p className="text-2xl font-bold text-white">{(user.badges ?? []).length}</p>
           <p className="text-xs text-gray-500">Badges Earned</p>
         </motion.div>
       </div>
@@ -302,9 +302,9 @@ export default function UserDetailPage() {
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
             <GraduationCap className="w-5 h-5 text-cyan-400" /> Training Progress
           </h3>
-          {user.moduleProgress.length > 0 ? (
+          {(user.moduleProgress ?? []).length > 0 ? (
             <div className="space-y-4 max-h-[400px] overflow-y-auto pr-1">
-              {user.moduleProgress.map((mp) => (
+              {(user.moduleProgress ?? []).map((mp) => (
                 <div key={mp.id} className="p-3 rounded-lg bg-dark-700/30">
                   <div className="flex items-center justify-between mb-2">
                     <div>
@@ -336,9 +336,9 @@ export default function UserDetailPage() {
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
             <ClipboardList className="w-5 h-5 text-emerald-400" /> Quiz Results
           </h3>
-          {user.quizResults.length > 0 ? (
+          {(user.quizResults ?? []).length > 0 ? (
             <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
-              {user.quizResults.map((qr) => (
+              {(user.quizResults ?? []).map((qr) => (
                 <div key={qr.id} className="p-3 rounded-lg bg-dark-700/30 flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-white">{qr.quiz.title}</p>
@@ -374,9 +374,9 @@ export default function UserDetailPage() {
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
             <Award className="w-5 h-5 text-yellow-400" /> Badges
           </h3>
-          {user.badges.length > 0 ? (
+          {(user.badges ?? []).length > 0 ? (
             <div className="grid grid-cols-2 gap-3">
-              {user.badges.map((ub) => (
+              {(user.badges ?? []).map((ub) => (
                 <div key={ub.id} className={`p-3 rounded-lg border text-center ${getBadgeColorClass(ub.badge.color)}`}>
                   <Award className="w-8 h-8 mx-auto mb-1" />
                   <p className="text-xs font-semibold">{ub.badge.name}</p>
@@ -394,9 +394,9 @@ export default function UserDetailPage() {
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
             <FileText className="w-5 h-5 text-blue-400" /> Certificates
           </h3>
-          {user.certificates.length > 0 ? (
+          {(user.certificates ?? []).length > 0 ? (
             <div className="space-y-3">
-              {user.certificates.map((cert) => (
+              {(user.certificates ?? []).map((cert) => (
                 <div key={cert.id} className="p-3 rounded-lg bg-dark-700/30 border border-gray-700/30">
                   <p className="text-sm font-medium text-white">{cert.moduleName}</p>
                   <div className="flex items-center justify-between mt-1">
@@ -418,9 +418,9 @@ export default function UserDetailPage() {
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
             <Activity className="w-5 h-5 text-purple-400" /> Recent Activity
           </h3>
-          {user.activities.length > 0 ? (
+          {(user.activities ?? []).length > 0 ? (
             <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
-              {user.activities.slice(0, 20).map((act) => (
+              {(user.activities ?? []).slice(0, 20).map((act) => (
                 <div key={act.id} className="p-2 rounded-lg bg-dark-700/30">
                   <div className="flex items-center gap-2">
                     <Badge variant="default" size="sm">{act.type.replace(/_/g, " ")}</Badge>

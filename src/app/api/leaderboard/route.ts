@@ -12,9 +12,6 @@ export async function GET(req: NextRequest) {
       select: {
         id: true,
         name: true,
-        email: true,
-        role: true,
-        riskScore: true,
         _count: {
           select: {
             quizResults: true,

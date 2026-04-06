@@ -68,6 +68,10 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         certificates: {
           orderBy: { issuedAt: "desc" },
         },
+        activities: {
+          orderBy: { createdAt: "desc" },
+          take: 20,
+        },
       },
     });
 
