@@ -43,7 +43,7 @@ async function main() {
     data: {
       name: "SecureAware Demo Corp",
       slug: "secureaware-demo",
-      domain: "secureaware.com",
+      domain: "secureaware.online",
       plan: OrganizationPlan.ENTERPRISE,
       maxUsers: 100,
     },
@@ -77,10 +77,10 @@ async function main() {
   const empHash = await bcrypt.hash("Employee123!", 12);
 
   const admin = await prisma.user.create({
-    data: { email: "admin@secureaware.com", name: "Security Administrator", passwordHash: adminHash, role: "ADMIN", status: "ACTIVE", jobTitle: "Chief Information Security Officer", riskScore: 12, departmentId: departments[0].id, organizationId: organization.id }
+    data: { email: "admin@secureaware.online", name: "Security Administrator", passwordHash: adminHash, role: "ADMIN", status: "ACTIVE", jobTitle: "Chief Information Security Officer", riskScore: 12, departmentId: departments[0].id, organizationId: organization.id }
   });
   const employee = await prisma.user.create({
-    data: { email: "employee@secureaware.com", name: "Sarah Johnson", passwordHash: empHash, role: "EMPLOYEE", status: "ACTIVE", jobTitle: "Marketing Specialist", riskScore: 45, departmentId: departments[3].id, organizationId: organization.id }
+    data: { email: "employee@secureaware.online", name: "Sarah Johnson", passwordHash: empHash, role: "EMPLOYEE", status: "ACTIVE", jobTitle: "Marketing Specialist", riskScore: 45, departmentId: departments[3].id, organizationId: organization.id }
   });
   const extraEmployees = [
     { email: "james.wilson@company.com", name: "James Wilson", jobTitle: "Software Engineer", dept: 0, risk: 22 },
