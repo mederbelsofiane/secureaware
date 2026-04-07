@@ -6,6 +6,7 @@ import type {
   UserRole, UserStatus, Difficulty, ModuleCategory, LessonType,
   QuizStatus, CampaignStatus, CampaignType, ContactStatus, ActivityType, BadgeColor,
   OrganizationPlan,
+  OrganizationStatus,
 } from "@prisma/client";
 
 export type {
@@ -16,6 +17,7 @@ export type {
   UserRole, UserStatus, Difficulty, ModuleCategory, LessonType,
   QuizStatus, CampaignStatus, CampaignType, ContactStatus, ActivityType, BadgeColor,
   OrganizationPlan,
+  OrganizationStatus,
 };
 
 // Safe user type without password hash
@@ -99,4 +101,16 @@ export interface QuizResultDetail {
     correctOptionId: string;
     isCorrect: boolean;
   }[];
+}
+
+
+// Super Admin stats
+export interface SuperAdminStats {
+  totalOrganizations: number;
+  activeOrganizations: number;
+  suspendedOrganizations: number;
+  totalUsers: number;
+  orgsByPlan: Record<string, number>;
+  recentAuditLogs: AuditLog[];
+  recentOrganizations: Organization[];
 }

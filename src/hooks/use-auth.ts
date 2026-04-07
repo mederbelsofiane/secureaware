@@ -10,6 +10,7 @@ export function useAuth() {
     user: session?.user as SessionUser | undefined,
     isLoading: status === "loading",
     isAuthenticated: status === "authenticated",
+    isSuperAdmin: session?.user?.role === "SUPER_ADMIN",
     isAdmin: session?.user?.role === "ADMIN",
     isEmployee: session?.user?.role === "EMPLOYEE",
   };

@@ -36,6 +36,9 @@ export async function POST(request: NextRequest) {
     }
 
     const { name, email, password, organizationName } = validation.data;
+
+    // Prevent SUPER_ADMIN self-registration
+    // SUPER_ADMIN accounts can only be created via seed or another SUPER_ADMIN
     const normalizedEmail = email.trim().toLowerCase();
     const trimmedName = name.trim();
 

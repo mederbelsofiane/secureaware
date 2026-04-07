@@ -6,9 +6,16 @@ export default withAuth(
     const { pathname } = req.nextUrl;
     const token = req.nextauth.token;
 
-    // Set pathname header for use by server components (e.g., root layout maintenance check)
+    // Set pathname header for use by server components
     const response = NextResponse.next();
     response.headers.set("x-pathname", pathname);
+
+    // Super Admin routes require SUPER_ADMIN role
+    if (pathname.startsWith("/super-admin")) {
+      if (token?.role !== "SUPER_ADMIN") {
+        return NextResponse.redirect(new URL("/login", req.url));
+      }
+    }
 
     // Admin page routes require ADMIN role
     if (pathname.startsWith("/admin")) {
@@ -53,6 +60,7 @@ export const config = {
   matcher: [
     "/dashboard/:path*",
     "/admin/:path*",
+    "/super-admin/:path*",
     "/",
     "/login",
     "/register",

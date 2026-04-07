@@ -37,6 +37,25 @@ async function main() {
   console.log("Cleared existing data");
 
   // =============================================
+  // SUPER ADMIN (Platform-level, no organization)
+  // =============================================
+  const superAdminHash = await bcrypt.hash("SuperAdmin123!@#", 12);
+  const superAdmin = await prisma.user.upsert({
+    where: { email: "superadmin@secureaware.online" },
+    update: {},
+    create: {
+      email: "superadmin@secureaware.online",
+      name: "Super Administrator",
+      passwordHash: superAdminHash,
+      role: "SUPER_ADMIN",
+      status: "ACTIVE",
+      jobTitle: "Platform Super Administrator",
+      organizationId: null,
+    },
+  });
+  console.log("Created Super Admin: " + superAdmin.email);
+
+  // =============================================
   // DEFAULT ORGANIZATION
   // =============================================
   const organization = await prisma.organization.create({

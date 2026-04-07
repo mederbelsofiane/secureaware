@@ -64,7 +64,9 @@ export default function LoginPage() {
       const sessionRes = await fetch("/api/auth/session");
       const session = await sessionRes.json();
 
-      if (session?.user?.role === "ADMIN") {
+      if (session?.user?.role === "SUPER_ADMIN") {
+        router.push("/super-admin");
+      } else if (session?.user?.role === "ADMIN") {
         router.push("/admin");
       } else {
         router.push("/dashboard");

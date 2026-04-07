@@ -16,6 +16,7 @@ datasource db {
 // ============================================
 
 enum UserRole {
+  SUPER_ADMIN
   ADMIN
   EMPLOYEE
   GUEST
@@ -110,6 +111,13 @@ enum OrganizationPlan {
   ENTERPRISE
 }
 
+
+enum OrganizationStatus {
+  ACTIVE
+  SUSPENDED
+  INACTIVE
+}
+
 // ============================================
 // ORGANIZATION (Multi-Tenancy)
 // ============================================
@@ -122,6 +130,12 @@ model Organization {
   plan          OrganizationPlan   @default(FREE)
   logo          String?
   maxUsers      Int                @default(50)
+  status        OrganizationStatus @default(ACTIVE)
+  billingEmail  String?
+  subscriptionStartDate DateTime?
+  subscriptionEndDate   DateTime?
+  currentUsers  Int                @default(0)
+  notes         String?            @db.Text
   stripeCustomerId     String?     @unique
   stripeSubscriptionId String?
   users         User[]

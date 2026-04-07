@@ -29,6 +29,19 @@ export async function requireRole(roles: UserRole[]): Promise<SessionUser> {
 }
 
 // ============================================
+// Super Admin Helper
+// ============================================
+
+/** Require SUPER_ADMIN role - no organization required */
+export async function requireSuperAdmin(): Promise<SessionUser> {
+  const user = await requireAuth();
+  if (user.role !== "SUPER_ADMIN") {
+    throw new Error("FORBIDDEN");
+  }
+  return user;
+}
+
+// ============================================
 // Organization (Multi-Tenancy) Helpers
 // ============================================
 

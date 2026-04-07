@@ -134,6 +134,46 @@ export const paginationSchema = z.object({
   sortOrder: z.enum(["asc", "desc"]).optional(),
 });
 
+
+// Super Admin: Organization management
+export const createOrganizationSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters").max(200),
+  slug: z.string().min(2).max(60).regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with hyphens"),
+  plan: z.enum(["FREE", "STARTER", "PROFESSIONAL", "ENTERPRISE"]),
+  maxUsers: z.number().min(1).max(10000).default(50),
+  domain: z.string().max(255).optional().nullable(),
+  billingEmail: z.string().email().max(255).optional().nullable(),
+  notes: z.string().max(5000).optional().nullable(),
+});
+
+export const updateOrganizationSchema = z.object({
+  name: z.string().min(2).max(200).optional(),
+  slug: z.string().min(2).max(60).regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with hyphens").optional(),
+  plan: z.enum(["FREE", "STARTER", "PROFESSIONAL", "ENTERPRISE"]).optional(),
+  maxUsers: z.number().min(1).max(10000).optional(),
+  domain: z.string().max(255).optional().nullable(),
+  billingEmail: z.string().email().max(255).optional().nullable(),
+  status: z.enum(["ACTIVE", "SUSPENDED", "INACTIVE"]).optional(),
+  notes: z.string().max(5000).optional().nullable(),
+  subscriptionStartDate: z.string().optional().nullable(),
+  subscriptionEndDate: z.string().optional().nullable(),
+});
+
+export const createOrgAdminSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters").max(100),
+  email: z.string().email("Invalid email address").max(255),
+  password: z.string().min(8, "Password must be at least 8 characters").max(128),
+  jobTitle: z.string().max(100).optional().nullable(),
+});
+
+export const updateOrgAdminSchema = z.object({
+  name: z.string().min(2).max(100).optional(),
+  email: z.string().email().max(255).optional(),
+  password: z.string().min(8).max(128).optional(),
+  status: z.enum(["ACTIVE", "INACTIVE", "SUSPENDED"]).optional(),
+  jobTitle: z.string().max(100).optional().nullable(),
+});
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type ContactInput = z.infer<typeof contactSchema>;
@@ -147,3 +187,8 @@ export type CreateQuestionInput = z.infer<typeof createQuestionSchema>;
 export type QuizSubmissionInput = z.infer<typeof quizSubmissionSchema>;
 export type QuizAssignmentInput = z.infer<typeof quizAssignmentSchema>;
 export type ContactStatusInput = z.infer<typeof contactStatusSchema>;
+
+export type CreateOrganizationInput = z.infer<typeof createOrganizationSchema>;
+export type UpdateOrganizationInput = z.infer<typeof updateOrganizationSchema>;
+export type CreateOrgAdminInput = z.infer<typeof createOrgAdminSchema>;
+export type UpdateOrgAdminInput = z.infer<typeof updateOrgAdminSchema>;
