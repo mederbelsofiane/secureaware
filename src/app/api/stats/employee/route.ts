@@ -41,16 +41,22 @@ export async function GET(req: NextRequest) {
         }),
       ]);
 
-    // Fetch user risk score
     const userData = await prisma.user.findUnique({
       where: { id: user.id },
       select: { riskScore: true },
     });
 
-    const totalModules = await prisma.module.count({ where: { isPublished: true } });
+    // Count modules visible to the user (org + global)
+    const moduleWhere: Record<string, unknown> = { isPublished: true };
+    if (user.organizationId) {
+      moduleWhere.OR = [
+        { organizationId: user.organizationId },
+        { isGlobal: true },
+      ];
+    }
+    const totalModules = await prisma.module.count({ where: moduleWhere });
     const completedModules = moduleProgress.filter((mp) => mp.isCompleted).length;
 
-    // Average quiz score
     const avgScore =
       quizResults.length > 0
         ? Math.round(
@@ -60,7 +66,6 @@ export async function GET(req: NextRequest) {
 
     const passedQuizzes = quizResults.filter((r) => r.passed).length;
 
-    // Assigned quizzes count
     const totalAssignedQuizzes = await prisma.quizAssignment.count({
       where: { userId: user.id },
     });

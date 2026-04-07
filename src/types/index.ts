@@ -2,16 +2,20 @@ import type {
   User, Department, Module, Lesson, Quiz, Question, QuestionOption,
   QuizResult, Campaign, Badge, UserBadge, Certificate, PhishingExample,
   Activity, ContactRequest, ModuleProgress, AuditLog,
+  Organization, Invitation, OrgSetting,
   UserRole, UserStatus, Difficulty, ModuleCategory, LessonType,
   QuizStatus, CampaignStatus, CampaignType, ContactStatus, ActivityType, BadgeColor,
+  OrganizationPlan,
 } from "@prisma/client";
 
 export type {
   User, Department, Module, Lesson, Quiz, Question, QuestionOption,
   QuizResult, Campaign, Badge, UserBadge, Certificate, PhishingExample,
   Activity, ContactRequest, ModuleProgress, AuditLog,
+  Organization, Invitation, OrgSetting,
   UserRole, UserStatus, Difficulty, ModuleCategory, LessonType,
   QuizStatus, CampaignStatus, CampaignType, ContactStatus, ActivityType, BadgeColor,
+  OrganizationPlan,
 };
 
 // Safe user type without password hash
@@ -24,6 +28,8 @@ export interface SessionUser {
   name: string;
   role: UserRole;
   departmentId: string | null;
+  organizationId: string | null;
+  organizationSlug: string | null;
 }
 
 // API Response types

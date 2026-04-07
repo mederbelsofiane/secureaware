@@ -2,9 +2,11 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import {
-  requireRole,
+  requireOrgRole,
+  orgWhere,
   unauthorized,
   forbidden,
+  noOrganization,
   badRequest,
   notFound,
   serverError,
@@ -23,10 +25,10 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       return badRequest("Invalid campaign ID");
     }
 
-    await requireRole(["ADMIN"]);
+    const user = await requireOrgRole(["ADMIN"]);
 
-    const campaign = await prisma.campaign.findUnique({
-      where: { id },
+    const campaign = await prisma.campaign.findFirst({
+      where: { id, ...orgWhere(user) },
       include: {
         campaignModules: {
           include: {
@@ -82,6 +84,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }
@@ -93,9 +96,11 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
       return badRequest("Invalid campaign ID");
     }
 
-    const currentUser = await requireRole(["ADMIN"]);
+    const currentUser = await requireOrgRole(["ADMIN"]);
 
-    const existing = await prisma.campaign.findUnique({ where: { id } });
+    const existing = await prisma.campaign.findFirst({
+      where: { id, ...orgWhere(currentUser) },
+    });
     if (!existing) {
       return notFound("Campaign not found");
     }
@@ -108,7 +113,6 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
 
     const { moduleIds, departmentIds, userIds, startDate, endDate, ...campaignData } = parsed.data;
 
-    // Sanitize and build update data
     const updateData: Record<string, unknown> = {};
     if (campaignData.name !== undefined) updateData.name = campaignData.name.trim();
     if (campaignData.description !== undefined) updateData.description = campaignData.description?.trim() || null;
@@ -117,7 +121,6 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     if (startDate !== undefined) updateData.startDate = startDate ? new Date(startDate) : null;
     if (endDate !== undefined) updateData.endDate = endDate ? new Date(endDate) : null;
 
-    // If relation arrays are provided, replace them
     if (moduleIds !== undefined) {
       await prisma.campaignModule.deleteMany({ where: { campaignId: id } });
       if (moduleIds.length > 0) {
@@ -170,7 +173,6 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
       },
     });
 
-    // Audit log
     await prisma.auditLog.create({
       data: {
         userId: currentUser.id,
@@ -187,6 +189,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }
@@ -198,17 +201,17 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
       return badRequest("Invalid campaign ID");
     }
 
-    const currentUser = await requireRole(["ADMIN"]);
+    const currentUser = await requireOrgRole(["ADMIN"]);
 
-    const existing = await prisma.campaign.findUnique({ where: { id } });
+    const existing = await prisma.campaign.findFirst({
+      where: { id, ...orgWhere(currentUser) },
+    });
     if (!existing) {
       return notFound("Campaign not found");
     }
 
-    // Cascade deletes handle related records
     await prisma.campaign.delete({ where: { id } });
 
-    // Audit log
     await prisma.auditLog.create({
       data: {
         userId: currentUser.id,
@@ -224,6 +227,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }

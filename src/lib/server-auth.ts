@@ -28,13 +28,57 @@ export async function requireRole(roles: UserRole[]): Promise<SessionUser> {
   return user;
 }
 
-// API route helpers
+// ============================================
+// Organization (Multi-Tenancy) Helpers
+// ============================================
+
+/** Require user belongs to an organization */
+export async function requireOrg(): Promise<SessionUser> {
+  const user = await requireAuth();
+  if (!user.organizationId) {
+    throw new Error("NO_ORGANIZATION");
+  }
+  return user;
+}
+
+/** Require org membership + specific role(s) */
+export async function requireOrgRole(roles: UserRole[]): Promise<SessionUser> {
+  const user = await requireOrg();
+  if (!roles.includes(user.role as UserRole)) {
+    throw new Error("FORBIDDEN");
+  }
+  return user;
+}
+
+/** Returns a where clause scoped to the user's organization */
+export function orgWhere(user: SessionUser): { organizationId: string } {
+  return { organizationId: user.organizationId! };
+}
+
+/** Returns OR clause for org-specific + global records (for modules, badges, phishing) */
+export function orgOrGlobalWhere(user: SessionUser) {
+  return {
+    OR: [
+      { organizationId: user.organizationId },
+      { isGlobal: true },
+    ],
+  };
+}
+
+// ============================================
+// API Route Response Helpers
+// ============================================
+
 export function unauthorized() {
   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 }
 
 export function forbidden() {
   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+}
+
+export function noOrganization() {
+  return NextResponse.json({ error: "No organization. Please join or create an organization." }, { status: 403 });
 }
 
 export function badRequest(message: string) {

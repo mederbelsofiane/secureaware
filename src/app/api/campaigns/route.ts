@@ -1,15 +1,14 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
-import { requireRole, unauthorized, forbidden, badRequest, serverError, success } from "@/lib/server-auth";
+import { requireOrgRole, orgWhere, unauthorized, forbidden, noOrganization, badRequest, serverError, success } from "@/lib/server-auth";
 import { paginationSchema, createCampaignSchema } from "@/lib/validations";
 
 export async function GET(req: NextRequest) {
   try {
-    await requireRole(["ADMIN"]);
+    const user = await requireOrgRole(["ADMIN"]);
 
     const returnAll = req.nextUrl.searchParams.get("all") === "true";
-
     const searchParams = Object.fromEntries(req.nextUrl.searchParams);
     const parsed = paginationSchema.safeParse(searchParams);
     const { page = 1, limit = 20, search, sortBy, sortOrder } = parsed.success
@@ -21,7 +20,7 @@ export async function GET(req: NextRequest) {
     const status = req.nextUrl.searchParams.get("status");
     const type = req.nextUrl.searchParams.get("type");
 
-    const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = { ...orgWhere(user) };
     if (search) {
       where.OR = [
         { name: { contains: search.trim(), mode: "insensitive" } },
@@ -73,13 +72,14 @@ export async function GET(req: NextRequest) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await requireRole(["ADMIN"]);
+    const user = await requireOrgRole(["ADMIN"]);
 
     const body = await req.json();
     const parsed = createCampaignSchema.safeParse(body);
@@ -89,7 +89,6 @@ export async function POST(req: NextRequest) {
 
     const { moduleIds, departmentIds, userIds, startDate, endDate, ...campaignData } = parsed.data;
 
-    // Sanitize
     const sanitizedData = {
       ...campaignData,
       name: campaignData.name.trim(),
@@ -102,6 +101,7 @@ export async function POST(req: NextRequest) {
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
         createdBy: user.id,
+        organizationId: user.organizationId!,
         campaignModules: moduleIds && moduleIds.length > 0
           ? { create: moduleIds.map((moduleId) => ({ moduleId })) }
           : undefined,
@@ -134,7 +134,6 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Audit log
     await prisma.auditLog.create({
       data: {
         userId: user.id,
@@ -150,6 +149,7 @@ export async function POST(req: NextRequest) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }

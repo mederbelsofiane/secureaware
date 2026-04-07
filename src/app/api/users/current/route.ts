@@ -19,6 +19,8 @@ export async function GET() {
         riskScore: true,
         departmentId: true,
         department: { select: { id: true, name: true } },
+        organizationId: true,
+        organization: { select: { id: true, name: true, slug: true, plan: true } },
         lastLoginAt: true,
         createdAt: true,
         certificates: {

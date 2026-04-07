@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
-import { requireAuth, requireRole, unauthorized, forbidden, badRequest, serverError, success } from "@/lib/server-auth";
+import { requireAuth, requireOrgRole, orgWhere, unauthorized, forbidden, noOrganization, badRequest, serverError, success } from "@/lib/server-auth";
 import { paginationSchema, createQuizSchema, createQuestionSchema } from "@/lib/validations";
 import { z } from "zod";
 
@@ -22,8 +22,14 @@ export async function GET(req: NextRequest) {
     const category = req.nextUrl.searchParams.get("category");
     const difficulty = req.nextUrl.searchParams.get("difficulty");
 
+    // Build org filter
+    const orgFilter: Record<string, unknown> = {};
+    if (user.organizationId) {
+      orgFilter.organizationId = user.organizationId;
+    }
+
     if (user.role === "ADMIN") {
-      const where: Record<string, unknown> = {};
+      const where: Record<string, unknown> = { ...orgFilter };
       if (search) {
         where.OR = [
           { title: { contains: search.trim(), mode: "insensitive" } },
@@ -55,7 +61,7 @@ export async function GET(req: NextRequest) {
       if (returnAll) return success(items);
       return success({ items, total, page, limit, totalPages: Math.ceil(total / limit) });
     } else {
-      // Employee: all published quizzes (with assignment info attached)
+      // Employee: all published quizzes in their org
       const assignments = await prisma.quizAssignment.findMany({
         where: { userId: user.id },
         select: { quizId: true, dueDate: true, assignedAt: true },
@@ -72,6 +78,7 @@ export async function GET(req: NextRequest) {
 
       const where: Record<string, unknown> = {
         status: "PUBLISHED",
+        ...orgFilter,
       };
       if (search) {
         where.OR = [
@@ -99,7 +106,6 @@ export async function GET(req: NextRequest) {
         prisma.quiz.count({ where }),
       ]);
 
-      // Attach user results and assignment info
       const quizIds = items.map((q) => q.id);
       const userResults = await prisma.quizResult.findMany({
         where: { userId: user.id, quizId: { in: quizIds } },
@@ -126,6 +132,7 @@ export async function GET(req: NextRequest) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }
@@ -136,7 +143,7 @@ const createQuizWithQuestionsSchema = createQuizSchema.extend({
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await requireRole(["ADMIN"]);
+    const user = await requireOrgRole(["ADMIN"]);
 
     const body = await req.json();
     const parsed = createQuizWithQuestionsSchema.safeParse(body);
@@ -146,7 +153,6 @@ export async function POST(req: NextRequest) {
 
     const { questions, dueDate, visibleFrom, visibleUntil, ...quizData } = parsed.data;
 
-    // Sanitize string fields
     const sanitizedData = {
       ...quizData,
       title: quizData.title.trim(),
@@ -160,6 +166,7 @@ export async function POST(req: NextRequest) {
         visibleFrom: visibleFrom ? new Date(visibleFrom) : null,
         visibleUntil: visibleUntil ? new Date(visibleUntil) : null,
         createdBy: user.id,
+        organizationId: user.organizationId,
         questions: questions
           ? {
               create: questions.map((q, qi) => ({
@@ -186,7 +193,6 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Audit log
     await prisma.auditLog.create({
       data: {
         userId: user.id,
@@ -202,6 +208,7 @@ export async function POST(req: NextRequest) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }

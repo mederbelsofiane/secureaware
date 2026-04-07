@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, UserStatus, Difficulty, ModuleCategory, LessonType, QuizStatus, CampaignStatus, CampaignType, ContactStatus, ActivityType, BadgeColor } from "@prisma/client";
+import { PrismaClient, UserRole, UserStatus, Difficulty, ModuleCategory, LessonType, QuizStatus, CampaignStatus, CampaignType, ContactStatus, ActivityType, BadgeColor, OrganizationPlan } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -29,9 +29,26 @@ async function main() {
   await prisma.module.deleteMany();
   await prisma.phishingExample.deleteMany();
   await prisma.contactRequest.deleteMany();
+  await prisma.invitation.deleteMany();
+  await prisma.orgSetting.deleteMany();
   await prisma.user.deleteMany();
   await prisma.department.deleteMany();
+  await prisma.organization.deleteMany();
   console.log("Cleared existing data");
+
+  // =============================================
+  // DEFAULT ORGANIZATION
+  // =============================================
+  const organization = await prisma.organization.create({
+    data: {
+      name: "SecureAware Demo Corp",
+      slug: "secureaware-demo",
+      domain: "secureaware.com",
+      plan: OrganizationPlan.ENTERPRISE,
+      maxUsers: 100,
+    },
+  });
+  console.log("Created default organization: " + organization.name);
 
   // =============================================
   // DEPARTMENTS
@@ -48,7 +65,7 @@ async function main() {
   ];
   const departments = [];
   for (const d of deptData) {
-    const dept = await prisma.department.create({ data: d });
+    const dept = await prisma.department.create({ data: { ...d, organizationId: organization.id } });
     departments.push(dept);
   }
   console.log("Created " + departments.length + " departments");
@@ -60,10 +77,10 @@ async function main() {
   const empHash = await bcrypt.hash("Employee123!", 12);
 
   const admin = await prisma.user.create({
-    data: { email: "admin@secureaware.com", name: "Security Administrator", passwordHash: adminHash, role: "ADMIN", status: "ACTIVE", jobTitle: "Chief Information Security Officer", riskScore: 12, departmentId: departments[0].id }
+    data: { email: "admin@secureaware.com", name: "Security Administrator", passwordHash: adminHash, role: "ADMIN", status: "ACTIVE", jobTitle: "Chief Information Security Officer", riskScore: 12, departmentId: departments[0].id, organizationId: organization.id }
   });
   const employee = await prisma.user.create({
-    data: { email: "employee@secureaware.com", name: "Sarah Johnson", passwordHash: empHash, role: "EMPLOYEE", status: "ACTIVE", jobTitle: "Marketing Specialist", riskScore: 45, departmentId: departments[3].id }
+    data: { email: "employee@secureaware.com", name: "Sarah Johnson", passwordHash: empHash, role: "EMPLOYEE", status: "ACTIVE", jobTitle: "Marketing Specialist", riskScore: 45, departmentId: departments[3].id, organizationId: organization.id }
   });
   const extraEmployees = [
     { email: "james.wilson@company.com", name: "James Wilson", jobTitle: "Software Engineer", dept: 0, risk: 22 },
@@ -79,7 +96,7 @@ async function main() {
   ];
   const employees = [employee];
   for (const e of extraEmployees) {
-    const u = await prisma.user.create({ data: { email: e.email, name: e.name, passwordHash: empHash, role: "EMPLOYEE", status: "ACTIVE", jobTitle: e.jobTitle, riskScore: e.risk, departmentId: departments[e.dept].id } });
+    const u = await prisma.user.create({ data: { email: e.email, name: e.name, passwordHash: empHash, role: "EMPLOYEE", status: "ACTIVE", jobTitle: e.jobTitle, riskScore: e.risk, departmentId: departments[e.dept].id, organizationId: organization.id } });
     employees.push(u);
   }
   console.log("Created " + (employees.length + 1) + " users");
@@ -99,7 +116,7 @@ async function main() {
   ];
   const badges = [];
   for (const b of badgeData) {
-    const badge = await prisma.badge.create({ data: b });
+    const badge = await prisma.badge.create({ data: { ...b, organizationId: organization.id, isGlobal: true } });
     badges.push(badge);
   }
   console.log("Created " + badges.length + " badges");
@@ -344,6 +361,8 @@ async function main() {
         durationMins: mod.durationMins,
         order: mod.order,
         isPublished: true,
+        organizationId: organization.id,
+        isGlobal: true,
       }
     });
     for (const les of mod.lessons) {
@@ -829,6 +848,7 @@ async function main() {
         timeLimitMins: q.timeLimitMins,
         status: QuizStatus.PUBLISHED,
         moduleId: createdModules[q.moduleIndex]?.id,
+        organizationId: organization.id,
       }
     });
     for (let qi = 0; qi < q.questions.length; qi++) {
@@ -943,6 +963,8 @@ async function main() {
         difficulty: p.difficulty,
         category: p.category,
         redFlags: p.redFlags,
+        organizationId: organization.id,
+        isGlobal: true,
       }
     });
   }
@@ -959,6 +981,7 @@ async function main() {
       type: CampaignType.TRAINING,
       startDate: new Date("2026-01-15"),
       endDate: new Date("2026-03-31"),
+      organizationId: organization.id,
     }
   });
   // Link first 5 modules to campaign 1
@@ -982,8 +1005,9 @@ async function main() {
       type: CampaignType.TRAINING,
       startDate: new Date("2026-02-01"),
       endDate: new Date("2026-06-30"),
+      organizationId: organization.id,
     }
-  });
+    });
   for (let i = 5; i < createdModules.length; i++) {
     await prisma.campaignModule.create({ data: { campaignId: campaign2.id, moduleId: createdModules[i].id } });
   }
@@ -1002,6 +1026,7 @@ async function main() {
       type: CampaignType.PHISHING_SIMULATION,
       startDate: new Date("2026-03-01"),
       endDate: new Date("2026-03-31"),
+      organizationId: organization.id,
     }
   });
   for (const dept of departments) {

@@ -6,6 +6,7 @@ import {
   forbidden,
   badRequest,
   notFound,
+  noOrganization,
   serverError,
   success,
 } from "@/lib/server-auth";
@@ -32,14 +33,17 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
     const { answers, timeTaken } = parsed.data;
 
-    // Verify quiz exists and is published
-    const quiz = await prisma.quiz.findUnique({
-      where: { id: quizId },
+    // Verify quiz exists, is published, and belongs to user's org
+    const where: Record<string, unknown> = { id: quizId };
+    if (user.organizationId) {
+      where.organizationId = user.organizationId;
+    }
+
+    const quiz = await prisma.quiz.findFirst({
+      where,
       include: {
         questions: {
-          include: {
-            options: true,
-          },
+          include: { options: true },
         },
       },
     });
@@ -52,7 +56,6 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       return badRequest("This quiz is not available for submission");
     }
 
-    // Calculate score
     const totalQuestions = quiz.questions.length;
     if (totalQuestions === 0) {
       return badRequest("This quiz has no questions");
@@ -85,12 +88,10 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     const score = Math.round((correctAnswers / totalQuestions) * 10000) / 100;
     const passed = score >= quiz.passingScore;
 
-    // Get attempt number
     const previousAttempts = await prisma.quizResult.count({
       where: { userId: user.id, quizId },
     });
 
-    // Save result
     const result = await prisma.quizResult.create({
       data: {
         userId: user.id,
@@ -103,7 +104,6 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       },
     });
 
-    // Log activity
     await prisma.activity.create({
       data: {
         userId: user.id,
@@ -113,7 +113,6 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       },
     });
 
-    // Update user risk score based on performance
     const allResults = await prisma.quizResult.findMany({
       where: { userId: user.id },
       select: { score: true },
@@ -139,6 +138,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }

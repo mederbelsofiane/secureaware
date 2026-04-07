@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireAuth, unauthorized, notFound, badRequest, serverError, success } from "@/lib/server-auth";
+import { requireAuth, orgOrGlobalWhere, unauthorized, notFound, badRequest, noOrganization, serverError, success } from "@/lib/server-auth";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -15,8 +15,14 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
     const user = await requireAuth();
 
-    const trainingModule = await prisma.module.findUnique({
-      where: { id },
+    // Build where clause: module must belong to user's org or be global
+    const where: Record<string, unknown> = { id };
+    if (user.organizationId) {
+      where.AND = [orgOrGlobalWhere(user)];
+    }
+
+    const trainingModule = await prisma.module.findFirst({
+      where,
       include: {
         lessons: {
           select: {
@@ -39,7 +45,6 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
                     id: true,
                     text: true,
                     order: true,
-                    // Only show isCorrect to admins
                     ...(user.role === "ADMIN" ? { isCorrect: true } : {}),
                   },
                   orderBy: { order: "asc" },
@@ -59,12 +64,10 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       return notFound("Module not found");
     }
 
-    // Employees cannot see unpublished modules
     if (user.role !== "ADMIN" && !trainingModule.isPublished) {
       return notFound("Module not found");
     }
 
-    // Attach user progress if not admin
     let userProgress = null;
     let lessonProgress: { userId: string; lessonId: string; isCompleted: boolean; completedAt: Date | null }[] = [];
     if (user.role !== "ADMIN") {
@@ -82,7 +85,6 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       });
     }
 
-    // Map lesson completion status onto each lesson
     const completedLessonIds = new Set(lessonProgress.filter(lp => lp.isCompleted).map(lp => lp.lessonId));
     const lessonsWithProgress = trainingModule.lessons.map(lesson => ({
       ...lesson,
@@ -97,6 +99,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }

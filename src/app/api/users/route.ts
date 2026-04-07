@@ -1,13 +1,13 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
-import { requireRole, unauthorized, forbidden, badRequest, serverError, success } from "@/lib/server-auth";
+import { requireOrgRole, orgWhere, unauthorized, forbidden, noOrganization, badRequest, serverError, success } from "@/lib/server-auth";
 import { paginationSchema, createUserSchema } from "@/lib/validations";
 import bcrypt from "bcryptjs";
 
 export async function GET(req: NextRequest) {
   try {
-    await requireRole(["ADMIN"]);
+    const user = await requireOrgRole(["ADMIN"]);
 
     const returnAll = req.nextUrl.searchParams.get("all") === "true";
 
@@ -20,12 +20,11 @@ export async function GET(req: NextRequest) {
     const skip = returnAll ? 0 : (page - 1) * limit;
     const take = returnAll ? 10000 : limit;
 
-    // Optional filters from query params
     const role = req.nextUrl.searchParams.get("role");
     const status = req.nextUrl.searchParams.get("status");
     const departmentId = req.nextUrl.searchParams.get("departmentId");
 
-    const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = { ...orgWhere(user) };
     if (search) {
       where.OR = [
         { name: { contains: search.trim(), mode: "insensitive" } },
@@ -83,13 +82,14 @@ export async function GET(req: NextRequest) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const currentUser = await requireRole(["ADMIN"]);
+    const currentUser = await requireOrgRole(["ADMIN"]);
 
     const body = await req.json();
     const parsed = createUserSchema.safeParse(body);
@@ -101,7 +101,6 @@ export async function POST(req: NextRequest) {
     const normalizedEmail = email.trim().toLowerCase();
     const trimmedName = name.trim();
 
-    // Check for existing user
     const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (existing) {
       return badRequest("A user with this email already exists");
@@ -117,6 +116,7 @@ export async function POST(req: NextRequest) {
         role: role as any,
         departmentId: departmentId || null,
         jobTitle: jobTitle?.trim() || null,
+        organizationId: currentUser.organizationId,
       },
       select: {
         id: true,
@@ -135,7 +135,6 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Update department employee count
     if (departmentId) {
       await prisma.department.update({
         where: { id: departmentId },
@@ -143,7 +142,6 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Audit log
     await prisma.auditLog.create({
       data: {
         userId: currentUser.id,
@@ -159,6 +157,7 @@ export async function POST(req: NextRequest) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }

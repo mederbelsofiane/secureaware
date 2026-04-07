@@ -3,9 +3,11 @@ import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import {
   requireAuth,
-  requireRole,
+  requireOrgRole,
+  orgWhere,
   unauthorized,
   forbidden,
+  noOrganization,
   badRequest,
   notFound,
   serverError,
@@ -26,8 +28,13 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
     const user = await requireAuth();
 
-    const quiz = await prisma.quiz.findUnique({
-      where: { id },
+    const where: Record<string, unknown> = { id };
+    if (user.organizationId) {
+      where.organizationId = user.organizationId;
+    }
+
+    const quiz = await prisma.quiz.findFirst({
+      where,
       include: {
         module: { select: { id: true, title: true, category: true } },
         questions: {
@@ -47,22 +54,19 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     }
 
     if (user.role !== "ADMIN") {
-      // Employee: can view any published quiz
       if (quiz.status !== "PUBLISHED") {
         return notFound("Quiz not found");
       }
 
-      // Hide correct answers from employees
       const sanitizedQuiz = {
         ...quiz,
         questions: quiz.questions.map((q) => ({
           ...q,
           options: q.options.map(({ isCorrect, ...opt }) => opt),
-          explanation: null, // Hide explanations until after submission
+          explanation: null,
         })),
       };
 
-      // Attach user results
       const userResults = await prisma.quizResult.findMany({
         where: { userId: user.id, quizId: id },
         orderBy: { createdAt: "desc" },
@@ -76,6 +80,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }
@@ -87,9 +92,11 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
       return badRequest("Invalid quiz ID");
     }
 
-    const currentUser = await requireRole(["ADMIN"]);
+    const currentUser = await requireOrgRole(["ADMIN"]);
 
-    const existing = await prisma.quiz.findUnique({ where: { id } });
+    const existing = await prisma.quiz.findFirst({
+      where: { id, ...orgWhere(currentUser) },
+    });
     if (!existing) {
       return notFound("Quiz not found");
     }
@@ -102,7 +109,6 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
 
     const { dueDate, visibleFrom, visibleUntil, ...rest } = parsed.data;
 
-    // Sanitize string fields
     const updateData: Record<string, unknown> = { ...rest };
     if (rest.title !== undefined) updateData.title = rest.title.trim();
     if (rest.description !== undefined) updateData.description = rest.description?.trim() || null;
@@ -123,7 +129,6 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
       },
     });
 
-    // Audit log
     await prisma.auditLog.create({
       data: {
         userId: currentUser.id,
@@ -140,6 +145,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }
@@ -151,16 +157,17 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
       return badRequest("Invalid quiz ID");
     }
 
-    const currentUser = await requireRole(["ADMIN"]);
+    const currentUser = await requireOrgRole(["ADMIN"]);
 
-    const existing = await prisma.quiz.findUnique({ where: { id } });
+    const existing = await prisma.quiz.findFirst({
+      where: { id, ...orgWhere(currentUser) },
+    });
     if (!existing) {
       return notFound("Quiz not found");
     }
 
     await prisma.quiz.delete({ where: { id } });
 
-    // Audit log
     await prisma.auditLog.create({
       data: {
         userId: currentUser.id,
@@ -176,6 +183,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }

@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireAuth, unauthorized, serverError, success } from "@/lib/server-auth";
+import { requireAuth, orgOrGlobalWhere, unauthorized, noOrganization, serverError, success } from "@/lib/server-auth";
 import { paginationSchema } from "@/lib/validations";
 
 export async function GET(req: NextRequest) {
@@ -21,15 +21,25 @@ export async function GET(req: NextRequest) {
 
     const where: Record<string, unknown> = {};
 
+    // Scope to org + global modules if user has an org
+    if (user.organizationId) {
+      Object.assign(where, orgOrGlobalWhere(user));
+    }
+
     // Employees only see published modules
     if (user.role !== "ADMIN") {
       where.isPublished = true;
     }
 
     if (search) {
-      where.OR = [
-        { title: { contains: search.trim(), mode: "insensitive" } },
-        { description: { contains: search.trim(), mode: "insensitive" } },
+      where.AND = [
+        ...(Array.isArray(where.AND) ? where.AND : []),
+        {
+          OR: [
+            { title: { contains: search.trim(), mode: "insensitive" } },
+            { description: { contains: search.trim(), mode: "insensitive" } },
+          ],
+        },
       ];
     }
     if (category) where.category = category;
@@ -93,6 +103,7 @@ export async function GET(req: NextRequest) {
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }

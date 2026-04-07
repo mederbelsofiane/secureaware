@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireAuth, unauthorized, forbidden, badRequest, notFound, serverError, success } from "@/lib/server-auth";
+import { requireAuth, orgWhere, unauthorized, forbidden, badRequest, notFound, noOrganization, serverError, success } from "@/lib/server-auth";
 import { paginationSchema } from "@/lib/validations";
 
 interface RouteParams {
@@ -16,8 +16,14 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
     const user = await requireAuth();
 
-    const quiz = await prisma.quiz.findUnique({
-      where: { id: quizId },
+    // Scope quiz lookup to org
+    const quizWhere: Record<string, unknown> = { id: quizId };
+    if (user.organizationId) {
+      quizWhere.organizationId = user.organizationId;
+    }
+
+    const quiz = await prisma.quiz.findFirst({
+      where: quizWhere,
       select: { id: true, title: true, passingScore: true, timeLimitMins: true },
     });
 
@@ -25,7 +31,6 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       return notFound("Quiz not found");
     }
 
-    // Map to frontend expected shape
     const quizData = {
       id: quiz.id,
       title: quiz.title,
@@ -43,9 +48,15 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     const take = returnAll ? 10000 : limit;
 
     if (user.role === "ADMIN") {
+      // Admin sees all results for users in their org
+      const resultWhere: Record<string, unknown> = { quizId };
+      if (user.organizationId) {
+        resultWhere.user = { organizationId: user.organizationId };
+      }
+
       const [results, total] = await Promise.all([
         prisma.quizResult.findMany({
-          where: { quizId },
+          where: resultWhere,
           skip,
           take,
           orderBy: { createdAt: "desc" },
@@ -61,12 +72,11 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
             },
           },
         }),
-        prisma.quizResult.count({ where: { quizId } }),
+        prisma.quizResult.count({ where: resultWhere }),
       ]);
 
-      // Aggregate stats
       const stats = await prisma.quizResult.aggregate({
-        where: { quizId },
+        where: resultWhere,
         _avg: { score: true },
         _min: { score: true },
         _max: { score: true },
@@ -74,7 +84,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       });
 
       const passedCount = await prisma.quizResult.count({
-        where: { quizId, passed: true },
+        where: { ...resultWhere, passed: true },
       });
 
       const statsData = {
@@ -121,6 +131,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     console.error("Quiz results error:", error);
     return serverError();
   }

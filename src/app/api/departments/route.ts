@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
-import { requireAuth, requireRole, unauthorized, forbidden, badRequest, serverError, success } from "@/lib/server-auth";
+import { requireAuth, requireOrgRole, orgWhere, unauthorized, forbidden, noOrganization, badRequest, serverError, success } from "@/lib/server-auth";
 import { z } from "zod";
 
 const createDepartmentSchema = z.object({
@@ -17,9 +17,15 @@ const updateDepartmentSchema = z.object({
 
 export async function GET(req: NextRequest) {
   try {
-    await requireAuth();
+    const user = await requireAuth();
+
+    const where: Record<string, unknown> = {};
+    if (user.organizationId) {
+      where.organizationId = user.organizationId;
+    }
 
     const departments = await prisma.department.findMany({
+      where,
       orderBy: { name: "asc" },
       select: {
         id: true,
@@ -37,18 +43,18 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Departments always return a flat array (used as lookup lists)
     return success(departments);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const currentUser = await requireRole(["ADMIN"]);
+    const currentUser = await requireOrgRole(["ADMIN"]);
 
     const body = await req.json();
     const parsed = createDepartmentSchema.safeParse(body);
@@ -58,9 +64,9 @@ export async function POST(req: NextRequest) {
 
     const trimmedName = parsed.data.name.trim();
 
-    // Check uniqueness
-    const existing = await prisma.department.findUnique({
-      where: { name: trimmedName },
+    // Check uniqueness within org
+    const existing = await prisma.department.findFirst({
+      where: { name: trimmedName, ...orgWhere(currentUser) },
     });
     if (existing) {
       return badRequest("A department with this name already exists");
@@ -70,10 +76,10 @@ export async function POST(req: NextRequest) {
       data: {
         name: trimmedName,
         description: parsed.data.description?.trim() || null,
+        organizationId: currentUser.organizationId!,
       },
     });
 
-    // Audit log
     await prisma.auditLog.create({
       data: {
         userId: currentUser.id,
@@ -89,13 +95,14 @@ export async function POST(req: NextRequest) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }
 
 export async function PUT(req: NextRequest) {
   try {
-    const currentUser = await requireRole(["ADMIN"]);
+    const currentUser = await requireOrgRole(["ADMIN"]);
 
     const body = await req.json();
     const parsed = updateDepartmentSchema.safeParse(body);
@@ -105,18 +112,20 @@ export async function PUT(req: NextRequest) {
 
     const { id, ...updateFields } = parsed.data;
 
-    const existing = await prisma.department.findUnique({ where: { id } });
+    const existing = await prisma.department.findFirst({
+      where: { id, ...orgWhere(currentUser) },
+    });
     if (!existing) {
       return badRequest("Department not found");
     }
 
-    // Build update data with sanitization
     const updateData: Record<string, unknown> = {};
     if (updateFields.name !== undefined) {
       const trimmedName = updateFields.name.trim();
-      // Check uniqueness if name is changing
       if (trimmedName !== existing.name) {
-        const nameTaken = await prisma.department.findUnique({ where: { name: trimmedName } });
+        const nameTaken = await prisma.department.findFirst({
+          where: { name: trimmedName, ...orgWhere(currentUser), id: { not: id } },
+        });
         if (nameTaken) {
           return badRequest("A department with this name already exists");
         }
@@ -132,7 +141,6 @@ export async function PUT(req: NextRequest) {
       data: updateData,
     });
 
-    // Audit log
     await prisma.auditLog.create({
       data: {
         userId: currentUser.id,
@@ -149,6 +157,7 @@ export async function PUT(req: NextRequest) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }

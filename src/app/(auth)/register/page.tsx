@@ -21,6 +21,7 @@ import {
   Loader2,
   Check,
   X,
+  Building2,
 } from 'lucide-react';
 
 type RegisterFormData = z.infer<typeof registerSchema>;
@@ -84,6 +85,7 @@ export default function RegisterPage() {
         email: data.email,
         password: data.password,
         confirmPassword: data.confirmPassword,
+        organizationName: data.organizationName || undefined,
       });
       toast.success('Account created successfully! Please sign in.');
       router.push('/login');
@@ -118,6 +120,25 @@ export default function RegisterPage() {
       {/* Register Card */}
       <motion.div variants={fadeInUp} className="glass-card p-8">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          {/* Company Name */}
+          <div>
+            <label htmlFor="organizationName" className="label-text">Company Name</label>
+            <div className="relative">
+              <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
+              <input
+                id="organizationName"
+                type="text"
+                placeholder="Your Company Inc."
+                className={`input-field pl-11 ${errors.organizationName ? 'input-error' : ''}`}
+                {...register('organizationName')}
+              />
+            </div>
+            {errors.organizationName && (
+              <p className="mt-1.5 text-sm text-red-400">{errors.organizationName.message}</p>
+            )}
+            <p className="mt-1 text-xs text-dark-500">Creates your organization workspace</p>
+          </div>
+
           {/* Full Name */}
           <div>
             <label htmlFor="name" className="label-text">Full Name</label>

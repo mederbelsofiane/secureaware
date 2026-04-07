@@ -1,14 +1,18 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireAuth, unauthorized, serverError, success } from "@/lib/server-auth";
+import { requireAuth, orgOrGlobalWhere, unauthorized, noOrganization, serverError, success } from "@/lib/server-auth";
 
 export async function GET(req: NextRequest) {
   try {
     const user = await requireAuth();
 
-    const returnAll = req.nextUrl.searchParams.get("all") === "true";
+    const where: Record<string, unknown> = {};
+    if (user.organizationId) {
+      Object.assign(where, orgOrGlobalWhere(user));
+    }
 
     const badges = await prisma.badge.findMany({
+      where,
       orderBy: { name: "asc" },
       include: {
         _count: {
@@ -17,7 +21,6 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // If employee, also attach which badges the current user has earned
     if (user.role !== "ADMIN") {
       const earnedBadges = await prisma.userBadge.findMany({
         where: { userId: user.id },
@@ -34,11 +37,11 @@ export async function GET(req: NextRequest) {
       return success(badgesWithEarned);
     }
 
-    // Admin view - returnAll is implicit (badges are always a flat list)
     return success(badges);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }

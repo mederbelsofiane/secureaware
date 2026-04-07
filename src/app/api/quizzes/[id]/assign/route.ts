@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
-import { requireRole, unauthorized, forbidden, badRequest, notFound, serverError, success } from "@/lib/server-auth";
+import { requireOrgRole, orgWhere, unauthorized, forbidden, noOrganization, badRequest, notFound, serverError, success } from "@/lib/server-auth";
 import { quizAssignmentSchema } from "@/lib/validations";
 
 interface RouteParams {
@@ -15,9 +15,11 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       return badRequest("Invalid quiz ID");
     }
 
-    await requireRole(["ADMIN"]);
+    const user = await requireOrgRole(["ADMIN"]);
 
-    const quiz = await prisma.quiz.findUnique({ where: { id: quizId } });
+    const quiz = await prisma.quiz.findFirst({
+      where: { id: quizId, ...orgWhere(user) },
+    });
     if (!quiz) {
       return notFound("Quiz not found");
     }
@@ -54,6 +56,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }
@@ -65,7 +68,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       return badRequest("Invalid quiz ID");
     }
 
-    const currentUser = await requireRole(["ADMIN"]);
+    const currentUser = await requireOrgRole(["ADMIN"]);
 
     const body = await req.json();
     const parsed = quizAssignmentSchema.safeParse(body);
@@ -75,7 +78,9 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
     const { departmentIds, userIds, dueDate } = parsed.data;
 
-    const quiz = await prisma.quiz.findUnique({ where: { id: quizId } });
+    const quiz = await prisma.quiz.findFirst({
+      where: { id: quizId, ...orgWhere(currentUser) },
+    });
     if (!quiz) {
       return notFound("Quiz not found");
     }
@@ -85,7 +90,6 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       departmentAssignments: 0,
     };
 
-    // Assign to departments
     if (departmentIds && departmentIds.length > 0) {
       for (const departmentId of departmentIds) {
         await prisma.quizDepartment.upsert({
@@ -97,7 +101,6 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       }
     }
 
-    // Assign to individual users
     if (userIds && userIds.length > 0) {
       for (const userId of userIds) {
         await prisma.quizAssignment.upsert({
@@ -113,7 +116,6 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         });
         results.userAssignments++;
 
-        // Log activity for each assigned user
         await prisma.activity.create({
           data: {
             userId,
@@ -125,7 +127,6 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       }
     }
 
-    // Audit log
     await prisma.auditLog.create({
       data: {
         userId: currentUser.id,
@@ -148,6 +149,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }

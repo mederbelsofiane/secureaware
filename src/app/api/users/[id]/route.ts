@@ -3,9 +3,11 @@ import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import {
   requireAuth,
-  requireRole,
+  requireOrgRole,
+  orgWhere,
   unauthorized,
   forbidden,
+  noOrganization,
   badRequest,
   notFound,
   serverError,
@@ -26,13 +28,19 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
     const currentUser = await requireAuth();
 
-    // Users can view their own profile; admins can view anyone
+    // Users can view their own profile; admins can view anyone in their org
     if (currentUser.id !== id && currentUser.role !== "ADMIN") {
       return forbidden();
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id },
+    const where: Record<string, unknown> = { id };
+    // Scope to org if user has one
+    if (currentUser.organizationId) {
+      where.organizationId = currentUser.organizationId;
+    }
+
+    const user = await prisma.user.findFirst({
+      where,
       select: {
         id: true,
         email: true,
@@ -84,6 +92,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }
@@ -95,7 +104,14 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
       return badRequest("Invalid user ID");
     }
 
-    const currentUser = await requireRole(["ADMIN"]);
+    const currentUser = await requireOrgRole(["ADMIN"]);
+
+    const existing = await prisma.user.findFirst({
+      where: { id, ...orgWhere(currentUser) },
+    });
+    if (!existing) {
+      return notFound("User not found");
+    }
 
     const body = await req.json();
     const parsed = updateUserSchema.safeParse(body);
@@ -103,12 +119,6 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
       return badRequest(parsed.error.errors.map((e) => e.message).join(", "));
     }
 
-    const existing = await prisma.user.findUnique({ where: { id } });
-    if (!existing) {
-      return notFound("User not found");
-    }
-
-    // Sanitize inputs
     const updateData: Record<string, unknown> = {};
     if (parsed.data.name !== undefined) updateData.name = parsed.data.name.trim();
     if (parsed.data.email !== undefined) updateData.email = parsed.data.email.trim().toLowerCase();
@@ -117,7 +127,6 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     if (parsed.data.jobTitle !== undefined) updateData.jobTitle = parsed.data.jobTitle?.trim() || null;
     if (parsed.data.departmentId !== undefined) updateData.departmentId = parsed.data.departmentId || null;
 
-    // Check email uniqueness if email is being changed
     if (updateData.email && updateData.email !== existing.email) {
       const emailTaken = await prisma.user.findUnique({
         where: { email: updateData.email as string },
@@ -127,7 +136,6 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
       }
     }
 
-    // Track old department for count updates
     const oldDeptId = existing.departmentId;
     const newDeptId = updateData.departmentId !== undefined
       ? (updateData.departmentId as string | null)
@@ -154,7 +162,6 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
       },
     });
 
-    // Update department employee counts if department changed
     if (oldDeptId !== newDeptId) {
       if (oldDeptId) {
         await prisma.department.update({
@@ -170,7 +177,6 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
       }
     }
 
-    // Audit log
     await prisma.auditLog.create({
       data: {
         userId: currentUser.id,
@@ -193,6 +199,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }
@@ -204,19 +211,19 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
       return badRequest("Invalid user ID");
     }
 
-    const currentUser = await requireRole(["ADMIN"]);
+    const currentUser = await requireOrgRole(["ADMIN"]);
 
-    // Prevent admin from deactivating themselves
     if (currentUser.id === id) {
       return badRequest("You cannot deactivate your own account");
     }
 
-    const existing = await prisma.user.findUnique({ where: { id } });
+    const existing = await prisma.user.findFirst({
+      where: { id, ...orgWhere(currentUser) },
+    });
     if (!existing) {
       return notFound("User not found");
     }
 
-    // Soft delete: set status to INACTIVE
     const user = await prisma.user.update({
       where: { id },
       data: { status: "INACTIVE" },
@@ -230,7 +237,6 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
       },
     });
 
-    // Audit log
     await prisma.auditLog.create({
       data: {
         userId: currentUser.id,
@@ -247,6 +253,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }

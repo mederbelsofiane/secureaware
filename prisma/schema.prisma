@@ -1,5 +1,6 @@
 // Security Awareness Platform - Prisma Schema
 // Production-ready database schema with all core entities
+// Multi-tenancy Organization Model
 
 generator client {
   provider = "prisma-client-js"
@@ -102,6 +103,69 @@ enum BadgeColor {
   CYAN
 }
 
+enum OrganizationPlan {
+  FREE
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+// ============================================
+// ORGANIZATION (Multi-Tenancy)
+// ============================================
+
+model Organization {
+  id            String             @id @default(cuid())
+  name          String
+  slug          String             @unique
+  domain        String?            @unique
+  plan          OrganizationPlan   @default(FREE)
+  logo          String?
+  maxUsers      Int                @default(50)
+  stripeCustomerId     String?     @unique
+  stripeSubscriptionId String?
+  users         User[]
+  departments   Department[]
+  modules       Module[]
+  quizzes       Quiz[]
+  campaigns     Campaign[]
+  badges        Badge[]
+  phishingExamples PhishingExample[]
+  settings      OrgSetting[]
+  invitations   Invitation[]
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  @@index([slug])
+  @@index([domain])
+}
+
+model Invitation {
+  id               String    @id @default(cuid())
+  email            String
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role             UserRole  @default(EMPLOYEE)
+  token            String    @unique @default(cuid())
+  expiresAt        DateTime
+  acceptedAt       DateTime?
+  invitedBy        String
+  createdAt        DateTime  @default(now())
+  @@unique([email, organizationId])
+  @@index([token])
+  @@index([organizationId])
+}
+
+model OrgSetting {
+  id               String       @id @default(cuid())
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  key              String
+  value            String
+  updatedAt        DateTime     @updatedAt
+  @@unique([organizationId, key])
+  @@index([organizationId])
+}
+
 // ============================================
 // CORE MODELS
 // ============================================
@@ -119,6 +183,8 @@ model User {
   riskScore     Float       @default(50)
   departmentId  String?
   department    Department? @relation(fields: [departmentId], references: [id])
+  organizationId String?
+  organization  Organization? @relation(fields: [organizationId], references: [id])
 
   // Relations
   moduleProgress  ModuleProgress[]
@@ -139,16 +205,19 @@ model User {
   @@index([role])
   @@index([departmentId])
   @@index([status])
+  @@index([organizationId])
 }
 
 model Department {
   id              String    @id @default(cuid())
-  name            String    @unique
+  name            String
   description     String?
   employeeCount   Int       @default(0)
   averageScore    Float     @default(0)
   riskScore       Float     @default(50)
   completionRate  Float     @default(0)
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
 
   // Relations
   users             User[]
@@ -157,6 +226,9 @@ model Department {
 
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
 }
 
 // ============================================
@@ -172,7 +244,10 @@ model Module {
   durationMins  Int             @default(30)
   imageUrl      String?
   isPublished   Boolean         @default(true)
+  isGlobal      Boolean         @default(false)
   order         Int             @default(0)
+  organizationId String?
+  organization  Organization?   @relation(fields: [organizationId], references: [id])
 
   // Relations
   lessons         Lesson[]
@@ -187,6 +262,7 @@ model Module {
 
   @@index([category])
   @@index([isPublished])
+  @@index([organizationId])
 }
 
 model Lesson {
@@ -260,6 +336,8 @@ model Quiz {
   dueDate       DateTime?
   visibleFrom   DateTime?
   visibleUntil  DateTime?
+  organizationId String?
+  organization  Organization? @relation(fields: [organizationId], references: [id])
 
   // Relations
   questions       Question[]
@@ -275,6 +353,7 @@ model Quiz {
   @@index([status])
   @@index([moduleId])
   @@index([isCustom])
+  @@index([organizationId])
 }
 
 model Question {
@@ -363,6 +442,8 @@ model Campaign {
   startDate       DateTime?
   endDate         DateTime?
   completionRate  Float           @default(0)
+  organizationId  String
+  organization    Organization    @relation(fields: [organizationId], references: [id])
 
   // Relations
   campaignModules     CampaignModule[]
@@ -376,6 +457,7 @@ model Campaign {
 
   @@index([status])
   @@index([type])
+  @@index([organizationId])
 }
 
 model CampaignModule {
@@ -425,16 +507,21 @@ model CampaignQuiz {
 
 model Badge {
   id          String      @id @default(cuid())
-  name        String      @unique
+  name        String
   description String
   icon        String      @default("Award")
   color       BadgeColor  @default(BLUE)
   criteria    String?     // Description of how to earn
+  isGlobal    Boolean     @default(false)
+  organizationId String?
+  organization Organization? @relation(fields: [organizationId], references: [id])
 
   // Relations
   userBadges  UserBadge[]
 
   createdAt   DateTime    @default(now())
+
+  @@unique([organizationId, name])
 }
 
 model UserBadge {
@@ -476,8 +563,13 @@ model PhishingExample {
   difficulty  Difficulty
   category    String      @default("email")
   isActive    Boolean     @default(true)
+  isGlobal    Boolean     @default(false)
+  organizationId String?
+  organization Organization? @relation(fields: [organizationId], references: [id])
 
   createdAt   DateTime    @default(now())
+
+  @@index([organizationId])
 }
 
 // ============================================

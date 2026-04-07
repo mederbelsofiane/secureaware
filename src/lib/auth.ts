@@ -30,6 +30,11 @@ export const authOptions: NextAuthOptions = {
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email.toLowerCase().trim() },
+          include: {
+            organization: {
+              select: { id: true, slug: true, plan: true },
+            },
+          },
         });
 
         // Generic error to prevent user enumeration
@@ -64,6 +69,8 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           role: user.role,
           departmentId: user.departmentId,
+          organizationId: user.organizationId,
+          organizationSlug: user.organization?.slug ?? null,
         };
       },
     }),
@@ -82,6 +89,8 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = user.role;
         token.departmentId = user.departmentId;
+        token.organizationId = user.organizationId;
+        token.organizationSlug = user.organizationSlug;
       }
       return token;
     },
@@ -92,6 +101,8 @@ export const authOptions: NextAuthOptions = {
         name: token.name as string,
         role: token.role as any,
         departmentId: token.departmentId as string | null,
+        organizationId: token.organizationId as string | null,
+        organizationSlug: token.organizationSlug as string | null,
       };
       return session;
     },

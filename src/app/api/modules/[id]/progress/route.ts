@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireAuth, unauthorized, forbidden, badRequest, notFound, serverError, success } from "@/lib/server-auth";
+import { requireAuth, orgOrGlobalWhere, unauthorized, forbidden, badRequest, notFound, noOrganization, serverError, success } from "@/lib/server-auth";
 import { z } from "zod";
 
 const progressSchema = z.object({
@@ -29,9 +29,14 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
     const { lessonId, completed } = parsed.data;
 
-    // Verify module exists and is published
-    const trainingModule = await prisma.module.findUnique({
-      where: { id: moduleId },
+    // Verify module exists, is published, and belongs to user's org or is global
+    const where: Record<string, unknown> = { id: moduleId };
+    if (user.organizationId) {
+      where.AND = [orgOrGlobalWhere(user)];
+    }
+
+    const trainingModule = await prisma.module.findFirst({
+      where,
       include: {
         lessons: { select: { id: true }, orderBy: { order: "asc" } },
       },
@@ -41,14 +46,12 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       return notFound("Module not found");
     }
 
-    // If a specific lesson is being marked
     if (lessonId) {
       const lesson = trainingModule.lessons.find((l) => l.id === lessonId);
       if (!lesson) {
         return notFound("Lesson not found in this training module");
       }
 
-      // Upsert lesson progress
       await prisma.lessonProgress.upsert({
         where: {
           userId_lessonId: { userId: user.id, lessonId },
@@ -66,7 +69,6 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       });
     }
 
-    // Calculate overall module progress based on completed lessons
     const completedLessons = await prisma.lessonProgress.count({
       where: {
         userId: user.id,
@@ -81,7 +83,6 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       : 0;
     const isModuleCompleted = progressPercent >= 100;
 
-    // Upsert module progress
     const moduleProgress = await prisma.moduleProgress.upsert({
       where: {
         userId_moduleId: { userId: user.id, moduleId },
@@ -100,7 +101,6 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       },
     });
 
-    // Log activity if module just completed
     if (isModuleCompleted) {
       const existingActivity = await prisma.activity.findFirst({
         where: {
@@ -152,6 +152,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError(message);
   }
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireAuth } from "@/lib/server-auth";
+import { requireAuth, orgOrGlobalWhere } from "@/lib/server-auth";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -31,7 +31,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: "Lesson not found" }, { status: 404 });
     }
 
-    // Find prev/next lessons
+    // Verify the lesson's module belongs to user's org or is global
+    if (session.organizationId) {
+      const moduleOrg = lesson.module.organizationId;
+      const isGlobal = lesson.module.isGlobal;
+      if (moduleOrg !== session.organizationId && !isGlobal) {
+        return NextResponse.json({ error: "Lesson not found" }, { status: 404 });
+      }
+    }
+
     const allLessons = lesson.module.lessons;
     const currentIndex = allLessons.findIndex((l) => l.id === lesson.id);
     const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;

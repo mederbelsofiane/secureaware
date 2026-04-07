@@ -1,28 +1,32 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireRole, unauthorized, forbidden, serverError, success } from "@/lib/server-auth";
+import { requireOrgRole, orgWhere, unauthorized, forbidden, noOrganization, serverError, success } from "@/lib/server-auth";
 
 export async function GET(req: NextRequest) {
   try {
-    await requireRole(["ADMIN"]);
+    const user = await requireOrgRole(["ADMIN"]);
+    const ow = orgWhere(user);
 
     // 1. Overview stats
-    const totalUsers = await prisma.user.count();
-    const activeUsers = await prisma.user.count({ where: { status: "ACTIVE" } });
-    const totalModules = await prisma.module.count({ where: { isPublished: true } });
+    const totalUsers = await prisma.user.count({ where: ow });
+    const activeUsers = await prisma.user.count({ where: { ...ow, status: "ACTIVE" } });
+    const totalModules = await prisma.module.count({ where: { isPublished: true, OR: [{ organizationId: user.organizationId }, { isGlobal: true }] } });
 
-    const scoreAgg = await prisma.quizResult.aggregate({ _avg: { score: true } });
+    const scoreAgg = await prisma.quizResult.aggregate({
+      where: { user: ow },
+      _avg: { score: true },
+    });
     const averageScore = Math.round((scoreAgg._avg.score ?? 0) * 100) / 100;
 
-    const totalEmployees = await prisma.user.count({ where: { role: "EMPLOYEE", status: "ACTIVE" } });
-    const totalPublishedModules = await prisma.module.count({ where: { isPublished: true } });
-    const completedProgress = await prisma.moduleProgress.count({ where: { isCompleted: true } });
+    const totalEmployees = await prisma.user.count({ where: { ...ow, role: "EMPLOYEE", status: "ACTIVE" } });
+    const totalPublishedModules = totalModules;
+    const completedProgress = await prisma.moduleProgress.count({ where: { user: ow, isCompleted: true } });
     const totalPossible = totalPublishedModules * (totalEmployees || 1);
     const completionRate = totalPossible > 0
       ? Math.round((completedProgress / totalPossible) * 10000) / 100
       : 0;
 
-    const highRiskUsers = await prisma.user.count({ where: { status: "ACTIVE", riskScore: { gte: 70 } } });
+    const highRiskUsers = await prisma.user.count({ where: { ...ow, status: "ACTIVE", riskScore: { gte: 70 } } });
 
     const overview = {
       totalUsers,
@@ -35,6 +39,7 @@ export async function GET(req: NextRequest) {
 
     // 2. Department stats
     const departments = await prisma.department.findMany({
+      where: ow,
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     });
@@ -42,7 +47,7 @@ export async function GET(req: NextRequest) {
     const departmentStats = await Promise.all(
       departments.map(async (dept) => {
         const users = await prisma.user.findMany({
-          where: { departmentId: dept.id, status: "ACTIVE" },
+          where: { departmentId: dept.id, status: "ACTIVE", ...ow },
           select: { id: true },
         });
         const userIds = users.map((u) => u.id);
@@ -78,25 +83,31 @@ export async function GET(req: NextRequest) {
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
+    // Get org user IDs for filtering
+    const orgUsers = await prisma.user.findMany({
+      where: ow,
+      select: { id: true },
+    });
+    const orgUserIds = orgUsers.map((u) => u.id);
+
     const completions = await prisma.moduleProgress.findMany({
-      where: { isCompleted: true, completedAt: { gte: sixMonthsAgo } },
+      where: { isCompleted: true, completedAt: { gte: sixMonthsAgo }, userId: { in: orgUserIds } },
       select: { completedAt: true },
       orderBy: { completedAt: "asc" },
     });
 
     const quizResults = await prisma.quizResult.findMany({
-      where: { createdAt: { gte: sixMonthsAgo } },
+      where: { createdAt: { gte: sixMonthsAgo }, userId: { in: orgUserIds } },
       select: { createdAt: true },
       orderBy: { createdAt: "asc" },
     });
 
     const newUsers = await prisma.user.findMany({
-      where: { createdAt: { gte: sixMonthsAgo } },
+      where: { createdAt: { gte: sixMonthsAgo }, ...ow },
       select: { createdAt: true },
       orderBy: { createdAt: "asc" },
     });
 
-    // Build monthly trend data
     const months: string[] = [];
     for (let i = 5; i >= 0; i--) {
       const d = new Date();
@@ -115,10 +126,10 @@ export async function GET(req: NextRequest) {
     }));
 
     // 4. Risk distribution
-    const lowRisk = await prisma.user.count({ where: { status: "ACTIVE", riskScore: { lt: 30 } } });
-    const medRisk = await prisma.user.count({ where: { status: "ACTIVE", riskScore: { gte: 30, lt: 60 } } });
-    const highRisk = await prisma.user.count({ where: { status: "ACTIVE", riskScore: { gte: 60, lt: 80 } } });
-    const critRisk = await prisma.user.count({ where: { status: "ACTIVE", riskScore: { gte: 80 } } });
+    const lowRisk = await prisma.user.count({ where: { ...ow, status: "ACTIVE", riskScore: { lt: 30 } } });
+    const medRisk = await prisma.user.count({ where: { ...ow, status: "ACTIVE", riskScore: { gte: 30, lt: 60 } } });
+    const highRisk = await prisma.user.count({ where: { ...ow, status: "ACTIVE", riskScore: { gte: 60, lt: 80 } } });
+    const critRisk = await prisma.user.count({ where: { ...ow, status: "ACTIVE", riskScore: { gte: 80 } } });
 
     const riskDistribution = [
       { level: "LOW", count: lowRisk },
@@ -137,6 +148,7 @@ export async function GET(req: NextRequest) {
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message === "UNAUTHORIZED") return unauthorized();
     if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
     return serverError();
   }
 }
