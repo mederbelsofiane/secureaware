@@ -3,25 +3,58 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import Image from "next/image";
 import {
   Shield, LayoutDashboard, BookOpen, FileQuestion, Fish,
   Trophy, User, Award, LogOut, Settings, Users,
   BarChart3, Megaphone, MessageSquare, PenTool, ChevronLeft, ChevronRight,
-  Sun, Moon,
+  Sun, Moon, CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "@/hooks/use-theme";
 import { useLanguage } from "@/hooks/use-language";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+interface OrgBranding {
+  name: string;
+  logo: string | null;
+}
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { t, isRTL } = useLanguage();
   const [collapsed, setCollapsed] = useState(false);
+  const [orgBranding, setOrgBranding] = useState<OrgBranding | null>(null);
+
+  // Fetch org branding
+  useEffect(() => {
+    if (user?.organizationId) {
+      fetch("/api/admin/subscription")
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data) {
+            setOrgBranding({ name: data.name, logo: null });
+          }
+        })
+        .catch(() => {});
+      // Also try to get org info from a simpler endpoint
+      fetch("/api/profile")
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.organization) {
+            setOrgBranding({
+              name: data.organization.name,
+              logo: data.organization.logo,
+            });
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user?.organizationId]);
 
   const employeeLinks = [
     { href: "/dashboard", label: t.sidebar.dashboard, icon: LayoutDashboard },
@@ -40,6 +73,7 @@ export function Sidebar() {
     { href: "/admin/quizzes", label: t.sidebar.quizManager, icon: PenTool },
     { href: "/admin/reports", label: t.sidebar.reports, icon: BarChart3 },
     { href: "/admin/contacts", label: t.sidebar.contactRequests, icon: MessageSquare },
+    { href: "/admin/subscription", label: "Subscription", icon: CreditCard },
     { href: "/admin/settings", label: t.sidebar.settings, icon: Settings },
   ];
 
@@ -50,6 +84,9 @@ export function Sidebar() {
     return pathname.startsWith(href);
   };
 
+  const logoSrc = orgBranding?.logo || null;
+  const orgName = orgBranding?.name || null;
+
   return (
     <aside className={cn(
       "fixed top-0 h-full backdrop-blur-xl border-r z-40 transition-all duration-300 flex flex-col",
@@ -59,13 +96,23 @@ export function Sidebar() {
     )} style={isRTL ? { borderRight: "none" } : undefined}>
       {/* Logo */}
       <div className={cn("h-16 flex items-center px-4 border-b", theme === "dark" ? "border-gray-800/50" : "border-gray-200")}>
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-accent-blue/20 flex items-center justify-center flex-shrink-0">
-            <Shield className="w-5 h-5 text-accent-blue" />
-          </div>
+        <Link href="/" className="flex items-center gap-2 min-w-0">
+          {logoSrc ? (
+            <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
+              <Image src={logoSrc} alt={orgName || "Logo"} width={32} height={32} className="w-full h-full object-cover" />
+            </div>
+          ) : (
+            <div className="w-8 h-8 rounded-lg bg-accent-blue/20 flex items-center justify-center flex-shrink-0">
+              <Shield className="w-5 h-5 text-accent-blue" />
+            </div>
+          )}
           {!collapsed && (
-            <span className={cn("font-bold text-lg", theme === "dark" ? "text-white" : "text-gray-900")}>
-              Secure<span className="text-accent-blue">Aware</span>
+            <span className={cn("font-bold text-lg truncate", theme === "dark" ? "text-white" : "text-gray-900")}>
+              {orgName ? (
+                <>{orgName}</>
+              ) : (
+                <>Secure<span className="text-accent-blue">Aware</span></>
+              )}
             </span>
           )}
         </Link>

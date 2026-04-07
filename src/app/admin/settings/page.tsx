@@ -20,7 +20,10 @@ import {
   CheckCircle2,
   Send,
   Loader2,
+  Upload,
+  ImageIcon,
 } from "lucide-react";
+import Image from "next/image";
 
 interface SettingsSection {
   id: string;
@@ -31,6 +34,7 @@ interface SettingsSection {
 }
 
 const SECTIONS: SettingsSection[] = [
+  { id: "branding", title: "Branding", description: "Organization logo and branding settings", icon: Palette, iconColor: "text-pink-400" },
   { id: "general", title: "General", description: "Platform name, branding, and general configuration", icon: Globe, iconColor: "text-cyan-400" },
   { id: "email", title: "Email", description: "SMTP configuration and email templates", icon: Mail, iconColor: "text-blue-400" },
   { id: "security", title: "Security", description: "Authentication, password policies, and session settings", icon: Shield, iconColor: "text-emerald-400" },
@@ -94,6 +98,9 @@ export default function AdminSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [loadingSettings, setLoadingSettings] = useState(true);
   const [sendingTest, setSendingTest] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [orgLogo, setOrgLogo] = useState<string | null>(null);
+  const [orgName, setOrgName] = useState<string>("");
   const [testEmailAddress, setTestEmailAddress] = useState("");
 
   const [general, setGeneral] = useState({
@@ -220,6 +227,19 @@ export default function AdminSettingsPage() {
     }
   }, []);
 
+  // Load org branding
+  useEffect(() => {
+    fetch("/api/profile")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.organization) {
+          setOrgLogo(data.organization.logo);
+          setOrgName(data.organization.name || "");
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     loadSettings();
   }, [loadSettings]);
@@ -234,6 +254,40 @@ export default function AdminSettingsPage() {
       settings.push({ key: dbKey, value: String(value) });
     }
     return settings;
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate
+    const allowedTypes = ["image/png", "image/jpeg", "image/jpg", "image/svg+xml"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Invalid file type. Allowed: PNG, JPG, JPEG, SVG");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("File too large. Maximum size: 2MB");
+      return;
+    }
+
+    setUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append("logo", file);
+      const res = await fetch("/api/organizations/logo", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      setOrgLogo(data.logo);
+      toast.success("Logo uploaded successfully");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to upload logo");
+    } finally {
+      setUploadingLogo(false);
+    }
   };
 
   const handleSave = async () => {
@@ -343,6 +397,75 @@ export default function AdminSettingsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="flex-1"
         >
+          {/* Branding Settings */}
+          {activeSection === "branding" && (
+            <div className="glass-card p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <Palette className="w-6 h-6 text-pink-400" />
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Organization Branding</h3>
+                  <p className="text-sm text-gray-500">Manage your organization&apos;s logo and branding</p>
+                </div>
+              </div>
+
+              {/* Organization Name */}
+              <div className="mb-6">
+                <label className="label-text">Organization Name</label>
+                <div className="input-field bg-dark-700/50 cursor-not-allowed opacity-75">
+                  {orgName || "Loading..."}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Contact your administrator to change the organization name</p>
+              </div>
+
+              {/* Logo Upload */}
+              <div className="mb-6">
+                <label className="label-text">Organization Logo</label>
+                <div className="flex items-start gap-6">
+                  {/* Current Logo Preview */}
+                  <div className="flex-shrink-0">
+                    <div className="w-24 h-24 rounded-xl border-2 border-dashed border-gray-600 flex items-center justify-center overflow-hidden bg-dark-700/30">
+                      {orgLogo ? (
+                        <Image
+                          src={orgLogo}
+                          alt="Organization logo"
+                          width={96}
+                          height={96}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <ImageIcon className="w-8 h-8 text-gray-500" />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Upload Controls */}
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-400 mb-3">
+                      Upload your organization logo. Supported formats: PNG, JPG, JPEG, SVG. Max size: 2MB.
+                    </p>
+                    <label className="btn-primary inline-flex items-center gap-2 cursor-pointer text-sm">
+                      {uploadingLogo ? (
+                        <><Loader2 className="w-4 h-4 animate-spin" /> Uploading...</>
+                      ) : (
+                        <><Upload className="w-4 h-4" /> Upload Logo</>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/jpg,image/svg+xml"
+                        onChange={handleLogoUpload}
+                        className="hidden"
+                        disabled={uploadingLogo}
+                      />
+                    </label>
+                    {orgLogo && (
+                      <p className="text-xs text-gray-500 mt-2">Current: {orgLogo}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* General Settings */}
           {activeSection === "general" && (
             <div className="glass-card p-6">

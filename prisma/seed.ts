@@ -7,6 +7,7 @@ async function main() {
   console.log("Seeding production database...");
 
   // Clear existing data
+  await prisma.subscriptionEvent.deleteMany();
   await prisma.auditLog.deleteMany();
   await prisma.activity.deleteMany();
   await prisma.lessonProgress.deleteMany();
@@ -65,9 +66,97 @@ async function main() {
       domain: "secureaware.online",
       plan: OrganizationPlan.ENTERPRISE,
       maxUsers: 100,
+      billingEmail: "billing@secureaware.online",
+      subscriptionStartDate: new Date("2026-01-01"),
+      subscriptionEndDate: new Date("2027-01-01"),
     },
   });
   console.log("Created default organization: " + organization.name);
+
+  // =============================================
+  // SUBSCRIPTION EVENTS
+  // =============================================
+  const subscriptionEvents = [
+    {
+      organizationId: organization.id,
+      type: "TRIAL_START",
+      description: "14-day free trial started",
+      createdAt: new Date("2025-12-15"),
+    },
+    {
+      organizationId: organization.id,
+      type: "TRIAL_END",
+      description: "Trial period ended",
+      createdAt: new Date("2025-12-29"),
+    },
+    {
+      organizationId: organization.id,
+      type: "UPGRADE",
+      description: "Upgraded from FREE to STARTER plan",
+      planFrom: OrganizationPlan.FREE,
+      planTo: OrganizationPlan.STARTER,
+      amount: 49.99,
+      currency: "USD",
+      createdAt: new Date("2025-12-29"),
+    },
+    {
+      organizationId: organization.id,
+      type: "PAYMENT",
+      description: "Monthly subscription payment",
+      amount: 49.99,
+      currency: "USD",
+      createdAt: new Date("2026-01-01"),
+    },
+    {
+      organizationId: organization.id,
+      type: "UPGRADE",
+      description: "Upgraded from STARTER to PROFESSIONAL plan",
+      planFrom: OrganizationPlan.STARTER,
+      planTo: OrganizationPlan.PROFESSIONAL,
+      amount: 149.99,
+      currency: "USD",
+      createdAt: new Date("2026-02-01"),
+    },
+    {
+      organizationId: organization.id,
+      type: "PAYMENT",
+      description: "Monthly subscription payment",
+      amount: 149.99,
+      currency: "USD",
+      createdAt: new Date("2026-02-01"),
+    },
+    {
+      organizationId: organization.id,
+      type: "UPGRADE",
+      description: "Upgraded from PROFESSIONAL to ENTERPRISE plan",
+      planFrom: OrganizationPlan.PROFESSIONAL,
+      planTo: OrganizationPlan.ENTERPRISE,
+      amount: 399.99,
+      currency: "USD",
+      createdAt: new Date("2026-03-01"),
+    },
+    {
+      organizationId: organization.id,
+      type: "PAYMENT",
+      description: "Monthly subscription payment",
+      amount: 399.99,
+      currency: "USD",
+      createdAt: new Date("2026-03-01"),
+    },
+    {
+      organizationId: organization.id,
+      type: "RENEWAL",
+      description: "Annual subscription renewed",
+      amount: 3999.99,
+      currency: "USD",
+      createdAt: new Date("2026-04-01"),
+    },
+  ];
+
+  for (const event of subscriptionEvents) {
+    await prisma.subscriptionEvent.create({ data: event });
+  }
+  console.log("Created " + subscriptionEvents.length + " subscription events");
 
   // =============================================
   // DEPARTMENTS

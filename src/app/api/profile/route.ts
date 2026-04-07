@@ -19,6 +19,7 @@ export async function GET() {
         phone: true,
         riskScore: true,
         department: { select: { id: true, name: true } },
+        organization: { select: { id: true, name: true, logo: true, slug: true, plan: true } },
         badges: {
           include: { badge: true },
           orderBy: { earnedAt: "desc" },

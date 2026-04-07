@@ -147,6 +147,7 @@ model Organization {
   phishingExamples PhishingExample[]
   settings      OrgSetting[]
   invitations   Invitation[]
+  subscriptionEvents SubscriptionEvent[]
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
   @@index([slug])
@@ -643,6 +644,28 @@ model ContactRequest {
   updatedAt     DateTime      @updatedAt
 
   @@index([status])
+  @@index([createdAt])
+}
+
+
+// ============================================
+// SUBSCRIPTION TRACKING
+// ============================================
+
+model SubscriptionEvent {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  type            String   // PAYMENT, RENEWAL, UPGRADE, DOWNGRADE, CANCELLATION, TRIAL_START, TRIAL_END
+  description     String?
+  amount          Float?   // Payment amount
+  currency        String   @default("USD")
+  planFrom        OrganizationPlan?
+  planTo          OrganizationPlan?
+  createdAt       DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([type])
   @@index([createdAt])
 }
 

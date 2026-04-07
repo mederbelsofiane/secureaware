@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useFetch, apiPost, apiPut, apiDelete } from "@/hooks/use-fetch";
 import { PageLoading, TableSkeleton } from "@/components/ui/loading";
@@ -11,6 +11,7 @@ import { formatDate, formatDateTime, getInitials, cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Building2,
   ArrowLeft,
@@ -31,12 +32,18 @@ import {
   StickyNote,
   Eye,
   EyeOff,
+  CreditCard,
+  Upload,
+  ImageIcon,
+  DollarSign,
+  Clock as ClockIcon2,
 } from "lucide-react";
 
 interface OrgDetail {
   id: string;
   name: string;
   slug: string;
+  logo?: string | null;
   plan: string;
   status: string;
   maxUsers: number;
@@ -90,7 +97,7 @@ const roleBadgeVariant: Record<string, "default" | "info" | "purple" | "warning"
   EMPLOYEE: "info",
 };
 
-type Tab = "overview" | "admins" | "users";
+type Tab = "overview" | "admins" | "users" | "subscription";
 
 export default function OrganizationDetailPage() {
   const params = useParams();
@@ -107,6 +114,26 @@ export default function OrganizationDetailPage() {
   const [deletingAdminId, setDeletingAdminId] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Subscription tab state
+  const [subData, setSubData] = useState<any>(null);
+  const [subLoading, setSubLoading] = useState(false);
+  const [subForm, setSubForm] = useState({
+    plan: "",
+    maxUsers: 50,
+    billingEmail: "",
+    subscriptionStartDate: "",
+    subscriptionEndDate: "",
+  });
+  const [subSaving, setSubSaving] = useState(false);
+  const [eventForm, setEventForm] = useState({
+    type: "PAYMENT",
+    description: "",
+    amount: "",
+    currency: "USD",
+  });
+  const [addingEvent, setAddingEvent] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+
   const {
     data: org,
     loading: orgLoading,
@@ -119,6 +146,38 @@ export default function OrganizationDetailPage() {
     loading: adminsLoading,
     refetch: refetchAdmins,
   } = useFetch<Admin[]>(`/api/super-admin/organizations/${orgId}/admins`);
+
+  // Fetch subscription data
+  const fetchSubscription = useCallback(async () => {
+    setSubLoading(true);
+    try {
+      const res = await fetch(`/api/super-admin/organizations/${orgId}/subscription`);
+      if (!res.ok) throw new Error("Failed to fetch subscription data");
+      const data = await res.json();
+      setSubData(data);
+      setSubForm({
+        plan: data.plan || "",
+        maxUsers: data.maxUsers || 50,
+        billingEmail: data.billingEmail || "",
+        subscriptionStartDate: data.subscriptionStartDate
+          ? data.subscriptionStartDate.slice(0, 10)
+          : "",
+        subscriptionEndDate: data.subscriptionEndDate
+          ? data.subscriptionEndDate.slice(0, 10)
+          : "",
+      });
+    } catch (err: any) {
+      toast.error(err.message || "Failed to load subscription data");
+    } finally {
+      setSubLoading(false);
+    }
+  }, [orgId]);
+
+  useEffect(() => {
+    if (activeTab === "subscription") {
+      fetchSubscription();
+    }
+  }, [activeTab, fetchSubscription]);
 
   // Edit org form
   const [editForm, setEditForm] = useState({
@@ -148,6 +207,7 @@ export default function OrganizationDetailPage() {
     status: "ACTIVE",
     jobTitle: "",
   });
+
 
   const openEditModal = () => {
     if (!org) return;
@@ -288,6 +348,77 @@ export default function OrganizationDetailPage() {
     }
   };
 
+
+  // Subscription handlers
+  const handleSubSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubSaving(true);
+    try {
+      await apiPut(`/api/super-admin/organizations/${orgId}/subscription/update`, {
+        plan: subForm.plan,
+        maxUsers: Number(subForm.maxUsers),
+        billingEmail: subForm.billingEmail.trim() || null,
+        subscriptionStartDate: subForm.subscriptionStartDate || null,
+        subscriptionEndDate: subForm.subscriptionEndDate || null,
+      });
+      toast.success("Subscription updated successfully");
+      fetchSubscription();
+      refetchOrg();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update subscription");
+    } finally {
+      setSubSaving(false);
+    }
+  };
+
+  const handleAddEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!eventForm.description.trim()) {
+      toast.error("Description is required");
+      return;
+    }
+    setAddingEvent(true);
+    try {
+      await apiPost(`/api/super-admin/organizations/${orgId}/subscription`, {
+        type: eventForm.type,
+        description: eventForm.description.trim(),
+        amount: eventForm.amount ? parseFloat(eventForm.amount) : null,
+        currency: eventForm.currency,
+      });
+      toast.success("Event added successfully");
+      setEventForm({ type: "PAYMENT", description: "", amount: "", currency: "USD" });
+      fetchSubscription();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to add event");
+    } finally {
+      setAddingEvent(false);
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append("logo", file);
+      const res = await fetch(`/api/organizations/logo?orgId=${orgId}`, {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to upload logo");
+      }
+      toast.success("Logo uploaded successfully");
+      refetchOrg();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to upload logo");
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
   if (orgLoading) return <PageLoading />;
 
   if (orgError) {
@@ -303,11 +434,16 @@ export default function OrganizationDetailPage() {
 
   if (!org) return <PageLoading />;
 
-  const tabs: { key: Tab; label: string; count?: number }[] = [
+  const tabs: { key: Tab; label: string; icon?: any; count?: number }[] = [
     { key: "overview", label: "Overview" },
     { key: "admins", label: "Admins", count: admins?.length },
     { key: "users", label: "Users", count: org._count.users },
+    { key: "subscription", label: "Subscription", icon: CreditCard },
   ];
+
+  const usagePercent = subData
+    ? Math.min(100, Math.round(((subData.currentUsers ?? org._count.users) / (subData.maxUsers || org.maxUsers)) * 100))
+    : Math.min(100, Math.round((org._count.users / org.maxUsers) * 100));
 
   return (
     <div className="page-container">
@@ -380,6 +516,7 @@ export default function OrganizationDetailPage() {
             )}
           >
             <span className="flex items-center gap-2">
+              {tab.icon && <tab.icon className="w-4 h-4" />}
               {tab.label}
               {tab.count !== undefined && (
                 <span
@@ -404,6 +541,7 @@ export default function OrganizationDetailPage() {
         ))}
       </div>
 
+
       {/* Tab Content */}
       {activeTab === "overview" && (
         <motion.div
@@ -411,6 +549,51 @@ export default function OrganizationDetailPage() {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6"
         >
+          {/* Organization Logo */}
+          <div className="glass-card p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <ImageIcon className="w-5 h-5 text-purple-400" />
+              <h3 className="text-lg font-semibold text-white">Organization Logo</h3>
+            </div>
+            <div className="flex items-center gap-6">
+              <div className="w-24 h-24 rounded-xl bg-dark-700/50 border border-gray-700/50 flex items-center justify-center overflow-hidden flex-shrink-0">
+                {org.logo ? (
+                  <Image
+                    src={org.logo}
+                    alt={`${org.name} logo`}
+                    width={96}
+                    height={96}
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <Building2 className="w-10 h-10 text-gray-600" />
+                )}
+              </div>
+              <div>
+                <p className="text-sm text-gray-400 mb-3">
+                  {org.logo
+                    ? "Current organization logo. Upload a new one to replace it."
+                    : "No logo uploaded yet. Upload one to brand this organization."}
+                </p>
+                <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-purple-400 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 transition-colors cursor-pointer">
+                  {uploadingLogo ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Upload className="w-4 h-4" />
+                  )}
+                  {uploadingLogo ? "Uploading..." : "Upload Logo"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    className="hidden"
+                    disabled={uploadingLogo}
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
+
           {/* Info Grid */}
           <div className="glass-card p-6">
             <h3 className="text-lg font-semibold text-white mb-4">Organization Details</h3>
@@ -521,6 +704,7 @@ export default function OrganizationDetailPage() {
           </div>
         </motion.div>
       )}
+
 
       {activeTab === "admins" && (
         <motion.div
@@ -707,6 +891,305 @@ export default function OrganizationDetailPage() {
         </motion.div>
       )}
 
+
+      {activeTab === "subscription" && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6"
+        >
+          {subLoading ? (
+            <TableSkeleton rows={4} />
+          ) : (
+            <>
+              {/* Current Plan & Subscription Settings */}
+              <form onSubmit={handleSubSave} className="space-y-6">
+                <div className="glass-card p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <CreditCard className="w-5 h-5 text-purple-400" />
+                    <h3 className="text-lg font-semibold text-white">Current Plan</h3>
+                  </div>
+                  <div>
+                    <label className="label-text">Plan</label>
+                    <select
+                      value={subForm.plan}
+                      onChange={(e) =>
+                        setSubForm((p) => ({ ...p, plan: e.target.value }))
+                      }
+                      className="input-field w-full max-w-xs"
+                    >
+                      <option value="FREE">Free</option>
+                      <option value="STARTER">Starter</option>
+                      <option value="PROFESSIONAL">Professional</option>
+                      <option value="ENTERPRISE">Enterprise</option>
+                    </select>
+                    <div className="mt-2">
+                      <Badge
+                        variant={planBadgeVariant[subForm.plan] || "default"}
+                        size="md"
+                      >
+                        {subForm.plan || "—"}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="glass-card p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Layers className="w-5 h-5 text-purple-400" />
+                    <h3 className="text-lg font-semibold text-white">Subscription Settings</h3>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="label-text">Max Users</label>
+                      <input
+                        type="number"
+                        value={subForm.maxUsers}
+                        onChange={(e) =>
+                          setSubForm((p) => ({
+                            ...p,
+                            maxUsers: parseInt(e.target.value) || 0,
+                          }))
+                        }
+                        className="input-field w-full"
+                        min={1}
+                      />
+                    </div>
+                    <div>
+                      <label className="label-text">Billing Email</label>
+                      <input
+                        type="email"
+                        value={subForm.billingEmail}
+                        onChange={(e) =>
+                          setSubForm((p) => ({ ...p, billingEmail: e.target.value }))
+                        }
+                        className="input-field w-full"
+                        placeholder="billing@example.com"
+                      />
+                    </div>
+                    <div>
+                      <label className="label-text">Subscription Start Date</label>
+                      <input
+                        type="date"
+                        value={subForm.subscriptionStartDate}
+                        onChange={(e) =>
+                          setSubForm((p) => ({
+                            ...p,
+                            subscriptionStartDate: e.target.value,
+                          }))
+                        }
+                        className="input-field w-full"
+                      />
+                    </div>
+                    <div>
+                      <label className="label-text">Subscription End Date</label>
+                      <input
+                        type="date"
+                        value={subForm.subscriptionEndDate}
+                        onChange={(e) =>
+                          setSubForm((p) => ({
+                            ...p,
+                            subscriptionEndDate: e.target.value,
+                          }))
+                        }
+                        className="input-field w-full"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-end mt-4">
+                    <button
+                      type="submit"
+                      disabled={subSaving}
+                      className="btn-primary flex items-center gap-2 disabled:opacity-50"
+                    >
+                      {subSaving && <Loader2 className="w-4 h-4 animate-spin" />}
+                      {subSaving ? "Saving..." : "Save Changes"}
+                    </button>
+                  </div>
+                </div>
+              </form>
+
+              {/* Usage Stats */}
+              <div className="glass-card p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Users className="w-5 h-5 text-purple-400" />
+                  <h3 className="text-lg font-semibold text-white">Usage Stats</h3>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-400">Current Users</span>
+                    <span className="text-gray-200 font-medium">
+                      {subData?.currentUsers ?? org._count.users} / {subData?.maxUsers ?? org.maxUsers}
+                    </span>
+                  </div>
+                  <div className="w-full bg-dark-700 rounded-full h-3 overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${usagePercent}%` }}
+                      transition={{ duration: 0.6, ease: "easeOut" }}
+                      className={cn(
+                        "h-full rounded-full transition-colors",
+                        usagePercent >= 90
+                          ? "bg-red-500"
+                          : usagePercent >= 70
+                          ? "bg-yellow-500"
+                          : "bg-purple-500"
+                      )}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    {usagePercent}% of user capacity used
+                  </p>
+                </div>
+              </div>
+
+
+              {/* Add Event */}
+              <div className="glass-card p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <DollarSign className="w-5 h-5 text-purple-400" />
+                  <h3 className="text-lg font-semibold text-white">Add Event</h3>
+                </div>
+                <form onSubmit={handleAddEvent} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="label-text">Event Type</label>
+                      <select
+                        value={eventForm.type}
+                        onChange={(e) =>
+                          setEventForm((p) => ({ ...p, type: e.target.value }))
+                        }
+                        className="input-field w-full"
+                      >
+                        <option value="PAYMENT">Payment</option>
+                        <option value="RENEWAL">Renewal</option>
+                        <option value="UPGRADE">Upgrade</option>
+                        <option value="DOWNGRADE">Downgrade</option>
+                        <option value="CANCELLATION">Cancellation</option>
+                        <option value="TRIAL_START">Trial Start</option>
+                        <option value="TRIAL_END">Trial End</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="label-text">Description *</label>
+                      <input
+                        type="text"
+                        value={eventForm.description}
+                        onChange={(e) =>
+                          setEventForm((p) => ({ ...p, description: e.target.value }))
+                        }
+                        className="input-field w-full"
+                        placeholder="e.g. Monthly payment received"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="label-text">Amount</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={eventForm.amount}
+                        onChange={(e) =>
+                          setEventForm((p) => ({ ...p, amount: e.target.value }))
+                        }
+                        className="input-field w-full"
+                        placeholder="0.00"
+                      />
+                    </div>
+                    <div>
+                      <label className="label-text">Currency</label>
+                      <select
+                        value={eventForm.currency}
+                        onChange={(e) =>
+                          setEventForm((p) => ({ ...p, currency: e.target.value }))
+                        }
+                        className="input-field w-full"
+                      >
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                        <option value="AED">AED</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-end">
+                    <button
+                      type="submit"
+                      disabled={addingEvent}
+                      className="btn-primary flex items-center gap-2 disabled:opacity-50"
+                    >
+                      {addingEvent && <Loader2 className="w-4 h-4 animate-spin" />}
+                      {addingEvent ? "Adding..." : "Add Event"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Event History */}
+              <div className="glass-card p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <ClockIcon2 className="w-5 h-5 text-purple-400" />
+                  <h3 className="text-lg font-semibold text-white">Event History</h3>
+                </div>
+                {!subData?.events || subData.events.length === 0 ? (
+                  <p className="text-sm text-gray-500 italic">No events recorded yet.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="text-left border-b border-gray-700/50">
+                          <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Date
+                          </th>
+                          <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Type
+                          </th>
+                          <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Description
+                          </th>
+                          <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-right">
+                            Amount
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-700/30">
+                        {subData.events.map((event: any, idx: number) => (
+                          <tr key={event.id || idx} className="hover:bg-dark-700/30 transition-colors">
+                            <td className="px-4 py-3">
+                              <span className="text-sm text-gray-400">
+                                {formatDate(event.createdAt || event.date)}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <Badge variant="default" size="sm">
+                                {event.type}
+                              </Badge>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className="text-sm text-gray-300">
+                                {event.description}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <span className="text-sm text-gray-200 font-medium">
+                                {event.amount != null
+                                  ? `${Number(event.amount).toFixed(2)} ${event.currency || "USD"}`
+                                  : "—"}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </motion.div>
+      )}
+
+
       {/* Edit Organization Modal */}
       {showEditModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -830,6 +1313,7 @@ export default function OrganizationDetailPage() {
           </motion.div>
         </div>
       )}
+
 
       {/* Create Admin Modal */}
       {showCreateAdminModal && (
