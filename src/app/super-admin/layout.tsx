@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { PageLoading } from "@/components/ui/loading";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
   Shield,
   LayoutDashboard,
@@ -43,7 +44,7 @@ export default function SuperAdminLayout({
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-dark-950 flex items-center justify-center">
+      <div className="min-h-screen bg-dark-950 light:bg-gray-50 flex items-center justify-center">
         <PageLoading />
       </div>
     );
@@ -59,26 +60,27 @@ export default function SuperAdminLayout({
   };
 
   return (
-    <div className="min-h-screen bg-dark-950">
+    <div className="sa-layout min-h-screen bg-dark-950">
       {/* Fixed Sidebar */}
-      <aside className="fixed top-0 left-0 h-full w-64 backdrop-blur-xl bg-dark-900/95 border-r border-gray-800/50 z-40 flex flex-col">
+      <aside className="sa-sidebar fixed top-0 left-0 h-full w-64 backdrop-blur-xl bg-dark-900/95 border-r border-gray-800/50 z-40 flex flex-col">
         {/* Logo */}
-        <div className="h-16 flex items-center px-4 border-b border-gray-800/50">
+        <div className="sa-sidebar-header h-16 flex items-center justify-between px-4 border-b border-gray-800/50">
           <Link href="/super-admin" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
               <Shield className="w-5 h-5 text-purple-400" />
             </div>
-            <span className="font-bold text-lg text-white">
+            <span className="font-bold text-lg sa-text-primary">
               Secure<span className="text-purple-400">Aware</span>
             </span>
           </Link>
+          <ThemeToggle />
         </div>
 
         {/* Super Admin Badge */}
-        <div className="px-4 py-3 border-b border-gray-800/50">
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
+        <div className="px-4 py-3 sa-sidebar-section border-b border-gray-800/50">
+          <div className="sa-badge-super flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
             <Crown className="w-4 h-4 text-purple-400" />
-            <span className="text-sm font-semibold text-purple-300">
+            <span className="text-sm font-semibold text-purple-400">
               Super Admin
             </span>
           </div>
@@ -91,10 +93,10 @@ export default function SuperAdminLayout({
               key={link.href}
               href={link.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                "sa-nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
                 isActive(link.href)
-                  ? "bg-purple-500/10 text-purple-400 border border-purple-500/20"
-                  : "text-gray-400 hover:text-white hover:bg-dark-700/50"
+                  ? "sa-nav-active bg-purple-500/10 text-purple-400 border border-purple-500/20"
+                  : "sa-nav-inactive text-gray-400 hover:text-white hover:bg-dark-700/50"
               )}
             >
               <link.icon className="w-5 h-5 flex-shrink-0" />
@@ -104,9 +106,9 @@ export default function SuperAdminLayout({
         </nav>
 
         {/* Bottom section */}
-        <div className="p-3 border-t border-gray-800/50">
+        <div className="sa-sidebar-bottom p-3 border-t border-gray-800/50">
           <div className="px-3 py-2 mb-2">
-            <p className="text-xs text-gray-500 truncate">
+            <p className="text-xs sa-text-muted truncate">
               {session.user?.email}
             </p>
           </div>
@@ -121,7 +123,7 @@ export default function SuperAdminLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="ml-64 min-h-screen">{children}</main>
+      <main className="sa-main ml-64 min-h-screen">{children}</main>
     </div>
   );
 }

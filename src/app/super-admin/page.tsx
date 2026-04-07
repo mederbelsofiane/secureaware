@@ -77,7 +77,7 @@ export default function SuperAdminDashboard() {
 
   if (error) {
     return (
-      <div className="page-container">
+      <div className="page-container sa-page-content">
         <div className="glass-card p-8 border-red-500/30 bg-red-500/5 text-center">
           <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-red-400 mb-2">
@@ -95,7 +95,7 @@ export default function SuperAdminDashboard() {
   if (!stats) return <PageLoading />;
 
   return (
-    <div className="page-container">
+    <div className="page-container sa-page-content">
       <PageHeader
         title="Super Admin Dashboard"
         description="Platform-wide overview of all organizations and system activity."
@@ -161,7 +161,7 @@ export default function SuperAdminDashboard() {
         >
           <div className="flex items-center gap-2 mb-6">
             <Layers className="w-5 h-5 text-purple-400" />
-            <h3 className="text-lg font-semibold text-white">
+            <h3 className="text-lg font-semibold text-white sa-section-title">
               Organizations by Plan
             </h3>
           </div>
@@ -183,11 +183,11 @@ export default function SuperAdminDashboard() {
                         {plan}
                       </Badge>
                     </div>
-                    <span className="text-sm font-medium text-gray-300">
+                    <span className="text-sm font-medium text-gray-300 sa-stat-value">
                       {count}
                     </span>
                   </div>
-                  <div className="w-full h-2 rounded-full bg-dark-700">
+                  <div className="w-full h-2 rounded-full bg-dark-700 sa-progress-bg">
                     <div
                       className={`h-2 rounded-full ${colors[plan] || "bg-gray-500"} transition-all duration-500`}
                       style={{ width: `${percentage}%` }}
@@ -209,7 +209,7 @@ export default function SuperAdminDashboard() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Building2 className="w-5 h-5 text-purple-400" />
-              <h3 className="text-lg font-semibold text-white">
+              <h3 className="text-lg font-semibold text-white sa-section-title">
                 Recent Organizations
               </h3>
             </div>
@@ -224,40 +224,40 @@ export default function SuperAdminDashboard() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left border-b border-gray-700/50">
-                    <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <tr className="text-left border-b border-gray-700/50 sa-divider">
+                    <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">
                       Name
                     </th>
-                    <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">
                       Slug
                     </th>
-                    <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">
                       Plan
                     </th>
-                    <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">
                       Users
                     </th>
-                    <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">
                       Created
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-700/30">
+                <tbody className="divide-y divide-gray-700/30 sa-table-body">
                   {stats.recentOrganizations.map((org) => (
                     <tr
                       key={org.id}
-                      className="hover:bg-dark-700/30 transition-colors"
+                      className="hover:bg-dark-700/30 transition-colors sa-table-row"
                     >
                       <td className="py-3 pr-4">
                         <Link
                           href={`/super-admin/organizations/${org.id}`}
-                          className="text-sm font-medium text-gray-200 hover:text-purple-400 transition-colors"
+                          className="text-sm font-medium text-gray-200 hover:text-purple-400 transition-colors sa-table-cell-primary"
                         >
                           {org.name}
                         </Link>
                       </td>
                       <td className="py-3 pr-4">
-                        <span className="text-sm text-gray-400">
+                        <span className="text-sm text-gray-400 sa-table-cell">
                           {org.slug}
                         </span>
                       </td>
@@ -270,12 +270,12 @@ export default function SuperAdminDashboard() {
                         </Badge>
                       </td>
                       <td className="py-3 pr-4">
-                        <span className="text-sm text-gray-300">
+                        <span className="text-sm text-gray-300 sa-table-cell">
                           {org._count.users}
                         </span>
                       </td>
                       <td className="py-3">
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-gray-500 sa-text-muted">
                           {formatDate(org.createdAt)}
                         </span>
                       </td>
@@ -304,7 +304,7 @@ export default function SuperAdminDashboard() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Activity className="w-5 h-5 text-purple-400" />
-            <h3 className="text-lg font-semibold text-white">
+            <h3 className="text-lg font-semibold text-white sa-section-title">
               Recent Audit Logs
             </h3>
           </div>
@@ -319,29 +319,29 @@ export default function SuperAdminDashboard() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="text-left border-b border-gray-700/50">
-                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <tr className="text-left border-b border-gray-700/50 sa-divider">
+                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">
                     Action
                   </th>
-                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">
                     Entity
                   </th>
-                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">
                     Entity ID
                   </th>
-                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">
                     User
                   </th>
-                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="pb-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">
                     Date
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-700/30">
+              <tbody className="divide-y divide-gray-700/30 sa-table-body">
                 {stats.recentAuditLogs.map((log) => (
                   <tr
                     key={log.id}
-                    className="hover:bg-dark-700/30 transition-colors"
+                    className="hover:bg-dark-700/30 transition-colors sa-table-row"
                   >
                     <td className="py-3 pr-4">
                       <Badge variant="purple" size="sm">
@@ -349,22 +349,22 @@ export default function SuperAdminDashboard() {
                       </Badge>
                     </td>
                     <td className="py-3 pr-4">
-                      <span className="text-sm text-gray-300">
+                      <span className="text-sm text-gray-300 sa-table-cell">
                         {log.entity}
                       </span>
                     </td>
                     <td className="py-3 pr-4">
-                      <span className="text-sm text-gray-500 font-mono">
+                      <span className="text-sm text-gray-500 font-mono sa-text-muted">
                         {log.entityId ? log.entityId.slice(0, 8) + "..." : "-"}
                       </span>
                     </td>
                     <td className="py-3 pr-4">
-                      <span className="text-sm text-gray-300">
+                      <span className="text-sm text-gray-300 sa-table-cell">
                         {log.user?.name || log.user?.email || "-"}
                       </span>
                     </td>
                     <td className="py-3">
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-gray-500 sa-text-muted">
                         {formatDateTime(log.createdAt)}
                       </span>
                     </td>

@@ -88,7 +88,7 @@ export default function AuditLogsPage() {
   }, [actionFilter, entityFilter, dateFrom, dateTo]);
 
   return (
-    <div className="page-container">
+    <div className="page-container sa-page-content">
       <PageHeader
         title="Audit Logs"
         description="Track all system activities and changes across the platform."
@@ -216,7 +216,7 @@ export default function AuditLogsPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left border-b border-gray-700/50 bg-dark-800/50">
+                  <tr className="text-left border-b border-gray-700/50 bg-dark-800/50 sa-table-header-row">
                     <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
                       ID
                     </th>
@@ -237,11 +237,11 @@ export default function AuditLogsPage() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-700/30">
+                <tbody className="divide-y divide-gray-700/30 sa-table-body">
                   {logsData.items.map((log) => (
                     <tr
                       key={log.id}
-                      className="hover:bg-dark-700/30 transition-colors"
+                      className="hover:bg-dark-700/30 transition-colors sa-table-row"
                     >
                       <td className="px-6 py-4">
                         <span
@@ -278,7 +278,7 @@ export default function AuditLogsPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div>
-                          <span className="text-sm text-gray-300">
+                          <span className="text-sm text-gray-300 sa-table-cell">
                             {log.user?.name || "—"}
                           </span>
                           {log.user?.email && (
@@ -301,8 +301,8 @@ export default function AuditLogsPage() {
 
             {/* Pagination */}
             {logsData.totalPages > 1 && (
-              <div className="flex items-center justify-between px-6 py-4 border-t border-gray-700/50">
-                <p className="text-sm text-gray-500">
+              <div className="flex items-center justify-between px-6 py-4 border-t border-gray-700/50 sa-divider">
+                <p className="text-sm text-gray-500 sa-text-muted">
                   Showing{" "}
                   <span className="text-gray-300">
                     {(logsData.page - 1) * logsData.limit + 1}
@@ -319,7 +319,7 @@ export default function AuditLogsPage() {
                   <button
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page <= 1}
-                    className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-dark-700/50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-dark-700/50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed sa-pagination-btn"
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
@@ -344,7 +344,7 @@ export default function AuditLogsPage() {
                             className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
                               page === pageNum
                                 ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
-                                : "text-gray-400 hover:text-white hover:bg-dark-700/50"
+                                : "text-gray-400 hover:text-white hover:bg-dark-700/50 sa-pagination-btn"
                             }`}
                           >
                             {pageNum}
@@ -358,7 +358,7 @@ export default function AuditLogsPage() {
                       setPage((p) => Math.min(logsData.totalPages, p + 1))
                     }
                     disabled={page >= logsData.totalPages}
-                    className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-dark-700/50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-dark-700/50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed sa-pagination-btn"
                   >
                     <ChevronRight className="w-5 h-5" />
                   </button>

@@ -174,7 +174,7 @@ export default function OrganizationsPage() {
   }, [statusFilter, planFilter]);
 
   return (
-    <div className="page-container">
+    <div className="page-container sa-page-content">
       <PageHeader
         title="Organizations"
         description="Manage all organizations on the platform."
@@ -278,43 +278,43 @@ export default function OrganizationsPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left border-b border-gray-700/50 bg-dark-800/50">
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <tr className="text-left border-b border-gray-700/50 bg-dark-800/50 sa-table-header-row">
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">
                       Name
                     </th>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">
                       Slug
                     </th>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">
                       Plan
                     </th>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">
                       Users
                     </th>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">
                       Created
                     </th>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-right">
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-right sa-table-header">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-700/30">
+                <tbody className="divide-y divide-gray-700/30 sa-table-body">
                   {orgsData.items.map((org) => (
                     <tr
                       key={org.id}
-                      className="hover:bg-dark-700/30 transition-colors"
+                      className="hover:bg-dark-700/30 transition-colors sa-table-row"
                     >
                       <td className="px-6 py-4">
-                        <span className="text-sm font-medium text-gray-200">
+                        <span className="text-sm font-medium text-gray-200 sa-table-cell-primary">
                           {org.name}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm text-gray-400 font-mono">
+                        <span className="text-sm text-gray-400 font-mono sa-table-cell">
                           {org.slug}
                         </span>
                       </td>
@@ -335,13 +335,13 @@ export default function OrganizationsPage() {
                         </Badge>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm text-gray-300">
+                        <span className="text-sm text-gray-300 sa-table-cell">
                           {org._count.users}
                           <span className="text-gray-500">/{org.maxUsers}</span>
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-gray-500 sa-text-muted">
                           {formatDate(org.createdAt)}
                         </span>
                       </td>
@@ -349,7 +349,7 @@ export default function OrganizationsPage() {
                         <div className="flex items-center justify-end gap-2">
                           <Link
                             href={`/super-admin/organizations/${org.id}`}
-                            className="p-2 rounded-lg text-gray-400 hover:text-purple-400 hover:bg-purple-500/10 transition-colors"
+                            className="p-2 rounded-lg text-gray-400 hover:text-purple-400 hover:bg-purple-500/10 transition-colors sa-action-btn"
                             title="View Details"
                           >
                             <Eye className="w-4 h-4" />
@@ -366,8 +366,8 @@ export default function OrganizationsPage() {
                             disabled={togglingId === org.id}
                             className={`p-2 rounded-lg transition-colors ${
                               org.status === "ACTIVE"
-                                ? "text-gray-400 hover:text-yellow-400 hover:bg-yellow-500/10"
-                                : "text-gray-400 hover:text-green-400 hover:bg-green-500/10"
+                                ? "text-gray-400 hover:text-yellow-400 hover:bg-yellow-500/10 sa-action-btn"
+                                : "text-gray-400 hover:text-green-400 hover:bg-green-500/10 sa-action-btn"
                             } disabled:opacity-50`}
                             title={
                               org.status === "ACTIVE" ? "Suspend" : "Activate"
@@ -391,25 +391,25 @@ export default function OrganizationsPage() {
 
             {/* Pagination */}
             {orgsData.totalPages > 1 && (
-              <div className="flex items-center justify-between px-6 py-4 border-t border-gray-700/50">
-                <p className="text-sm text-gray-500">
+              <div className="flex items-center justify-between px-6 py-4 border-t border-gray-700/50 sa-divider">
+                <p className="text-sm text-gray-500 sa-text-muted">
                   Showing{" "}
-                  <span className="text-gray-300">
+                  <span className="text-gray-300 sa-table-cell">
                     {(orgsData.page - 1) * orgsData.limit + 1}
                   </span>{" "}
                   to{" "}
-                  <span className="text-gray-300">
+                  <span className="text-gray-300 sa-table-cell">
                     {Math.min(orgsData.page * orgsData.limit, orgsData.total)}
                   </span>{" "}
                   of{" "}
-                  <span className="text-gray-300">{orgsData.total}</span>{" "}
+                  <span className="text-gray-300 sa-table-cell">{orgsData.total}</span>{" "}
                   organizations
                 </p>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page <= 1}
-                    className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-dark-700/50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-dark-700/50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed sa-pagination-btn"
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
@@ -434,7 +434,7 @@ export default function OrganizationsPage() {
                             className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
                               page === pageNum
                                 ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
-                                : "text-gray-400 hover:text-white hover:bg-dark-700/50"
+                                : "text-gray-400 hover:text-white hover:bg-dark-700/50 sa-pagination-btn"
                             }`}
                           >
                             {pageNum}
@@ -448,7 +448,7 @@ export default function OrganizationsPage() {
                       setPage((p) => Math.min(orgsData.totalPages, p + 1))
                     }
                     disabled={page >= orgsData.totalPages}
-                    className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-dark-700/50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-dark-700/50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed sa-pagination-btn"
                   >
                     <ChevronRight className="w-5 h-5" />
                   </button>
@@ -472,12 +472,12 @@ export default function OrganizationsPage() {
             className="relative w-full max-w-lg glass-card p-6 max-h-[90vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-white">
+              <h2 className="text-lg font-semibold text-white sa-section-title">
                 Create Organization
               </h2>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-dark-700/50 transition-colors"
+                className="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-dark-700/50 transition-colors sa-action-btn"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -513,7 +513,7 @@ export default function OrganizationsPage() {
                   placeholder="acme-corporation"
                   required
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 mt-1 sa-text-muted">
                   Auto-generated from name. Must be unique.
                 </p>
               </div>
@@ -611,7 +611,7 @@ export default function OrganizationsPage() {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-dark-700/50 transition-colors"
+                  className="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-dark-700/50 transition-colors sa-btn-cancel"
                 >
                   Cancel
                 </button>

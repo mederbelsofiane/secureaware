@@ -423,7 +423,7 @@ export default function OrganizationDetailPage() {
 
   if (orgError) {
     return (
-      <div className="page-container">
+      <div className="page-container sa-page-content">
         <div className="glass-card p-8 text-center">
           <p className="text-red-400 mb-4">{orgError}</p>
           <button onClick={refetchOrg} className="btn-primary">Retry</button>
@@ -446,11 +446,11 @@ export default function OrganizationDetailPage() {
     : Math.min(100, Math.round((org._count.users / org.maxUsers) * 100));
 
   return (
-    <div className="page-container">
+    <div className="page-container sa-page-content">
       {/* Back button */}
       <Link
         href="/super-admin/organizations"
-        className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-purple-400 transition-colors mb-6"
+        className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-purple-400 transition-colors mb-6 sa-text-muted"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to Organizations
@@ -469,13 +469,13 @@ export default function OrganizationDetailPage() {
                 {org.status}
               </Badge>
             </div>
-            <p className="text-sm text-gray-500 mt-0.5">{org.slug}</p>
+            <p className="text-sm text-gray-500 mt-0.5 sa-text-muted">{org.slug}</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={openEditModal}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white bg-dark-700/50 hover:bg-dark-600/50 border border-gray-700/50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white bg-dark-700/50 hover:bg-dark-600/50 border border-gray-700/50 transition-colors sa-btn-secondary"
           >
             <Edit3 className="w-4 h-4" />
             Edit
@@ -503,7 +503,7 @@ export default function OrganizationDetailPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 mb-6 border-b border-gray-700/50">
+      <div className="flex items-center gap-1 mb-6 border-b border-gray-700/50 sa-divider">
         {tabs.map((tab) => (
           <button
             key={tab.key}
@@ -512,7 +512,7 @@ export default function OrganizationDetailPage() {
               "px-4 py-3 text-sm font-medium transition-colors relative",
               activeTab === tab.key
                 ? "text-purple-400"
-                : "text-gray-400 hover:text-gray-200"
+                : "text-gray-400 hover:text-gray-200 sa-tab-inactive"
             )}
           >
             <span className="flex items-center gap-2">
@@ -524,7 +524,7 @@ export default function OrganizationDetailPage() {
                     "text-xs px-1.5 py-0.5 rounded-full",
                     activeTab === tab.key
                       ? "bg-purple-500/20 text-purple-400"
-                      : "bg-dark-700 text-gray-500"
+                      : "bg-dark-700 text-gray-500 sa-tab-badge-inactive"
                   )}
                 >
                   {tab.count}
@@ -553,10 +553,10 @@ export default function OrganizationDetailPage() {
           <div className="glass-card p-6">
             <div className="flex items-center gap-2 mb-4">
               <ImageIcon className="w-5 h-5 text-purple-400" />
-              <h3 className="text-lg font-semibold text-white">Organization Logo</h3>
+              <h3 className="text-lg font-semibold text-white sa-section-title">Organization Logo</h3>
             </div>
             <div className="flex items-center gap-6">
-              <div className="w-24 h-24 rounded-xl bg-dark-700/50 border border-gray-700/50 flex items-center justify-center overflow-hidden flex-shrink-0">
+              <div className="w-24 h-24 rounded-xl bg-dark-700/50 border border-gray-700/50 flex items-center justify-center overflow-hidden flex-shrink-0 sa-logo-container">
                 {org.logo ? (
                   <Image
                     src={org.logo}
@@ -570,7 +570,7 @@ export default function OrganizationDetailPage() {
                 )}
               </div>
               <div>
-                <p className="text-sm text-gray-400 mb-3">
+                <p className="text-sm text-gray-400 mb-3 sa-text-muted">
                   {org.logo
                     ? "Current organization logo. Upload a new one to replace it."
                     : "No logo uploaded yet. Upload one to brand this organization."}
@@ -596,15 +596,15 @@ export default function OrganizationDetailPage() {
 
           {/* Info Grid */}
           <div className="glass-card p-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Organization Details</h3>
+            <h3 className="text-lg font-semibold text-white mb-4 sa-section-title">Organization Details</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="flex items-start gap-3">
                 <div className="w-9 h-9 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <Building2 className="w-4 h-4 text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider">Name</p>
-                  <p className="text-sm text-gray-200 font-medium">{org.name}</p>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider sa-label">Name</p>
+                  <p className="text-sm text-gray-200 font-medium sa-table-cell-primary">{org.name}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -612,8 +612,8 @@ export default function OrganizationDetailPage() {
                   <Hash className="w-4 h-4 text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider">Slug</p>
-                  <p className="text-sm text-gray-300 font-mono">{org.slug}</p>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider sa-label">Slug</p>
+                  <p className="text-sm text-gray-300 font-mono sa-table-cell">{org.slug}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -621,8 +621,8 @@ export default function OrganizationDetailPage() {
                   <Globe className="w-4 h-4 text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider">Domain</p>
-                  <p className="text-sm text-gray-200">{org.domain || "—"}</p>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider sa-label">Domain</p>
+                  <p className="text-sm text-gray-200 sa-table-cell-primary">{org.domain || "—"}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -630,7 +630,7 @@ export default function OrganizationDetailPage() {
                   <Layers className="w-4 h-4 text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider">Plan</p>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider sa-label">Plan</p>
                   <Badge variant={planBadgeVariant[org.plan] || "default"} size="sm">
                     {org.plan}
                   </Badge>
@@ -641,7 +641,7 @@ export default function OrganizationDetailPage() {
                   <ShieldCheck className="w-4 h-4 text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider">Status</p>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider sa-label">Status</p>
                   <Badge variant={statusBadgeVariant[org.status] || "default"} size="sm">
                     {org.status}
                   </Badge>
@@ -652,9 +652,9 @@ export default function OrganizationDetailPage() {
                   <Users className="w-4 h-4 text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider">Users</p>
-                  <p className="text-sm text-gray-200">
-                    {org._count.users} <span className="text-gray-500">/ {org.maxUsers} max</span>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider sa-label">Users</p>
+                  <p className="text-sm text-gray-200 sa-table-cell-primary">
+                    {org._count.users} <span className="text-gray-500 sa-text-muted">/ {org.maxUsers} max</span>
                   </p>
                 </div>
               </div>
@@ -663,8 +663,8 @@ export default function OrganizationDetailPage() {
                   <Mail className="w-4 h-4 text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider">Billing Email</p>
-                  <p className="text-sm text-gray-200">{org.billingEmail || "—"}</p>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider sa-label">Billing Email</p>
+                  <p className="text-sm text-gray-200 sa-table-cell-primary">{org.billingEmail || "—"}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -672,8 +672,8 @@ export default function OrganizationDetailPage() {
                   <Calendar className="w-4 h-4 text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider">Created</p>
-                  <p className="text-sm text-gray-200">{formatDateTime(org.createdAt)}</p>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider sa-label">Created</p>
+                  <p className="text-sm text-gray-200 sa-table-cell-primary">{formatDateTime(org.createdAt)}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -681,8 +681,8 @@ export default function OrganizationDetailPage() {
                   <Calendar className="w-4 h-4 text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider">Updated</p>
-                  <p className="text-sm text-gray-200">{formatDateTime(org.updatedAt)}</p>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider sa-label">Updated</p>
+                  <p className="text-sm text-gray-200 sa-table-cell-primary">{formatDateTime(org.updatedAt)}</p>
                 </div>
               </div>
             </div>
@@ -692,14 +692,14 @@ export default function OrganizationDetailPage() {
           <div className="glass-card p-6">
             <div className="flex items-center gap-2 mb-3">
               <StickyNote className="w-5 h-5 text-purple-400" />
-              <h3 className="text-lg font-semibold text-white">Notes</h3>
+              <h3 className="text-lg font-semibold text-white sa-section-title">Notes</h3>
             </div>
             {org.notes ? (
-              <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">
+              <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed sa-table-cell">
                 {org.notes}
               </p>
             ) : (
-              <p className="text-sm text-gray-500 italic">No notes added yet.</p>
+              <p className="text-sm text-gray-500 italic sa-text-muted">No notes added yet.</p>
             )}
           </div>
         </motion.div>
@@ -712,7 +712,7 @@ export default function OrganizationDetailPage() {
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-white">Organization Admins</h3>
+            <h3 className="text-lg font-semibold text-white sa-section-title">Organization Admins</h3>
             <button
               onClick={() => {
                 setCreateAdminForm({ name: "", email: "", password: "", jobTitle: "" });
@@ -742,18 +742,18 @@ export default function OrganizationDetailPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="text-left border-b border-gray-700/50 bg-dark-800/50">
-                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Job Title</th>
-                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Last Login</th>
-                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Actions</th>
+                    <tr className="text-left border-b border-gray-700/50 bg-dark-800/50 sa-table-header-row">
+                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">Name</th>
+                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">Email</th>
+                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">Status</th>
+                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">Job Title</th>
+                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">Last Login</th>
+                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-right sa-table-header">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-700/30">
+                  <tbody className="divide-y divide-gray-700/30 sa-table-body">
                     {admins.map((admin) => (
-                      <tr key={admin.id} className="hover:bg-dark-700/30 transition-colors">
+                      <tr key={admin.id} className="hover:bg-dark-700/30 transition-colors sa-table-row">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
@@ -761,11 +761,11 @@ export default function OrganizationDetailPage() {
                                 {getInitials(admin.name)}
                               </span>
                             </div>
-                            <span className="text-sm font-medium text-gray-200">{admin.name}</span>
+                            <span className="text-sm font-medium text-gray-200 sa-table-cell-primary">{admin.name}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-sm text-gray-400">{admin.email}</span>
+                          <span className="text-sm text-gray-400 sa-table-cell">{admin.email}</span>
                         </td>
                         <td className="px-6 py-4">
                           <Badge variant={statusBadgeVariant[admin.status] || "default"} size="sm">
@@ -773,10 +773,10 @@ export default function OrganizationDetailPage() {
                           </Badge>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-sm text-gray-400">{admin.jobTitle || "—"}</span>
+                          <span className="text-sm text-gray-400 sa-table-cell">{admin.jobTitle || "—"}</span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-gray-500 sa-text-muted">
                             {admin.lastLoginAt ? formatDateTime(admin.lastLoginAt) : "Never"}
                           </span>
                         </td>
@@ -784,7 +784,7 @@ export default function OrganizationDetailPage() {
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => openEditAdminModal(admin)}
-                              className="p-2 rounded-lg text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 transition-colors"
+                              className="p-2 rounded-lg text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 transition-colors sa-action-btn"
                               title="Edit Admin"
                             >
                               <Edit3 className="w-4 h-4" />
@@ -792,7 +792,7 @@ export default function OrganizationDetailPage() {
                             <button
                               onClick={() => handleDeleteAdmin(admin.id, admin.name)}
                               disabled={deletingAdminId === admin.id}
-                              className="p-2 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                              className="p-2 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50 sa-action-btn"
                               title="Delete Admin"
                             >
                               {deletingAdminId === admin.id ? (
@@ -819,8 +819,8 @@ export default function OrganizationDetailPage() {
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="mb-4">
-            <h3 className="text-lg font-semibold text-white">All Users</h3>
-            <p className="text-sm text-gray-500">Read-only view of all users in this organization.</p>
+            <h3 className="text-lg font-semibold text-white sa-section-title">All Users</h3>
+            <p className="text-sm text-gray-500 sa-text-muted">Read-only view of all users in this organization.</p>
           </div>
 
           {!org.users || org.users.length === 0 ? (
@@ -836,30 +836,30 @@ export default function OrganizationDetailPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="text-left border-b border-gray-700/50 bg-dark-800/50">
-                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
-                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Last Login</th>
+                    <tr className="text-left border-b border-gray-700/50 bg-dark-800/50 sa-table-header-row">
+                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">Name</th>
+                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">Email</th>
+                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">Role</th>
+                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">Status</th>
+                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">Department</th>
+                      <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider sa-table-header">Last Login</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-700/30">
+                  <tbody className="divide-y divide-gray-700/30 sa-table-body">
                     {org.users.map((user) => (
-                      <tr key={user.id} className="hover:bg-dark-700/30 transition-colors">
+                      <tr key={user.id} className="hover:bg-dark-700/30 transition-colors sa-table-row">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-dark-600 flex items-center justify-center">
-                              <span className="text-xs font-medium text-gray-400">
+                            <div className="w-8 h-8 rounded-full bg-dark-600 flex items-center justify-center sa-avatar">
+                              <span className="text-xs font-medium text-gray-400 sa-text-muted">
                                 {getInitials(user.name)}
                               </span>
                             </div>
-                            <span className="text-sm font-medium text-gray-200">{user.name}</span>
+                            <span className="text-sm font-medium text-gray-200 sa-table-cell-primary">{user.name}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-sm text-gray-400">{user.email}</span>
+                          <span className="text-sm text-gray-400 sa-table-cell">{user.email}</span>
                         </td>
                         <td className="px-6 py-4">
                           <Badge variant={roleBadgeVariant[user.role] || "default"} size="sm">
@@ -872,12 +872,12 @@ export default function OrganizationDetailPage() {
                           </Badge>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-sm text-gray-400">
+                          <span className="text-sm text-gray-400 sa-table-cell">
                             {user.department?.name || "—"}
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-gray-500 sa-text-muted">
                             {user.lastLoginAt ? formatDateTime(user.lastLoginAt) : "Never"}
                           </span>
                         </td>
@@ -907,7 +907,7 @@ export default function OrganizationDetailPage() {
                 <div className="glass-card p-6">
                   <div className="flex items-center gap-2 mb-4">
                     <CreditCard className="w-5 h-5 text-purple-400" />
-                    <h3 className="text-lg font-semibold text-white">Current Plan</h3>
+                    <h3 className="text-lg font-semibold text-white sa-section-title">Current Plan</h3>
                   </div>
                   <div>
                     <label className="label-text">Plan</label>
@@ -937,7 +937,7 @@ export default function OrganizationDetailPage() {
                 <div className="glass-card p-6">
                   <div className="flex items-center gap-2 mb-4">
                     <Layers className="w-5 h-5 text-purple-400" />
-                    <h3 className="text-lg font-semibold text-white">Subscription Settings</h3>
+                    <h3 className="text-lg font-semibold text-white sa-section-title">Subscription Settings</h3>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
@@ -1013,7 +1013,7 @@ export default function OrganizationDetailPage() {
               <div className="glass-card p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Users className="w-5 h-5 text-purple-400" />
-                  <h3 className="text-lg font-semibold text-white">Usage Stats</h3>
+                  <h3 className="text-lg font-semibold text-white sa-section-title">Usage Stats</h3>
                 </div>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
@@ -1048,7 +1048,7 @@ export default function OrganizationDetailPage() {
               <div className="glass-card p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <DollarSign className="w-5 h-5 text-purple-400" />
-                  <h3 className="text-lg font-semibold text-white">Add Event</h3>
+                  <h3 className="text-lg font-semibold text-white sa-section-title">Add Event</h3>
                 </div>
                 <form onSubmit={handleAddEvent} className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1129,15 +1129,15 @@ export default function OrganizationDetailPage() {
               <div className="glass-card p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <ClockIcon2 className="w-5 h-5 text-purple-400" />
-                  <h3 className="text-lg font-semibold text-white">Event History</h3>
+                  <h3 className="text-lg font-semibold text-white sa-section-title">Event History</h3>
                 </div>
                 {!subData?.events || subData.events.length === 0 ? (
-                  <p className="text-sm text-gray-500 italic">No events recorded yet.</p>
+                  <p className="text-sm text-gray-500 italic sa-text-muted">No events recorded yet.</p>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
-                        <tr className="text-left border-b border-gray-700/50">
+                        <tr className="text-left border-b border-gray-700/50 sa-divider">
                           <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Date
                           </th>
@@ -1152,11 +1152,11 @@ export default function OrganizationDetailPage() {
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-700/30">
+                      <tbody className="divide-y divide-gray-700/30 sa-table-body">
                         {subData.events.map((event: any, idx: number) => (
-                          <tr key={event.id || idx} className="hover:bg-dark-700/30 transition-colors">
+                          <tr key={event.id || idx} className="hover:bg-dark-700/30 transition-colors sa-table-row">
                             <td className="px-4 py-3">
-                              <span className="text-sm text-gray-400">
+                              <span className="text-sm text-gray-400 sa-table-cell">
                                 {formatDate(event.createdAt || event.date)}
                               </span>
                             </td>
@@ -1166,12 +1166,12 @@ export default function OrganizationDetailPage() {
                               </Badge>
                             </td>
                             <td className="px-4 py-3">
-                              <span className="text-sm text-gray-300">
+                              <span className="text-sm text-gray-300 sa-table-cell">
                                 {event.description}
                               </span>
                             </td>
                             <td className="px-4 py-3 text-right">
-                              <span className="text-sm text-gray-200 font-medium">
+                              <span className="text-sm text-gray-200 font-medium sa-table-cell-primary">
                                 {event.amount != null
                                   ? `${Number(event.amount).toFixed(2)} ${event.currency || "USD"}`
                                   : "—"}
@@ -1203,7 +1203,7 @@ export default function OrganizationDetailPage() {
             className="relative w-full max-w-lg glass-card p-6 max-h-[90vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-white">Edit Organization</h2>
+              <h2 className="text-lg font-semibold text-white sa-section-title">Edit Organization</h2>
               <button
                 onClick={() => setShowEditModal(false)}
                 className="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-dark-700/50 transition-colors"
@@ -1328,7 +1328,7 @@ export default function OrganizationDetailPage() {
             className="relative w-full max-w-md glass-card p-6"
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-white">Create Admin</h2>
+              <h2 className="text-lg font-semibold text-white sa-section-title">Create Admin</h2>
               <button
                 onClick={() => setShowCreateAdminModal(false)}
                 className="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-dark-700/50 transition-colors"
@@ -1422,7 +1422,7 @@ export default function OrganizationDetailPage() {
             className="relative w-full max-w-md glass-card p-6"
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-white">Edit Admin</h2>
+              <h2 className="text-lg font-semibold text-white sa-section-title">Edit Admin</h2>
               <button
                 onClick={() => { setShowEditAdminModal(false); setEditingAdmin(null); }}
                 className="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-dark-700/50 transition-colors"
