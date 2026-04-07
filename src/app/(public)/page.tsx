@@ -19,6 +19,10 @@ import {
   Eye,
   MonitorCheck,
   Quote,
+  Crown,
+  Briefcase,
+  Building2,
+  Rocket,
 } from 'lucide-react';
 
 const fadeInUp = {
@@ -138,6 +142,83 @@ const testimonials = [
       'We evaluated five platforms before choosing SecureAware. The risk analytics and compliance reporting alone saved our security team 20+ hours per month on audit preparation.',
     name: 'Dr. Emily Watts',
     role: 'VP of Information Security, HealthBridge Systems',
+  },
+];
+
+
+const plans = [
+  {
+    name: 'Free',
+    description: 'Perfect for trying out the platform',
+    icon: Shield,
+    color: 'from-gray-500 to-gray-600',
+    checkColor: 'text-gray-400',
+    popular: false,
+    features: [
+      'Up to 10 users',
+      '3 training modules',
+      'Basic phishing simulation',
+      'Employee dashboard',
+      'Email support',
+    ],
+    cta: { text: 'Get Started Free', href: '/register' },
+  },
+  {
+    name: 'Starter',
+    description: 'For growing teams building security culture',
+    icon: Rocket,
+    color: 'from-accent-blue to-blue-600',
+    checkColor: 'text-accent-blue',
+    popular: false,
+    features: [
+      'Up to 50 users',
+      'All training modules',
+      'Advanced phishing campaigns',
+      'Department management',
+      'Risk analytics dashboard',
+      'Custom quizzes',
+      'Priority email support',
+    ],
+    cta: { text: 'Contact Sales', href: '/contact' },
+  },
+  {
+    name: 'Professional',
+    description: 'For organizations serious about security',
+    icon: Briefcase,
+    color: 'from-accent-purple to-purple-600',
+    checkColor: 'text-accent-purple',
+    popular: true,
+    features: [
+      'Up to 500 users',
+      'Everything in Starter',
+      'Custom branding & logo',
+      'Campaign management',
+      'Compliance reporting',
+      'Certificates & badges',
+      'API access',
+      'Dedicated account manager',
+    ],
+    cta: { text: 'Contact Sales', href: '/contact' },
+  },
+  {
+    name: 'Enterprise',
+    description: 'For large organizations with advanced needs',
+    icon: Building2,
+    color: 'from-yellow-500 to-amber-600',
+    checkColor: 'text-yellow-400',
+    popular: false,
+    features: [
+      'Unlimited users',
+      'Everything in Professional',
+      'SSO / LDAP integration',
+      'Multi-tenant management',
+      'Custom training content',
+      'Advanced threat intelligence',
+      'SLA guarantee',
+      '24/7 dedicated support',
+      'On-premise deployment option',
+    ],
+    cta: { text: 'Contact Sales', href: '/contact' },
   },
 ];
 
@@ -394,6 +475,95 @@ export default function HomePage() {
               </motion.div>
             ))}
           </motion.div>
+        </div>
+      </section>
+
+      {/* ============ PLANS SECTION ============ */}
+      <section className="py-24 relative">
+        <div className="absolute inset-0 bg-dark-900/50" />
+        <div className="page-container relative z-10">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+            variants={staggerContainer}
+            className="text-center mb-16"
+          >
+            <motion.span variants={fadeInUp} custom={0} className="text-accent-cyan text-sm font-semibold uppercase tracking-wider">
+              Plans for Every Organization
+            </motion.span>
+            <motion.h2 variants={fadeInUp} custom={1} className="text-4xl sm:text-5xl font-bold text-white mt-3 mb-4">
+              Choose the Right <span className="gradient-text">Plan</span> for Your Team
+            </motion.h2>
+            <motion.p variants={fadeInUp} custom={2} className="text-dark-400 text-lg max-w-2xl mx-auto">
+              From startups to enterprises, we have a plan that scales with your security awareness needs.
+            </motion.p>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-50px' }}
+            variants={staggerContainer}
+            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
+          >
+            {plans.map((plan, i) => (
+              <motion.div
+                key={plan.name}
+                variants={scaleIn}
+                custom={i}
+                className={`relative glass-card p-8 flex flex-col ${
+                  plan.popular
+                    ? 'ring-2 ring-accent-purple shadow-lg shadow-accent-purple/10'
+                    : ''
+                }`}
+              >
+                {plan.popular && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className="bg-gradient-to-r from-accent-purple to-accent-blue text-white text-xs font-bold px-4 py-1.5 rounded-full">
+                      Most Popular
+                    </span>
+                  </div>
+                )}
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${plan.color} flex items-center justify-center mb-5`}>
+                  <plan.icon className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-1">{plan.name}</h3>
+                <p className="text-dark-500 text-sm mb-6">{plan.description}</p>
+                <div className="border-t border-gray-700/50 pt-5 mb-6 flex-1">
+                  <ul className="space-y-3">
+                    {plan.features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-2 text-sm">
+                        <CheckCircle2 className={`w-4 h-4 mt-0.5 flex-shrink-0 ${plan.checkColor}`} />
+                        <span className="text-dark-300">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <Link
+                  href={plan.cta.href}
+                  className={`w-full py-2.5 px-4 rounded-lg text-center text-sm font-medium transition-all duration-200 ${
+                    plan.popular
+                      ? 'btn-primary'
+                      : 'border border-gray-700 text-dark-300 hover:bg-dark-800 hover:text-white'
+                  }`}
+                >
+                  {plan.cta.text}
+                </Link>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.5 }}
+            className="text-center mt-10 text-dark-500 text-sm"
+          >
+            All plans include SSL encryption, 99.9% uptime SLA, and dedicated onboarding.{' '}
+            <Link href="/contact" className="text-accent-blue hover:underline">Contact us</Link> for custom enterprise solutions.
+          </motion.p>
         </div>
       </section>
 
