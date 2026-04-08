@@ -8,7 +8,7 @@ import {
   Shield, LayoutDashboard, BookOpen, FileQuestion, Fish,
   Trophy, User, Award, LogOut, Settings, Users,
   BarChart3, Megaphone, PenTool, ChevronLeft, ChevronRight,
-  Sun, Moon, CreditCard,
+  Sun, Moon, CreditCard, ClipboardCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -74,6 +74,7 @@ export function Sidebar() {
     { href: "/admin/phishing", label: "Phishing Sim", icon: Fish },
     { href: "/admin/quizzes", label: t.sidebar.quizManager, icon: PenTool },
     { href: "/admin/reports", label: t.sidebar.reports, icon: BarChart3 },
+    { href: "/admin/compliance", label: "Compliance", icon: ClipboardCheck },
     { href: "/admin/subscription", label: "Subscription", icon: CreditCard },
     { href: "/admin/settings", label: t.sidebar.settings, icon: Settings },
   ];
