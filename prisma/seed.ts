@@ -230,237 +230,1122 @@ async function main() {
   console.log("Created " + badges.length + " badges");
 
   // =============================================
-  // TRAINING MODULES WITH REAL LESSONS
+  // TRAINING MODULES WITH LESSONS AND QUIZZES
   // =============================================
-  interface LessonInput { title: string; description: string; type: LessonType; durationMins: number; order: number; content: string; }
-  interface ModuleInput { title: string; description: string; category: ModuleCategory; difficulty: Difficulty; durationMins: number; order: number; keyTakeaways: string[]; realExamples: string[]; lessons: LessonInput[]; }
+  interface ModuleSeed {
+  title: string;
+  description: string;
+  category: ModuleCategory;
+  difficulty: Difficulty;
+  durationMins: number;
+  order: number;
+  keyTakeaways: string[];
+  realExamples: string[];
+  lessons: LessonSeed[];
+  quiz: QuizSeed;
+}
 
-  const modulesData: ModuleInput[] = [
-    {
-      title: "Phishing Awareness Fundamentals",
-      description: "Learn to recognize and respond to phishing attacks. Covers email phishing, spear phishing, whaling, vishing, and smishing techniques used by modern attackers.",
-      category: ModuleCategory.PHISHING, difficulty: Difficulty.BEGINNER, durationMins: 25, order: 1,
-      keyTakeaways: ["Identify common phishing indicators in emails", "Understand mass phishing vs targeted attacks", "Know your reporting procedure for suspicious messages", "Recognize urgency and fear tactics"],
-      realExamples: ["MGM Resorts lost $100M in 2023 after social engineering attack", "Twitter 2020 breach started with phone-based phishing", "BEC scams cost $2.7 billion in 2022"],
-      lessons: [
-        { title: "What Is Phishing and Why It Matters", description: "Understanding the scope and impact of phishing attacks", type: LessonType.READING, durationMins: 8, order: 1,
-          content: "Phishing is a social engineering attack where criminals impersonate trusted entities to trick you into revealing sensitive information, clicking malicious links, or downloading harmful attachments.\n\nPhishing remains the number one initial attack vector in data breaches worldwide. The FBI reports phishing losses exceeding $10.3 billion annually.\n\nTypes of Phishing:\n\n1. Email Phishing - Mass-sent emails impersonating banks, tech companies, or internal departments.\n2. Spear Phishing - Targeted attacks using personal information. Highly customized and dangerous.\n3. Whaling - Spear phishing aimed at executives and high-value targets.\n4. Vishing (Voice Phishing) - Phone-based attacks impersonating IT support, banks, or agencies.\n5. Smishing (SMS Phishing) - Text messages containing malicious links or urgent requests.\n\nNo email filter is 100% effective. Your ability to recognize phishing is the last critical line of defense." },
-        { title: "Anatomy of a Phishing Email", description: "Breaking down phishing emails to spot red flags", type: LessonType.INTERACTIVE, durationMins: 10, order: 2,
-          content: "Every phishing email contains identifiable red flags if you know where to look.\n\nRed Flag 1 - Sender Address Mismatch: Check the full email address, not just the display name. Watch for lookalike domains (micros0ft.com), subdomain tricks (microsoft.security-update.com), and free email services.\n\nRed Flag 2 - Urgency and Threats: Phishing creates panic. Watch for messages like 'Your account will be suspended in 24 hours' or 'Unauthorized login detected.'\n\nRed Flag 3 - Suspicious Links: Hover over links to see the actual URL. Check if it matches the sender's domain and uses HTTPS.\n\nRed Flag 4 - Unexpected Attachments: Be cautious with .exe, .scr, .bat files. Office documents asking to Enable Macros are dangerous.\n\nRed Flag 5 - Generic Greetings: Legitimate organizations address you by name. Watch for 'Dear Customer' or 'Dear User.'\n\nAction Steps: Do not click links or download attachments. Do not reply. Report to IT security immediately. Delete after reporting." },
-        { title: "Responding to Phishing Attempts", description: "Step-by-step procedures for handling suspected phishing", type: LessonType.READING, durationMins: 7, order: 3,
-          content: "How to respond when you spot a phishing email:\n\n1. Do not interact with the email\n2. Report immediately using your phishing report button or forwarding to security\n3. Note key details - sender address, subject line, time received\n4. Delete the email after reporting\n5. Warn colleagues if the attack targets your department\n\nIf you already clicked a link:\n1. Disconnect from the network immediately\n2. Do not enter any credentials\n3. Contact IT Security - time is critical\n4. Change passwords for exposed accounts\n5. Enable MFA on all accounts\n\nIf you entered credentials:\n1. Change the compromised password immediately from a trusted device\n2. Change passwords on accounts using the same credentials\n3. Report the incident with full details\n4. Review recent account activity\n5. Enable MFA everywhere\n\nEvery reported phishing attempt helps protect the entire organization." }
-      ]
-    },
-    {
-      title: "Password Security & Management",
-      description: "Master creating, managing, and protecting strong passwords. Learn why password hygiene is critical and how to use modern tools to stay secure.",
-      category: ModuleCategory.PASSWORDS, difficulty: Difficulty.BEGINNER, durationMins: 20, order: 2,
-      keyTakeaways: ["Create strong unique passwords using passphrases", "Use a password manager for all accounts", "Never reuse passwords across services", "Understand how attackers crack weak passwords"],
-      realExamples: ["RockYou breach: most common password was 123456", "LinkedIn 2012 breach exposed 117M passwords", "Colonial Pipeline ransomware from a single compromised VPN password"],
-      lessons: [
-        { title: "Why Passwords Still Matter", description: "Password security in the modern threat landscape", type: LessonType.READING, durationMins: 7, order: 1,
-          content: "Despite advances in biometrics and passwordless auth, passwords remain the primary authentication method. Your password is often the only barrier between an attacker and your accounts.\n\nHow Attackers Crack Passwords:\n\nBrute Force - Automated tools try every combination. A 6-character lowercase password is cracked in under 1 second. A 12-character mixed password takes centuries.\n\nDictionary Attacks - Tools use lists of common passwords and words. password123, company2024, and Welcome1 are cracked instantly.\n\nCredential Stuffing - Attackers use breached username/password pairs on other services. This is why password reuse is extremely dangerous.\n\nSocial Engineering - Attackers gather personal info to guess passwords based on names, birthdays, or interests.\n\nKey Statistics: 81% of breaches involve weak or stolen passwords. The average person has 100+ online accounts. 65% of people reuse the same password across sites." },
-        { title: "Creating Strong Passwords", description: "Techniques for building uncrackable yet memorable passwords", type: LessonType.INTERACTIVE, durationMins: 8, order: 2,
-          content: "The Passphrase Method - Use a string of random unrelated words instead of a complex short password.\n\nWeak: P@ssw0rd! | Strong: correct-horse-battery-staple | Stronger: Maple!Quantum7$Bridge&Falcon\n\nPassword Strength Rules:\n1. Length over complexity - aim for 16+ characters\n2. Use passphrases - 4+ random unrelated words\n3. Add variety - mix uppercase, numbers, symbols between words\n4. Avoid personal info - no names, dates, pet names\n5. Never use common patterns - no qwerty, 12345, or dictionary words alone\n\nPassword Strength Examples:\npassword = cracked instantly (dictionary word)\nP@ssw0rd! = 3 minutes (common substitution)\nSummer2024 = 2 seconds (season + year)\ncorrect-horse-battery = 550 years (passphrase)\n\nEvery account must have a unique password. If one service is breached, attackers try that password everywhere." },
-        { title: "Password Managers: Your Security Vault", description: "Using password managers effectively and securely", type: LessonType.READING, durationMins: 5, order: 3,
-          content: "A password manager stores, generates, and auto-fills your passwords. You only need to remember one master password.\n\nBenefits:\n- Generates truly random unique passwords for every account\n- Stores hundreds of passwords securely with encryption\n- Auto-fills login forms preventing typos and phishing\n- Syncs across all devices\n- Alerts you to breached, weak, or reused passwords\n\nRecommended: Bitwarden (free, open source), 1Password (enterprise), KeePass (offline)\n\nMaster Password Best Practices:\n- At least 20 characters\n- A memorable passphrase\n- Completely unique - never used elsewhere\n- Enable MFA on your password manager\n\nSecurity Tips: Review vault regularly, use password health checker, set up emergency access for trusted contacts." }
-      ]
-    },
-    {
-      title: "Multi-Factor Authentication (MFA)",
-      description: "Understand why MFA is essential and learn to set it up correctly. Covers authenticator apps, hardware keys, and MFA bypass techniques.",
-      category: ModuleCategory.PASSWORDS, difficulty: Difficulty.BEGINNER, durationMins: 15, order: 3,
-      keyTakeaways: ["Enable MFA on every account that supports it", "Prefer authenticator apps over SMS codes", "Understand MFA bypass attacks", "Securely store backup codes"],
-      realExamples: ["Microsoft: MFA blocks 99.9% of automated attacks", "Uber 2022 breach via MFA fatigue attack", "Google: hardware keys prevented 100% of phishing"],
-      lessons: [
-        { title: "Understanding Multi-Factor Authentication", description: "What MFA is and why it is your strongest defense", type: LessonType.READING, durationMins: 5, order: 1,
-          content: "MFA requires two or more verification factors. Even if an attacker steals your password, they cannot access your account without the additional factor.\n\nThe Three Factors:\n1. Something You Know - Passwords, PINs\n2. Something You Have - Phone, hardware key\n3. Something You Are - Fingerprint, face scan\n\nMFA Methods Ranked:\n1. Hardware Security Keys (Best) - YubiKey, cannot be phished remotely\n2. Authenticator Apps (Strong) - Google Authenticator, Authy, time-based codes\n3. Push Notifications (Good) - Approve/deny login attempts\n4. SMS Codes (Acceptable) - Vulnerable to SIM-swapping but still better than nothing\n5. Email Codes (Weakest) - If attacker has email access, no protection\n\nAny MFA is dramatically better than no MFA." },
-        { title: "Setting Up and Using MFA Securely", description: "Practical guide to enabling MFA on key accounts", type: LessonType.INTERACTIVE, durationMins: 7, order: 2,
-          content: "Priority Accounts for MFA:\n1. Email - gateway to password resets\n2. Password manager - contains all credentials\n3. Banking and financial\n4. Work accounts\n5. Social media\n\nSetting Up an Authenticator App:\n1. Download authenticator app\n2. Go to account security settings\n3. Select Enable Two-Factor Authentication\n4. Choose Authenticator App\n5. Scan QR code\n6. Enter 6-digit code to verify\n7. SAVE your backup codes securely\n\nBackup Codes - store in password manager or printed in a safe. Never in an unencrypted file.\n\nAvoiding MFA Fatigue: Attackers trigger repeated push notifications hoping you approve one. Never approve a prompt you did not initiate. Report unexpected prompts immediately." }
-      ]
-    },
-    {
-      title: "Social Engineering Defense",
-      description: "Recognize and defend against manipulation techniques that bypass technical controls by exploiting human psychology.",
-      category: ModuleCategory.SOCIAL_ENGINEERING, difficulty: Difficulty.INTERMEDIATE, durationMins: 30, order: 4,
-      keyTakeaways: ["Recognize six principles of persuasion in attacks", "Identify pretexting, baiting, and tailgating", "Verify requests through independent channels", "Maintain professional skepticism"],
-      realExamples: ["$25M transferred after deepfake video call impersonated CFO in 2024", "RSA SecurID breach started with a phishing email", "Kevin Mitnick accessed systems primarily through social engineering"],
-      lessons: [
-        { title: "The Psychology of Social Engineering", description: "How attackers exploit human behavior patterns", type: LessonType.READING, durationMins: 10, order: 1,
-          content: "Social engineering exploits fundamental human psychological tendencies.\n\nCialdini's Six Principles:\n\n1. Authority - People comply with authority figures. Attackers impersonate IT directors, executives, or law enforcement.\n\n2. Urgency/Scarcity - Time pressure bypasses thinking. 'Your account will be deleted in 30 minutes.'\n\n3. Social Proof - People follow others. 'Everyone in your department already completed this.'\n\n4. Likability - People help those they like. Attackers build rapport first.\n\n5. Reciprocity - We return favors. 'I fixed your printer. Can you hold the door?'\n\n6. Commitment - Small agreements lead to larger ones.\n\nDefense - The Pause Principle: Before acting on any unexpected request, ask:\n1. Did I expect this communication?\n2. Can I independently verify the sender?\n3. Is there unusual urgency?\n4. Would this be normal through official channels?" },
-        { title: "Common Social Engineering Attack Types", description: "Identifying pretexting, baiting, tailgating and more", type: LessonType.READING, durationMins: 10, order: 2,
-          content: "Pretexting - Attacker creates a fabricated scenario to gain trust. Example: Someone calls claiming to be from your bank's fraud department asking you to verify your account.\nDefense: Hang up and call using the official number.\n\nBaiting - Offering something enticing. Physical: USB drives labeled 'Salary Information' left in parking lots. Digital: Free software downloads.\nDefense: Never insert found USB drives or download from untrusted sources.\n\nTailgating - Gaining physical access by following authorized personnel. Example: Someone carrying boxes asks you to hold the door.\nDefense: Ask them to badge in or contact reception.\n\nQuid Pro Quo - Offering a service for information. Example: 'Hi, IT support. We need your password for the system update.'\nDefense: IT will never ask for your password.\n\nBusiness Email Compromise - Spoofed executive emails authorizing fraud. Example: CEO email to finance requesting urgent wire transfer.\nDefense: Always verify financial requests through a second channel." },
-        { title: "Building Social Engineering Resistance", description: "Organizational strategies and personal defense habits", type: LessonType.READING, durationMins: 10, order: 3,
-          content: "Personal Defense:\n- Verify through independent channels using contact info you already have\n- Embrace professional skepticism - better to verify than be compromised\n- Control your digital footprint - limit what you share on social media\n- Follow least privilege - only share information necessary for the request\n\nOrganizational Defenses:\n1. Verification protocols for financial transactions\n2. Callback procedures for unexpected executive requests\n3. Clean desk policies\n4. Visitor management with ID and escort requirements\n5. Regular security awareness training\n6. Incident reporting culture where employees feel safe reporting\n\nSocial engineering targets humans because they are often the weakest link. By being aware and following verification procedures, you become the strongest link." }
-      ]
-    },
-    {
-      title: "Safe Browsing & Internet Security",
-      description: "Navigate the internet safely by understanding web-based threats, secure connections, and safe download practices.",
-      category: ModuleCategory.BROWSING, difficulty: Difficulty.BEGINNER, durationMins: 20, order: 5,
-      keyTakeaways: ["Verify HTTPS and certificate validity", "Recognize malicious websites and downloads", "Use browser security features", "Avoid public computers for sensitive tasks"],
-      realExamples: ["Watering hole attacks compromised Forbes.com to target defense industry visitors", "Malvertising campaigns on major ad networks infected millions of visitors", "Drive-by downloads from compromised WordPress sites affected thousands"],
-      lessons: [
-        { title: "Understanding Web-Based Threats", description: "Common internet threats targeting everyday browsing", type: LessonType.READING, durationMins: 7, order: 1,
-          content: "Web-Based Threats Overview:\n\nDrive-By Downloads - Malware automatically downloads when visiting a compromised website, no click required. Keep browsers and plugins updated to prevent this.\n\nMalvertising - Malicious code embedded in online advertisements, even on legitimate websites. Use ad blockers and keep browsers updated.\n\nWatering Hole Attacks - Attackers compromise websites frequently visited by their targets. Industry forums, news sites, and professional communities are common targets.\n\nFake Websites - Cloned versions of legitimate sites designed to steal credentials. Always verify the URL carefully before entering any information.\n\nMan-in-the-Middle - Attackers intercept communication between you and a website, especially on unsecured networks. Always verify HTTPS connections." },
-        { title: "Secure Browsing Practices", description: "Practical habits for safe daily internet use", type: LessonType.INTERACTIVE, durationMins: 8, order: 2,
-          content: "Essential Secure Browsing Habits:\n\n1. Check for HTTPS - Look for the padlock icon. Never enter credentials or personal data on HTTP sites.\n\n2. Verify URLs carefully - Check for misspellings (googIe.com with capital I vs google.com). Bookmark important sites.\n\n3. Keep everything updated - Browser, operating system, and plugins. Updates patch security vulnerabilities.\n\n4. Use browser security features - Enable popup blockers, safe browsing warnings, and cookie controls.\n\n5. Download safely - Only from official sources. Verify file hashes when possible. Scan downloads with antivirus.\n\n6. Be cautious with browser extensions - Only install from official stores. Review permissions. Remove unused extensions.\n\n7. Use private browsing wisely - Private mode does not make you anonymous. It only prevents local history storage.\n\n8. Log out of accounts - Especially on shared or public computers. Close all browser windows when done." },
-        { title: "Browser Security Configuration", description: "Configuring your browser for maximum security", type: LessonType.READING, durationMins: 5, order: 3,
-          content: "Browser Security Settings:\n\nEssential Settings:\n- Enable automatic updates\n- Block third-party cookies\n- Enable Do Not Track\n- Block pop-ups and redirects\n- Enable safe browsing protection\n\nRecommended Extensions:\n- uBlock Origin (ad/malware blocking)\n- HTTPS Everywhere (force encrypted connections)\n- Password manager extension\n\nAvoid:\n- Saving passwords in the browser (use a dedicated password manager)\n- Allowing all cookies\n- Installing extensions from unknown sources\n- Using outdated browsers\n\nFor Work Devices:\n- Follow your organization IT policy\n- Do not install unauthorized extensions\n- Report suspicious websites to IT security" }
-      ]
-    },
-    {
-      title: "Email Security Best Practices",
-      description: "Protect yourself and your organization through secure email practices. Learn to handle attachments, verify senders, and prevent data leakage.",
-      category: ModuleCategory.PHISHING, difficulty: Difficulty.INTERMEDIATE, durationMins: 20, order: 6,
-      keyTakeaways: ["Verify sender identity before acting on requests", "Handle attachments and links safely", "Prevent accidental data leakage via email", "Use encryption for sensitive communications"],
-      realExamples: ["Sony Pictures hack in 2014 began with spear phishing emails", "Hillary Clinton email server controversy highlighted classification risks", "Anthem healthcare breach exposing 80M records started with a phishing email"],
-      lessons: [
-        { title: "Email as an Attack Vector", description: "Why email is the primary target for cybercriminals", type: LessonType.READING, durationMins: 7, order: 1,
-          content: "Email remains the most exploited attack vector because every employee has an email address, messages can be spoofed, and attachments can carry malware.\n\n91% of cyberattacks start with an email. Organizations receive thousands of malicious emails daily, and only one needs to succeed.\n\nCommon Email Attacks:\n\nMalicious Attachments - Documents with embedded macros, executable files disguised as PDFs, or archive files containing malware.\n\nMalicious Links - URLs leading to credential harvesting sites, malware downloads, or exploit kits.\n\nBusiness Email Compromise - Impersonating executives or vendors to redirect payments or steal data.\n\nAccount Takeover - Using stolen credentials to send malicious emails from legitimate internal accounts, bypassing external email filters.\n\nEmail Spoofing - Forging the sender address to appear as a trusted source." },
-        { title: "Secure Email Handling Procedures", description: "Daily practices for secure email communication", type: LessonType.INTERACTIVE, durationMins: 8, order: 2,
-          content: "Before Opening: Check sender address (full address, not just display name). Is this expected? Does the tone match the supposed sender?\n\nAttachment Safety:\n- Never open attachments from unknown senders\n- Be suspicious of unexpected attachments even from known contacts\n- Never enable macros unless verified with the sender through a separate channel\n- Use your organization's file sharing platform instead of email for large files\n\nLink Safety:\n- Hover before clicking to see the actual URL\n- When in doubt, navigate to the website directly instead of clicking the link\n- Be especially careful with shortened URLs\n\nPreventing Data Leakage:\n- Double-check recipients before sending sensitive information\n- Use BCC for large distribution lists\n- Never forward internal emails to personal accounts\n- Use classification labels (Confidential, Internal, Public)\n- Set up email rules to flag external recipients\n\nEncryption: Use email encryption for sensitive data. Your organization may have tools like S/MIME or PGP." },
-        { title: "Email Security for Sensitive Communications", description: "Protecting confidential information in email", type: LessonType.READING, durationMins: 5, order: 3,
-          content: "Sensitive Email Best Practices:\n\nClassify Before Sending - Determine if the information should be shared via email at all. Some data requires encrypted channels or in-person delivery.\n\nEncryption Options:\n- TLS (Transport Layer Security) - Encrypts email in transit. Most organizations have this by default.\n- S/MIME or PGP - End-to-end encryption. The content is encrypted so only the intended recipient can read it.\n- Encrypted file sharing - Upload to secure platforms and share links instead of attaching files.\n\nDigital Signatures - Verify that emails have not been tampered with and confirm the sender's identity.\n\nRetention and Deletion:\n- Follow your organization's email retention policy\n- Delete sensitive emails after they are no longer needed\n- Empty deleted items regularly\n- Remember that emails may be backed up and discoverable in legal proceedings" }
-      ]
-    },
-    {
-      title: "Malware & Ransomware Awareness",
-      description: "Understand the types of malware threatening organizations and learn practical defense strategies against ransomware and other malicious software.",
-      category: ModuleCategory.MALWARE, difficulty: Difficulty.INTERMEDIATE, durationMins: 25, order: 7,
-      keyTakeaways: ["Identify different types of malware and their behaviors", "Recognize ransomware warning signs", "Implement practical defense measures", "Know what to do if you suspect an infection"],
-      realExamples: ["WannaCry ransomware affected 200,000 computers across 150 countries in 2017", "NotPetya caused $10 billion in global damages", "Colonial Pipeline paid $4.4M ransom after ransomware shut down fuel distribution"],
-      lessons: [
-        { title: "Types of Malware Explained", description: "Understanding viruses, trojans, ransomware, spyware and more", type: LessonType.READING, durationMins: 8, order: 1,
-          content: "Malware is any software designed to harm, exploit, or compromise computer systems.\n\nViruses - Attach to legitimate programs and spread when executed. Can corrupt files, slow systems, or create backdoors.\n\nTrojans - Disguised as legitimate software. Once installed, they create backdoors, steal data, or download additional malware.\n\nRansomware - Encrypts your files and demands payment for the decryption key. Modern variants also steal data before encrypting, threatening to publish it (double extortion).\n\nSpyware - Secretly monitors your activities, captures keystrokes, screenshots, and credentials.\n\nWorms - Self-replicating malware that spreads across networks without user action. Can consume bandwidth and crash systems.\n\nRootkits - Hide deep in the operating system to maintain persistent access. Extremely difficult to detect and remove.\n\nFileless Malware - Operates entirely in memory without writing files to disk, evading traditional antivirus. Uses legitimate system tools for malicious purposes." },
-        { title: "Ransomware Deep Dive", description: "How ransomware works and why it is so dangerous", type: LessonType.READING, durationMins: 10, order: 2,
-          content: "Ransomware Attack Lifecycle:\n\n1. Initial Access - Usually through phishing emails, compromised websites, or exposed remote access (RDP).\n\n2. Establishing Foothold - Malware installs itself and establishes communication with attacker servers.\n\n3. Lateral Movement - Spreads across the network, compromising additional systems and accounts.\n\n4. Data Exfiltration - Modern ransomware steals sensitive data before encryption for double extortion.\n\n5. Encryption - Files are encrypted with strong algorithms. Ransom notes appear demanding payment in cryptocurrency.\n\n6. Extortion - Attackers threaten to publish stolen data if ransom is not paid.\n\nWhy Ransomware Succeeds:\n- Organizations lack proper backups\n- Unpatched systems provide easy entry\n- Employees fall for phishing emails\n- Weak or reused passwords\n- Insufficient network segmentation\n\nPrevention:\n- Maintain offline backups tested regularly\n- Keep all systems patched and updated\n- Implement email filtering and web proxies\n- Use endpoint detection and response (EDR) tools\n- Practice least privilege access\n- Conduct regular security awareness training" },
-        { title: "Responding to Malware Infections", description: "What to do if you suspect your device is infected", type: LessonType.READING, durationMins: 7, order: 3,
-          content: "Signs of Infection:\n- Unusual system slowness\n- Unexpected pop-ups or programs\n- Files that cannot be opened or have changed extensions\n- Antivirus alerts or disabled security software\n- Unusual network traffic or high bandwidth usage\n- Programs launching without your action\n\nImmediate Response:\n1. DISCONNECT from the network immediately (unplug Ethernet, disable WiFi)\n2. DO NOT shut down the computer (forensic evidence may be in memory)\n3. CONTACT IT Security immediately\n4. NOTE what you were doing when symptoms appeared\n5. DO NOT try to fix it yourself\n\nDo Not:\n- Do not pay ransoms - there is no guarantee of recovery\n- Do not delete files or reinstall software\n- Do not connect USB drives or external storage\n- Do not use the infected device for any purpose\n\nPrevention Habits:\n- Keep antivirus updated and running\n- Do not disable security software\n- Avoid downloading from untrusted sources\n- Be cautious with email attachments\n- Keep systems and applications patched" }
-      ]
-    },
-    {
-      title: "Removable Media & USB Security",
-      description: "Understand the risks of USB drives, external storage, and removable media. Learn safe handling practices to prevent malware infections.",
-      category: ModuleCategory.DATA_PROTECTION, difficulty: Difficulty.BEGINNER, durationMins: 15, order: 8,
-      keyTakeaways: ["Never insert unknown USB devices into your computer", "Understand autorun attacks and BadUSB threats", "Follow proper procedures for transferring data", "Use encrypted USB drives for sensitive data"],
-      realExamples: ["Stuxnet worm targeting Iran nuclear facilities spread via USB drives", "US military banned USB drives after malware compromised classified networks", "Researchers dropped USB drives in parking lots and 48% were plugged in by employees"],
-      lessons: [
-        { title: "USB and Removable Media Threats", description: "How attackers weaponize physical storage devices", type: LessonType.READING, durationMins: 8, order: 1,
-          content: "USB drives are one of the most effective physical attack vectors because they exploit human curiosity and trust.\n\nAutoRun Malware - USB drives configured to automatically execute malware when plugged in. Modern operating systems have mitigations but they are not foolproof.\n\nBadUSB - Modified USB firmware that makes the drive impersonate a keyboard and type malicious commands. Appears as a normal USB drive but can execute any command on your computer.\n\nData Exfiltration - Small USB drives can quickly copy gigabytes of sensitive data. An insider or attacker with brief physical access can steal massive amounts of information.\n\nUSB Drop Attacks - Attackers deliberately leave infected USB drives in parking lots, lobbies, and common areas. Labels like 'Salary Information' or 'Confidential' increase the chance someone will plug them in.\n\nRules:\n1. Never insert a USB drive you found or received unexpectedly\n2. Only use company-approved encrypted USB drives\n3. Scan all removable media before opening files\n4. Report found USB drives to IT security\n5. Use secure file sharing instead of USB whenever possible" },
-        { title: "Safe Data Transfer Practices", description: "Approved methods for moving data securely", type: LessonType.INTERACTIVE, durationMins: 7, order: 2,
-          content: "Preferred Data Transfer Methods (Ranked by Security):\n\n1. Organization's cloud platform (SharePoint, Google Drive, approved services) - Encrypted, logged, access-controlled\n2. Encrypted email attachments - For smaller files within the organization\n3. Secure file transfer protocol (SFTP) - For large files or automated transfers\n4. Encrypted USB drives (organization-approved) - When network transfer is not possible\n\nIf You Must Use USB:\n- Only use encrypted, organization-approved drives\n- Scan the drive with antivirus before and after use\n- Transfer files and safely eject the drive immediately\n- Do not leave USB drives unattended\n- Never use personal USB drives for work data\n- Wipe the drive securely after the transfer is complete\n\nFor Charging Only:\n- Use charge-only USB cables (no data pins)\n- Avoid public USB charging stations (juice jacking risk)\n- Use a USB data blocker dongle if you must charge from unknown ports" }
-      ]
-    },
-    {
-      title: "Mobile Device Security",
-      description: "Secure your smartphones and tablets against modern mobile threats. Covers app security, device configuration, and safe mobile work practices.",
-      category: ModuleCategory.MOBILE, difficulty: Difficulty.INTERMEDIATE, durationMins: 20, order: 9,
-      keyTakeaways: ["Configure device security settings properly", "Identify and avoid malicious mobile apps", "Separate personal and work data on devices", "Respond appropriately to lost or stolen devices"],
-      realExamples: ["Pegasus spyware infected phones of journalists and politicians worldwide", "FluBot banking trojan spread via SMS to millions of Android devices", "App store malware disguised as QR code readers and PDF converters infected 300K devices"],
-      lessons: [
-        { title: "Mobile Threat Landscape", description: "Understanding threats targeting smartphones and tablets", type: LessonType.READING, durationMins: 7, order: 1,
-          content: "Your smartphone contains more personal and work data than most computers. It is always connected, always with you, and increasingly targeted.\n\nMobile Threats:\n\nMalicious Apps - Apps that appear legitimate but contain malware, spyware, or adware. Even official app stores occasionally host malicious apps.\n\nSMS Phishing (Smishing) - Text messages with malicious links. Package delivery scams, bank alerts, and prize notifications are common lures.\n\nRogue WiFi Networks - Fake hotspots that intercept your traffic. 'Free Airport WiFi' or 'Starbucks Guest' may not be what they seem.\n\nDevice Theft - Physical theft gives attackers access to email, banking apps, corporate data, and authentication apps.\n\nOutdated Software - Unpatched devices are vulnerable to known exploits. Manufacturers eventually stop providing updates.\n\nJailbreaking/Rooting - Removing security restrictions makes devices significantly more vulnerable to malware." },
-        { title: "Securing Your Mobile Device", description: "Essential configuration and usage practices", type: LessonType.INTERACTIVE, durationMins: 8, order: 2,
-          content: "Essential Mobile Security Settings:\n\n1. Strong Lock Screen - Use biometrics plus a 6-digit PIN minimum. Avoid pattern locks (easily shoulder surfed).\n\n2. Enable Auto-Updates - Keep operating system and apps updated automatically.\n\n3. Enable Find My Device - iOS: Find My iPhone. Android: Find My Device. Allows remote locate, lock, and wipe.\n\n4. Enable Full-Device Encryption - Most modern phones encrypt by default when a lock screen is set.\n\n5. Review App Permissions - Regularly audit which apps have access to camera, microphone, location, contacts, and storage.\n\nApp Security:\n- Only install from official stores (App Store, Google Play)\n- Check reviews and download counts before installing\n- Remove apps you no longer use\n- Be suspicious of apps requesting excessive permissions\n- Do not sideload apps from unknown sources\n\nIf Your Device Is Lost or Stolen:\n1. Use Find My Device to locate and lock it immediately\n2. Change passwords for email and critical accounts\n3. Notify IT security if it contains work data\n4. Remote wipe if recovery is unlikely\n5. Report to your mobile carrier to disable the SIM" },
-        { title: "BYOD and Mobile Work Security", description: "Safely using personal devices for work", type: LessonType.READING, durationMins: 5, order: 3,
-          content: "Bring Your Own Device (BYOD) Considerations:\n\nSeparate Work and Personal:\n- Use work profiles or containers (Android Work Profile, iOS managed apps)\n- Do not mix personal and work accounts in the same apps\n- Use your organization's approved apps for work communication\n\nConnectivity:\n- Always use VPN when accessing work resources remotely\n- Avoid conducting work on public WiFi without VPN\n- Disable auto-join for WiFi networks\n- Turn off Bluetooth when not in use\n\nData Protection:\n- Do not store sensitive work data locally unless required\n- Use organization-approved cloud storage\n- Enable screen lock timeout (30 seconds or less)\n- Do not screenshot or photograph sensitive work information\n\nLeaving the Organization:\n- IT must be able to remove work data from your personal device\n- Understand your organization's BYOD policy before enrolling\n- Cooperate with IT during offboarding for data removal" }
-      ]
-    },
-    {
-      title: "Remote Work Security",
-      description: "Maintain strong security practices while working from home or public locations. Covers VPN usage, home network security, and physical workspace protection.",
-      category: ModuleCategory.NETWORK, difficulty: Difficulty.INTERMEDIATE, durationMins: 20, order: 10,
-      keyTakeaways: ["Secure your home network and WiFi", "Use VPN for all work connections", "Maintain physical security of your workspace", "Follow clean desk policy at home"],
-      realExamples: ["Remote work during COVID-19 led to a 600% increase in cyberattacks", "A remote worker's compromised home router led to a corporate breach", "Video call bombing disrupted sensitive business meetings"],
-      lessons: [
-        { title: "Home Network Security", description: "Securing your home internet for work use", type: LessonType.READING, durationMins: 7, order: 1,
-          content: "Your home network is now an extension of your corporate network. Securing it is essential.\n\nWiFi Security:\n1. Change default router admin credentials immediately\n2. Use WPA3 or WPA2 encryption (never WEP)\n3. Create a strong WiFi password (16+ characters)\n4. Disable WPS (WiFi Protected Setup) - it has known vulnerabilities\n5. Consider a separate network for work devices\n\nRouter Configuration:\n- Update router firmware regularly\n- Disable remote management\n- Change default SSID (network name)\n- Enable the router's built-in firewall\n- Disable UPnP unless specifically needed\n\nNetwork Hygiene:\n- Keep IoT devices (smart speakers, cameras, TVs) on a separate network\n- Regularly check connected devices and remove unknown ones\n- Consider using DNS-level filtering for additional protection" },
-        { title: "VPN and Secure Connections", description: "Using VPN and encrypted connections for remote work", type: LessonType.INTERACTIVE, durationMins: 7, order: 2,
-          content: "Always Use VPN for Work:\n\nA VPN (Virtual Private Network) creates an encrypted tunnel between your device and your organization's network. All work traffic should flow through the VPN.\n\nVPN Best Practices:\n- Connect to VPN before accessing any work resources\n- Use only your organization's approved VPN client\n- Do not use personal VPN services for work\n- If VPN disconnects, stop work activity until reconnected\n- Report VPN connection issues to IT support\n\nVideo Conferencing Security:\n- Use organization-approved platforms only\n- Enable waiting rooms and meeting passwords\n- Do not share meeting links publicly\n- Lock meetings after all participants join\n- Be aware of what is visible in your camera background\n- Use virtual backgrounds when in public spaces\n\nFile Sharing:\n- Use organization-approved platforms only\n- Do not email sensitive documents to personal accounts\n- Do not use personal cloud storage for work files" },
-        { title: "Physical Workspace Security at Home", description: "Protecting your physical remote work environment", type: LessonType.READING, durationMins: 6, order: 3,
-          content: "Physical security applies at home too.\n\nWorkspace Setup:\n- Position screen away from windows and common areas\n- Use a privacy screen filter on your monitor\n- Lock your computer when stepping away (Win+L or Cmd+Ctrl+Q)\n- Close and lock your laptop at the end of each workday\n\nDocument Security:\n- Shred sensitive documents - do not put them in regular recycling\n- Do not leave printed documents unattended\n- Store work documents in a locked drawer or cabinet\n\nDevice Security:\n- Keep work devices in a secure location when not in use\n- Do not let family members use work devices\n- Do not connect personal devices to work computers\n- Keep work devices physically separate from personal devices\n\nConversation Security:\n- Be aware of who can hear your calls\n- Use headphones for sensitive discussions\n- Do not discuss sensitive work topics in public spaces\n- Mute when not speaking in video calls" }
-      ]
-    },
-    {
-      title: "Data Classification & Handling",
-      description: "Learn to properly classify, handle, store, and dispose of sensitive information according to organizational policies and regulatory requirements.",
-      category: ModuleCategory.DATA_PROTECTION, difficulty: Difficulty.INTERMEDIATE, durationMins: 25, order: 11,
-      keyTakeaways: ["Classify data into appropriate sensitivity levels", "Apply correct handling procedures per classification", "Understand regulatory requirements like GDPR and HIPAA", "Properly dispose of sensitive information"],
-      realExamples: ["Equifax breach exposed 147M records due to poor data handling practices", "GDPR fines exceeded 4 billion euros since enforcement began", "Capital One breach of 100M records from misconfigured cloud storage"],
-      lessons: [
-        { title: "Data Classification Framework", description: "Understanding sensitivity levels and classification criteria", type: LessonType.READING, durationMins: 8, order: 1,
-          content: "Data classification organizes information by sensitivity level to determine appropriate protection measures.\n\nClassification Levels:\n\n1. Public - Information approved for external sharing. Annual reports, marketing materials, press releases. No special handling required.\n\n2. Internal - For internal use only. Meeting notes, internal policies, organizational charts. Should not be shared externally without approval.\n\n3. Confidential - Sensitive business information. Financial data, strategic plans, employee records, customer contracts. Access restricted to authorized personnel with a business need.\n\n4. Restricted - Highest sensitivity. Trade secrets, encryption keys, authentication credentials, regulated personal data (health records, financial account numbers). Strictest access controls and encryption required.\n\nClassification Criteria:\n- What would happen if this data was leaked?\n- Is this data subject to regulations (GDPR, HIPAA, PCI-DSS)?\n- Does this data contain personally identifiable information (PII)?\n- What is the financial impact of unauthorized disclosure?" },
-        { title: "Handling Sensitive Data", description: "Proper procedures for working with classified information", type: LessonType.INTERACTIVE, durationMins: 10, order: 2,
-          content: "Handling Requirements by Classification:\n\nConfidential Data:\n- Encrypt at rest and in transit\n- Share only through approved channels\n- Apply access controls (need-to-know basis)\n- Label documents clearly with classification markings\n- Use secure printing (pull printing)\n- Lock screens when stepping away\n\nRestricted Data:\n- All confidential requirements plus additional controls\n- Multi-factor authentication required for access\n- Encrypted storage with key management\n- Audit logging of all access\n- No storage on personal devices\n- Approval required for each access grant\n\nEmail and Messaging:\n- Check classification before sending\n- Never send restricted data via unencrypted email\n- Verify recipients before clicking send\n- Use approved encrypted channels for confidential data\n- Be cautious of auto-complete filling in wrong recipients\n\nCloud Storage:\n- Use only organization-approved cloud services\n- Never upload restricted data to personal cloud accounts\n- Verify sharing permissions and link expiration settings" },
-        { title: "Data Disposal and Retention", description: "Securely destroying data when no longer needed", type: LessonType.READING, durationMins: 7, order: 3,
-          content: "Improper data disposal is a leading cause of data breaches. Deleted does not mean destroyed.\n\nDigital Data Disposal:\n- Standard file deletion only removes the directory entry, data remains recoverable\n- Use secure deletion tools that overwrite data multiple times\n- For SSDs, use manufacturer-provided secure erase commands\n- Encrypt drives before disposal so even recovered data is unreadable\n- Destroy drives physically for restricted data (degaussing, shredding)\n\nPhysical Document Disposal:\n- Cross-cut shred all confidential and restricted documents\n- Use locked shredding bins for collection\n- Never place sensitive documents in regular recycling\n- Monitor shredding service providers\n\nRetention Policies:\n- Retain data only as long as required by policy and regulations\n- Review stored data regularly and purge expired items\n- Document retention periods for different data types\n- Automated deletion policies reduce human error\n\nRegulatory Requirements:\n- GDPR: Right to erasure, data minimization, purpose limitation\n- HIPAA: Specific retention and destruction requirements for health data\n- PCI-DSS: Do not store sensitive authentication data after authorization" }
-      ]
-    },
-    {
-      title: "Incident Reporting & Response",
-      description: "Know how to identify, report, and respond to security incidents. Quick reporting minimizes damage and helps protect the entire organization.",
-      category: ModuleCategory.COMPLIANCE, difficulty: Difficulty.BEGINNER, durationMins: 15, order: 12,
-      keyTakeaways: ["Recognize what constitutes a security incident", "Follow proper reporting procedures", "Understand your role in incident response", "Preserve evidence and cooperate with responders"],
-      realExamples: ["Target breach was detected by security tools but alerts were ignored for weeks", "SolarWinds supply chain attack went undetected for 9 months", "Early reporting at Maersk limited NotPetya damage despite losing entire network"],
-      lessons: [
-        { title: "Recognizing Security Incidents", description: "What counts as a security incident and warning signs", type: LessonType.READING, durationMins: 5, order: 1,
-          content: "A security incident is any event that potentially compromises the confidentiality, integrity, or availability of information or systems.\n\nCommon Incidents:\n- Phishing emails received or clicked\n- Malware detected on devices\n- Unauthorized access to accounts or systems\n- Lost or stolen devices containing work data\n- Accidental data exposure (wrong email recipient, public file share)\n- Suspicious system behavior (unexpected software, unusual network activity)\n- Physical security breaches (unauthorized access to secure areas)\n- Social engineering attempts (suspicious phone calls, impersonation)\n\nWarning Signs:\n- Security software alerts or disabled antivirus\n- Unexpected password reset emails\n- Accounts locked out without your action\n- Colleagues receiving suspicious emails that appear to come from you\n- Unexpected system changes or new programs installed\n- Files that are encrypted, modified, or missing\n\nWhen in doubt, REPORT IT. False alarms are far better than unreported incidents." },
-        { title: "How to Report Security Incidents", description: "Step-by-step reporting procedures", type: LessonType.INTERACTIVE, durationMins: 5, order: 2,
-          content: "Immediate Steps:\n1. Stop and assess - Do not continue the activity that triggered the incident\n2. Do not try to fix it yourself - You may destroy evidence or worsen the situation\n3. Report immediately - Time is critical in incident response\n\nReporting Channels (in order of preference):\n1. IT Security hotline or dedicated incident reporting email\n2. Your direct manager plus IT department\n3. Help desk as a last resort\n\nInformation to Provide:\n- Date and time of the incident\n- What happened (what you observed)\n- What actions you took\n- Systems or data affected\n- Whether you clicked any links or opened attachments\n- Any other people involved or aware\n\nPreserve Evidence:\n- Do not delete emails, files, or logs related to the incident\n- Take screenshots if possible\n- Note any error messages exactly as displayed\n- Keep the device powered on (unless instructed otherwise)\n- Do not discuss the incident on social media\n\nAfter Reporting:\n- Follow instructions from the incident response team\n- Remain available for follow-up questions\n- Change passwords if instructed\n- Do not discuss details outside the response team" },
-        { title: "Your Role in Incident Response", description: "Understanding the incident lifecycle and your responsibilities", type: LessonType.READING, durationMins: 5, order: 3,
-          content: "The Incident Response Lifecycle:\n\n1. Detection and Reporting - This is YOUR primary role. Quick detection limits damage.\n\n2. Containment - The IR team isolates affected systems to prevent spread. You may be asked to disconnect from the network.\n\n3. Investigation - The IR team determines scope, cause, and impact. Cooperate fully and provide accurate information.\n\n4. Eradication - Remove the threat from all affected systems.\n\n5. Recovery - Restore systems and data from clean backups. Verify integrity before returning to normal operations.\n\n6. Lessons Learned - Review what happened and improve defenses. Your feedback is valuable.\n\nYour Responsibilities:\n- Report promptly and honestly\n- Follow instructions from the IR team\n- Do not attempt unauthorized investigation\n- Maintain confidentiality about the incident\n- Participate in post-incident reviews\n- Apply lessons learned to prevent future incidents\n\nOrganizational Culture: A strong security culture rewards reporting, not punishes it. Even if you made a mistake, reporting quickly limits damage and is always the right action." }
-      ]
-    },
-    {
-      title: "Physical Security & Tailgating Prevention",
-      description: "Protect physical assets and prevent unauthorized access to facilities. Covers access control, clean desk policy, and visitor management.",
-      category: ModuleCategory.SOCIAL_ENGINEERING, difficulty: Difficulty.BEGINNER, durationMins: 15, order: 13,
-      keyTakeaways: ["Never hold doors open for unverified individuals", "Follow clean desk policies consistently", "Challenge unknown visitors politely", "Report physical security concerns immediately"],
-      realExamples: ["Pentesters gained access to a bank vault room by tailgating employees", "A journalist accessed secure government areas by following staff through doors", "Stolen laptops from offices account for significant data breaches annually"],
-      lessons: [
-        { title: "Facility Access Control", description: "Preventing unauthorized physical access", type: LessonType.READING, durationMins: 5, order: 1,
-          content: "Physical security is the foundation of information security. If an attacker can physically access your systems, most digital protections become irrelevant.\n\nTailgating Prevention:\n- Never hold doors open for people you do not recognize\n- Politely ask unknown individuals to badge in separately\n- Report doors that do not close or lock properly\n- Use mantrap doors in high-security areas\n\nBadge Security:\n- Always wear your badge visibly\n- Never lend your badge to anyone\n- Report lost or stolen badges immediately\n- Do not use another person's badge\n- Challenge individuals without visible badges\n\nVisitor Management:\n- All visitors must sign in at reception\n- Visitors must be escorted at all times in secure areas\n- Verify visitor identity and appointment\n- Ensure visitors sign out when leaving\n\nHow to Challenge Someone Politely:\n- 'Hi, can I help you find someone?'\n- 'I do not think we have met. Who are you here to see?'\n- 'Let me walk you to reception so they can help you.'" },
-        { title: "Clean Desk and Secure Workspace", description: "Maintaining a physically secure work environment", type: LessonType.INTERACTIVE, durationMins: 5, order: 2,
-          content: "Clean Desk Policy:\n\nBefore Leaving Your Desk:\n- Lock your computer (Win+L or Cmd+Ctrl+Q)\n- Put sensitive documents in locked drawers\n- Clear whiteboards of sensitive information\n- Remove sticky notes with passwords or sensitive information\n- Secure portable devices\n\nEnd of Day:\n- All sensitive documents locked away\n- Computer shut down or locked\n- Desk cleared of sensitive materials\n- Portable devices taken with you or locked in a cabinet\n\nPrinting Security:\n- Use pull printing (badge to release at printer)\n- Collect printouts immediately\n- Shred documents you no longer need\n- Never leave documents in printer trays\n\nMeeting Room Security:\n- Clear whiteboards after meetings\n- Collect all documents and materials\n- Check the room after video conferences\n- Ensure screens are not visible from windows or corridors" }
-      ]
-    },
-    {
-      title: "Public WiFi & Network Safety",
-      description: "Understand the dangers of public WiFi networks and learn to protect your data when connecting outside the office.",
-      category: ModuleCategory.NETWORK, difficulty: Difficulty.BEGINNER, durationMins: 15, order: 14,
-      keyTakeaways: ["Never access sensitive accounts on public WiFi without VPN", "Identify rogue WiFi networks", "Use mobile hotspot as a safer alternative", "Understand man-in-the-middle attacks"],
-      realExamples: ["Researchers at Black Hat created fake WiFi hotspots and harvested credentials from thousands of attendees", "Evil twin attacks at airports intercepted business email credentials", "A major hotel chain WiFi was compromised to spy on executive guests"],
-      lessons: [
-        { title: "Public WiFi Threats", description: "Understanding why public WiFi is dangerous", type: LessonType.READING, durationMins: 5, order: 1,
-          content: "Public WiFi networks at airports, hotels, cafes, and conferences are inherently insecure. Anyone on the same network can potentially intercept your traffic.\n\nCommon Attacks:\n\nEvil Twin - An attacker creates a WiFi network with the same name as a legitimate one. Your device connects to the fake network, routing all traffic through the attacker.\n\nMan-in-the-Middle - The attacker intercepts communication between you and the website or service. They can read, modify, or inject content into your traffic.\n\nPacket Sniffing - On unencrypted networks, attackers can capture all data transmitted including credentials, emails, and documents.\n\nSession Hijacking - Attackers steal your authentication cookies to access your accounts without needing your password.\n\nRogue Hotspots - Fake networks named 'Free WiFi' or mimicking nearby businesses to lure connections.\n\nThe Rule: Assume all public WiFi is compromised. Act accordingly." },
-        { title: "Staying Safe on Public Networks", description: "Practical protection strategies for public connectivity", type: LessonType.INTERACTIVE, durationMins: 5, order: 2,
-          content: "Protection Strategies (Ranked by Effectiveness):\n\n1. Use Your Mobile Hotspot (Best) - Your cellular data connection is encrypted and private. Use your phone as a hotspot for your laptop.\n\n2. Always Use VPN - Encrypts all traffic between your device and the VPN server. Even on compromised networks, your data remains protected.\n\n3. Verify HTTPS - Only visit sites with HTTPS when on public WiFi. Never enter credentials on HTTP sites.\n\n4. Forget Networks After Use - Disable auto-join. Remove public networks from your saved networks list.\n\n5. Disable Sharing - Turn off file sharing, AirDrop, and printer sharing when on public networks.\n\nDo Not:\n- Access banking or financial accounts on public WiFi\n- Log into work accounts without VPN\n- Make purchases or enter credit card details\n- Access sensitive company data or email\n- Leave WiFi and Bluetooth on when not in use\n\nAdditional Tips:\n- Use cellular data for sensitive transactions\n- Verify the exact network name with staff before connecting\n- Use DNS-over-HTTPS for additional protection\n- Consider a portable travel router with built-in VPN" },
-        { title: "Securing Your Connections Everywhere", description: "Comprehensive network safety beyond WiFi", type: LessonType.READING, durationMins: 5, order: 3,
-          content: "Network Security Beyond WiFi:\n\nBluetooth Security:\n- Disable Bluetooth when not actively using it\n- Do not accept pairing requests from unknown devices\n- Use Bluetooth in non-discoverable mode\n- Be cautious of Bluetooth in crowded public spaces\n\nCharging Security:\n- Avoid public USB charging stations (juice jacking risk)\n- Use your own charger and wall outlet\n- Carry a portable power bank\n- Use data-blocking USB cables if you must use public ports\n\nTravel Security:\n- Use VPN on all hotel WiFi\n- Do not use hotel business center computers for sensitive tasks\n- Keep devices physically secure in hotel safes\n- Be aware of shoulder surfing in airports and lounges\n- Use privacy screen filters on laptops and phones\n\nConference and Event Security:\n- Be cautious of shared conference WiFi\n- Do not connect to unnamed or suspicious networks\n- Disable wireless features you do not need\n- Be aware that attackers target industry events" }
-      ]
-    },
-    {
-      title: "Insider Threat Awareness",
-      description: "Recognize and respond to insider threats from employees, contractors, or partners who may intentionally or accidentally compromise security.",
-      category: ModuleCategory.SOCIAL_ENGINEERING, difficulty: Difficulty.ADVANCED, durationMins: 25, order: 15,
-      keyTakeaways: ["Recognize behavioral indicators of insider threats", "Understand both malicious and negligent insider risks", "Report concerns through appropriate channels", "Follow least privilege and need-to-know principles"],
-      realExamples: ["Edward Snowden exfiltrated classified NSA documents as a contractor", "Tesla employee sabotaged manufacturing systems after being denied a promotion", "A disgruntled IT admin deleted critical databases before leaving the company"],
-      lessons: [
-        { title: "Understanding Insider Threats", description: "Types of insider threats and their motivations", type: LessonType.READING, durationMins: 8, order: 1,
-          content: "An insider threat is a security risk originating from within the organization. Insiders have legitimate access, making their actions harder to detect.\n\nTypes of Insider Threats:\n\n1. Malicious Insiders - Deliberately steal data, sabotage systems, or aid external attackers. Motivated by financial gain, revenge, ideology, or coercion.\n\n2. Negligent Insiders - Cause breaches through carelessness. Falling for phishing, mishandling data, ignoring security policies. This is the most common type.\n\n3. Compromised Insiders - Their credentials or devices are taken over by external attackers through phishing, malware, or social engineering.\n\nWhy Insider Threats Are Dangerous:\n- Insiders already have authorized access\n- They know where sensitive data is stored\n- They understand security controls and how to bypass them\n- Their activities may appear normal\n- Detection can take months or years\n\nStatistics:\n- 60% of data breaches involve insiders\n- Average insider incident costs $15.4 million\n- Mean time to detect an insider threat is 85 days" },
-        { title: "Recognizing Warning Signs", description: "Behavioral and technical indicators of insider threats", type: LessonType.READING, durationMins: 10, order: 2,
-          content: "Behavioral Indicators:\n- Unexplained changes in work habits or attitude\n- Working unusual hours without clear reason\n- Expressing dissatisfaction or grievances repeatedly\n- Financial difficulties or unexplained wealth\n- Resistance to security policies or access restrictions\n- Attempting to access systems or data outside their role\n- Frequent policy violations\n\nTechnical Indicators:\n- Downloading large amounts of data, especially before leaving\n- Accessing systems at unusual times\n- Using unauthorized storage devices or cloud services\n- Attempting to bypass security controls\n- Installing unauthorized software\n- Sending sensitive data to personal email accounts\n- Multiple failed access attempts to restricted systems\n\nImportant Considerations:\n- No single indicator confirms a threat. Look for patterns.\n- Cultural sensitivity matters. Do not profile based on background.\n- Some behaviors have innocent explanations.\n- Report concerns through proper channels. Do not investigate yourself.\n- Early intervention and support can prevent incidents." },
-        { title: "Preventing and Reporting Insider Threats", description: "Organizational and personal prevention strategies", type: LessonType.READING, durationMins: 7, order: 3,
-          content: "Personal Prevention:\n- Follow least privilege. Only access what you need for your role.\n- Protect your credentials. Never share passwords or badges.\n- Report suspicious behavior through proper channels.\n- Support colleagues who may be struggling.\n- Follow all security policies consistently.\n\nReporting:\n- Use your organization's anonymous reporting hotline\n- Speak to your manager or HR confidentially\n- Contact the security team directly if urgent\n- Document specific observations (dates, times, actions)\n- Do not confront the individual directly\n- Do not discuss your concerns with other colleagues\n\nOrganizational Defenses:\n- Role-based access control with regular reviews\n- User activity monitoring on sensitive systems\n- Data loss prevention (DLP) tools\n- Mandatory security training and policy acknowledgment\n- Exit procedures including access revocation\n- Positive workplace culture that reduces motivation for malicious acts\n- Employee assistance programs for those facing difficulties\n\nRemember: Reporting is not about distrust. It is about protecting everyone in the organization including the person whose behavior concerns you." }
-      ]
-    },
-  ];
+interface LessonSeed {
+  title: string;
+  description: string;
+  type: LessonType;
+  durationMins: number;
+  order: number;
+  content: string;
+}
 
-  // Create modules and lessons in DB
-  const createdModules = [];
-  for (const mod of modulesData) {
-    const module = await prisma.module.create({
+interface QuizSeed {
+  title: string;
+  description: string;
+  passingScore: number;
+  timeLimitMins: number;
+  questions: QuestionSeed[];
+}
+
+interface QuestionSeed {
+  text: string;
+  explanation: string;
+  order: number;
+  options: { text: string; isCorrect: boolean; order: number }[];
+}
+
+// =============================================================================
+// MODULE 1: PHISHING RECOGNITION
+// =============================================================================
+
+const module1: ModuleSeed = {
+  title: "Phishing Recognition Fundamentals",
+  description:
+    "Learn to identify phishing emails, messages, and websites. Understand the tactics attackers use and build the instincts to spot deception before you click.",
+  category: "PHISHING",
+  difficulty: "BEGINNER",
+  durationMins: 20,
+  order: 1,
+  keyTakeaways: [
+    "Verify sender email addresses — display names can be spoofed",
+    "Hover over links before clicking to check the real URL",
+    "Legitimate organizations never ask for passwords via email",
+    "Urgency and threats are classic manipulation tactics",
+    "When in doubt, contact the supposed sender through a separate channel",
+  ],
+  realExamples: [
+    "In 2020, Twitter employees received spear-phishing calls that led to the compromise of 130 high-profile accounts including Barack Obama and Elon Musk.",
+    "The 2016 DNC email breach started with a single phishing email disguised as a Google security alert asking a staffer to reset their password.",
+    "In 2023, MGM Resorts lost over $100 million after an attacker social-engineered the IT help desk using information found on LinkedIn.",
+  ],
+  lessons: [
+    {
+      title: "What is phishing and why it works",
+      description: "Understanding the psychology behind phishing attacks",
+      type: "READING",
+      durationMins: 5,
+      order: 1,
+      content: `# What is phishing?
+
+Phishing is a social engineering attack where criminals impersonate trusted entities to trick you into revealing sensitive information, clicking malicious links, or downloading malware.
+
+## Why phishing works
+
+Phishing exploits fundamental human psychology, not technical vulnerabilities:
+
+**Authority**: Emails that appear to come from your CEO, IT department, or a bank carry implicit trust. Attackers exploit this by spoofing sender names and using official-looking templates.
+
+**Urgency**: "Your account will be locked in 24 hours" or "Immediate action required" — these phrases short-circuit your critical thinking. Attackers want you to act before you think.
+
+**Fear**: "Suspicious login detected" or "Your payment was declined" triggers anxiety. When you're worried, you're less likely to scrutinize the email.
+
+**Curiosity**: "You have a package waiting" or "Someone shared a document with you" — these appeal to your natural desire to know more.
+
+**Helpfulness**: "Can you do me a quick favor?" from what appears to be a colleague. People naturally want to help, especially when the request seems easy.
+
+## The scale of the problem
+
+Phishing is the most common initial attack vector in data breaches. Over 80% of reported security incidents involve phishing. The average cost of a phishing-driven breach exceeds $4.7 million.
+
+The good news: phishing is also the most preventable attack. Once you learn to recognize the patterns, the vast majority of phishing attempts become obvious.`,
+    },
+    {
+      title: "Anatomy of a phishing email",
+      description: "Breaking down the red flags in phishing messages",
+      type: "READING",
+      durationMins: 7,
+      order: 2,
+      content: `# Anatomy of a phishing email
+
+Every phishing email contains detectable red flags. Here's how to systematically evaluate any suspicious message.
+
+## Red flag 1: Sender address mismatch
+
+The display name might say "Microsoft Support" but the actual email address is support@m1crosoft-security.com. Always check the full email address, not just the name.
+
+**How to check**: Click or hover on the sender name to reveal the full address. Look for misspellings, extra characters, or unfamiliar domains.
+
+Common tricks:
+- Replacing letters with numbers: amaz0n.com, g00gle.com
+- Adding words: microsoft-security.com, apple-support-center.com
+- Using subdomains: login.microsoft.com.attacker.com (the real domain here is attacker.com)
+
+## Red flag 2: Suspicious links
+
+Hover over any link WITHOUT clicking it. Your email client will show you the actual URL.
+
+What to look for:
+- Does the URL domain match the supposed sender? An email from "PayPal" should link to paypal.com, not paypa1-verify.com
+- Is HTTPS present? While not a guarantee of safety, legitimate sites use HTTPS
+- Are there excessive subdomains or long random strings?
+
+## Red flag 3: Urgency and threats
+
+"Your account will be suspended", "Verify within 24 hours", "Unauthorized access detected" — legitimate companies rarely threaten immediate consequences via email. They give you time and multiple ways to respond.
+
+## Red flag 4: Generic greetings
+
+"Dear Customer", "Dear User", "Dear Account Holder" — if a company has your account, they know your name. Generic greetings suggest the email was sent in bulk.
+
+## Red flag 5: Requests for sensitive information
+
+No legitimate organization will ask you to send your password, Social Security number, or credit card number via email. Ever. If you receive such a request, it's phishing.
+
+## Red flag 6: Attachments you didn't expect
+
+Unexpected attachments, especially .zip, .exe, .docm, or .js files, are a major risk. Even PDFs can contain malicious links. Never open attachments from unknown senders.
+
+## What to do when you spot a phishing email
+
+1. **Do not click** any links or download any attachments
+2. **Report it** using your organization's phishing report button or forward it to your security team
+3. **Delete it** from your inbox
+4. If you already clicked, **change your password immediately** and notify IT`,
+    },
+    {
+      title: "Beyond email: other phishing channels",
+      description:
+        "Recognizing phishing via SMS, voice calls, QR codes, and social media",
+      type: "READING",
+      durationMins: 5,
+      order: 3,
+      content: `# Beyond email: other phishing channels
+
+Phishing isn't limited to email. Attackers use every communication channel available.
+
+## Smishing (SMS phishing)
+
+Text messages claiming to be from banks, delivery services, or government agencies. Examples:
+- "Your package delivery failed. Reschedule here: [link]"
+- "Unusual activity on your bank account. Verify: [link]"
+- "Your IRS refund of $3,847 is ready. Claim now: [link]"
+
+**Defense**: Never click links in unexpected text messages. Go directly to the company's app or website instead.
+
+## Vishing (Voice phishing)
+
+Phone calls from people claiming to be tech support, your bank, or law enforcement. They may spoof caller ID to appear legitimate.
+
+Common scripts:
+- "This is Microsoft support. We detected a virus on your computer."
+- "This is your bank's fraud department. We need to verify your account."
+- "This is the IRS. You owe back taxes and must pay immediately."
+
+**Defense**: Hang up and call the organization back using the number on their official website or your card.
+
+## QR code phishing (Quishing)
+
+Malicious QR codes placed over legitimate ones in public spaces, or sent in emails/documents. When scanned, they redirect to phishing sites.
+
+Common locations: parking meters, restaurant menus, conference materials, printed mail.
+
+**Defense**: Preview the URL before opening it. If your phone's camera shows the URL, check the domain before proceeding.
+
+## Social media phishing
+
+Fake profiles, direct messages with malicious links, or posts promising prizes and giveaways.
+
+**Defense**: Be skeptical of unsolicited messages on any platform, even from accounts that appear to belong to people you know.`,
+    },
+    {
+      title: "Phishing simulation exercise",
+      description: "Practice identifying phishing in realistic scenarios",
+      type: "INTERACTIVE",
+      durationMins: 3,
+      order: 4,
+      content: `# Practice: Can you spot the phishing?
+
+Review each email scenario below and identify all the red flags.
+
+---
+
+## Scenario 1
+
+**From**: IT Support <it.support@yourcompany-helpdesk.net>
+**Subject**: Urgent: Password Reset Required
+
+"Dear Employee, your email password will expire today. Click the link below to reset it immediately or you will lose access to all company systems. [Reset Password Now]"
+
+**Red flags to identify**:
+- External domain (yourcompany-helpdesk.net instead of your actual company domain)
+- Generic greeting ("Dear Employee")
+- Extreme urgency ("will expire today", "lose access to all company systems")
+- No personalization (no name, no ticket number)
+
+---
+
+## Scenario 2
+
+**From**: Jennifer Martinez, CEO <j.martinez@company.com>
+**Subject**: Quick favor needed
+
+"Hi, are you available right now? I need you to purchase some gift cards for a client appreciation event. I'll reimburse you. Please keep this quiet as it's a surprise for the team. Can you get 5x $200 Amazon gift cards and send me the codes?"
+
+**Red flags to identify**:
+- CEO wouldn't typically email a random employee for gift card purchases
+- Request for secrecy ("keep this quiet")
+- Gift cards are a hallmark of scams — they're untraceable
+- Urgency and unusual request
+- No use of normal purchasing channels
+
+---
+
+## Scenario 3
+
+**From**: DocuSign <noreply@docusign.com>
+**Subject**: You have a new document to review and sign
+
+"John Smith shared a document with you via DocuSign. Please review and sign: Quarterly Report Q3 2024. [Review Document]"
+
+**Analysis**: This one is harder. The sender domain is legitimate (docusign.com), uses your name, and references a plausible document. To evaluate:
+- Were you expecting this document?
+- Can you verify with John Smith through another channel?
+- Hover over the "Review Document" link — does it actually go to docusign.com?
+
+Not every suspicious email is phishing, but verification takes 30 seconds and could save your organization millions.`,
+    },
+  ],
+  quiz: {
+    title: "Phishing Recognition Assessment",
+    description:
+      "Test your ability to identify phishing attacks across different channels and scenarios.",
+    passingScore: 70,
+    timeLimitMins: 10,
+    questions: [
+      {
+        text: "You receive an email from 'support@amaz0n-security.com' about suspicious activity on your account. What is the most important red flag?",
+        explanation:
+          "The domain 'amaz0n-security.com' uses a zero instead of the letter 'o' and adds '-security' — this is not Amazon's real domain (amazon.com). Always check the actual sender email address.",
+        order: 1,
+        options: [
+          {
+            text: "The email mentions suspicious activity",
+            isCorrect: false,
+            order: 1,
+          },
+          {
+            text: "The sender domain is misspelled and not amazon.com",
+            isCorrect: true,
+            order: 2,
+          },
+          {
+            text: "The email was received outside business hours",
+            isCorrect: false,
+            order: 3,
+          },
+          {
+            text: "The email contains a link",
+            isCorrect: false,
+            order: 4,
+          },
+        ],
+      },
+      {
+        text: "Your CEO sends you an urgent email asking you to buy gift cards and send the codes. What should you do?",
+        explanation:
+          "Gift card requests via email are a classic business email compromise (BEC) scam. Legitimate executives never ask employees to buy gift cards and send codes. Always verify through a separate channel.",
+        order: 2,
+        options: [
+          {
+            text: "Buy the gift cards quickly since the CEO asked",
+            isCorrect: false,
+            order: 1,
+          },
+          {
+            text: "Reply to the email asking for more details",
+            isCorrect: false,
+            order: 2,
+          },
+          {
+            text: "Verify the request by calling or messaging the CEO directly through a separate channel",
+            isCorrect: true,
+            order: 3,
+          },
+          {
+            text: "Forward the email to your colleagues for their opinion",
+            isCorrect: false,
+            order: 4,
+          },
+        ],
+      },
+      {
+        text: "What is 'smishing'?",
+        explanation:
+          "Smishing is phishing conducted via SMS (text messages). Attackers send texts impersonating banks, delivery services, or government agencies with links to malicious websites.",
+        order: 3,
+        options: [
+          {
+            text: "Phishing conducted through social media platforms",
+            isCorrect: false,
+            order: 1,
+          },
+          {
+            text: "Phishing conducted through SMS text messages",
+            isCorrect: true,
+            order: 2,
+          },
+          {
+            text: "Phishing that uses fake QR codes",
+            isCorrect: false,
+            order: 3,
+          },
+          {
+            text: "Phishing conducted through phone calls",
+            isCorrect: false,
+            order: 4,
+          },
+        ],
+      },
+      {
+        text: "You hover over a link in an email from 'PayPal' and see the URL is https://paypal.account-verify.com/login. Is this legitimate?",
+        explanation:
+          "The actual domain is account-verify.com, not paypal.com. 'paypal' is just a subdomain of the attacker's domain. Always look at the root domain (the part right before .com/.org/.net).",
+        order: 4,
+        options: [
+          {
+            text: "Yes, it contains 'paypal' and uses HTTPS",
+            isCorrect: false,
+            order: 1,
+          },
+          {
+            text: "No, the real domain is account-verify.com, not paypal.com",
+            isCorrect: true,
+            order: 2,
+          },
+          {
+            text: "Yes, any URL with HTTPS is safe",
+            isCorrect: false,
+            order: 3,
+          },
+          {
+            text: "It depends on whether you have a PayPal account",
+            isCorrect: false,
+            order: 4,
+          },
+        ],
+      },
+      {
+        text: "Which of the following is the BEST action to take when you receive a suspicious email?",
+        explanation:
+          "The correct action is to report the email using your organization's phishing report tool, then delete it. Never reply to, forward, or click anything in a suspected phishing email.",
+        order: 5,
+        options: [
+          {
+            text: "Reply asking the sender to verify their identity",
+            isCorrect: false,
+            order: 1,
+          },
+          {
+            text: "Report it using the phishing report button and delete it",
+            isCorrect: true,
+            order: 2,
+          },
+          {
+            text: "Forward it to all your colleagues as a warning",
+            isCorrect: false,
+            order: 3,
+          },
+          {
+            text: "Open any attachments in a sandbox to investigate",
+            isCorrect: false,
+            order: 4,
+          },
+        ],
+      },
+      {
+        text: "What psychological tactic do phishing emails most commonly exploit?",
+        explanation:
+          "While phishing emails use many tactics, urgency is the most prevalent. Phrases like 'act now', 'expires today', and 'immediate action required' are designed to make you act before you think critically.",
+        order: 6,
+        options: [
+          {
+            text: "Humor and entertainment",
+            isCorrect: false,
+            order: 1,
+          },
+          {
+            text: "Urgency and time pressure",
+            isCorrect: true,
+            order: 2,
+          },
+          {
+            text: "Technical complexity",
+            isCorrect: false,
+            order: 3,
+          },
+          {
+            text: "Long, detailed explanations",
+            isCorrect: false,
+            order: 4,
+          },
+        ],
+      },
+    ],
+  },
+};
+
+// =============================================================================
+// MODULE 2: PASSWORD SECURITY
+// =============================================================================
+
+const module2: ModuleSeed = {
+  title: "Password Security & Authentication",
+  description:
+    "Master the principles of strong authentication. Learn to create secure passwords, use password managers effectively, and understand multi-factor authentication.",
+  category: "PASSWORDS",
+  difficulty: "BEGINNER",
+  durationMins: 15,
+  order: 2,
+  keyTakeaways: [
+    "Use a unique password for every account — never reuse",
+    "Use a password manager to generate and store strong passwords",
+    "Enable multi-factor authentication (MFA) on all critical accounts",
+    "Passphrases (4+ random words) are stronger and easier to remember than complex short passwords",
+    "Never share passwords via email, chat, or phone",
+  ],
+  realExamples: [
+    "The Colonial Pipeline ransomware attack in 2021 began with a single compromised VPN password that had been reused from a previous breach.",
+    "The Dropbox breach of 2012 exposed 68 million user credentials because an employee reused their LinkedIn password at work.",
+    "In 2024, the Snowflake customer data breaches (affecting AT&T, Ticketmaster, and others) succeeded because victim accounts lacked multi-factor authentication.",
+  ],
+  lessons: [
+    {
+      title: "Why passwords fail",
+      description: "Understanding how attackers crack and steal passwords",
+      type: "READING",
+      durationMins: 4,
+      order: 1,
+      content: `# Why passwords fail
+
+## How attackers get your passwords
+
+**Credential stuffing**: Attackers take email/password pairs leaked from one breach and try them on other services. If you reuse your Netflix password on your work email, a Netflix breach gives attackers your work access.
+
+**Brute force attacks**: Automated tools try millions of combinations per second. A 6-character password with only lowercase letters has about 309 million combinations — crackable in seconds. An 8-character password with mixed case, numbers, and symbols has 6 quadrillion combinations — but modern GPUs can still crack it in hours.
+
+**Dictionary attacks**: Attackers try common words, names, dates, and known password patterns. "Password123!", "Summer2024!", and "Company@123" are all in attacker dictionaries.
+
+**Phishing and social engineering**: The simplest method — just ask for it. Fake login pages capture credentials directly.
+
+**Keyloggers and malware**: Software installed on compromised machines records every keystroke.
+
+## What makes a password weak
+
+- Any word found in a dictionary, in any language
+- Personal information: names, birthdays, pet names, addresses
+- Common substitutions: p@ssw0rd, h3llo, s3cur1ty (attackers know these patterns)
+- Keyboard patterns: qwerty, 123456, asdfgh
+- Short length: anything under 12 characters is increasingly vulnerable
+- Reused passwords: using the same password across multiple accounts`,
+    },
+    {
+      title: "Building strong passwords",
+      description: "Practical techniques for creating uncrackable passwords",
+      type: "READING",
+      durationMins: 4,
+      order: 2,
+      content: `# Building strong passwords
+
+## The passphrase method (recommended)
+
+Instead of a complex short password, use a passphrase — four or more random, unrelated words:
+
+**Examples**:
+- correct horse battery staple (from the famous XKCD comic)
+- marble penguin telescope furnace
+- sidewalk cactus umbrella molecule
+
+**Why this works**: "marble penguin telescope furnace" is 33 characters long. Even without special characters, it would take centuries to brute-force. And it's far easier to remember than "X#9mK!2pQ".
+
+**Rules for good passphrases**:
+- Use at least 4 words
+- Choose truly random words (don't use song lyrics, quotes, or phrases)
+- Words should not be related to each other
+- Add a number or special character between words if required by the system
+
+## Password managers
+
+The only practical way to have unique, strong passwords for every account is a password manager.
+
+**How they work**: You remember one strong master password. The manager generates, stores, and auto-fills unique random passwords for every site.
+
+**Recommended password managers**: 1Password, Bitwarden, KeePass. Your organization may provide one — check with IT.
+
+**What to store in a password manager**:
+- All website and application passwords
+- WiFi passwords
+- Software license keys
+- Security questions and answers (generate random answers — "What is your mother's maiden name?" → "7hG$kL9mNp")
+
+**What NOT to store in a password manager**:
+- The master password itself (memorize it)
+- Recovery codes (print and store physically)`,
+    },
+    {
+      title: "Multi-factor authentication (MFA)",
+      description: "Adding layers of security beyond passwords",
+      type: "READING",
+      durationMins: 4,
+      order: 3,
+      content: `# Multi-factor authentication (MFA)
+
+MFA requires two or more verification methods from different categories:
+
+1. **Something you know**: password, PIN
+2. **Something you have**: phone, security key, smart card
+3. **Something you are**: fingerprint, face scan
+
+Even if an attacker steals your password, they still can't access your account without the second factor.
+
+## MFA methods ranked by security
+
+**Most secure — Hardware security keys (YubiKey, Google Titan)**:
+A physical device you plug in or tap. Immune to phishing because the key verifies the website's identity. If possible, use this for your most critical accounts.
+
+**Very secure — Authenticator apps (Google Authenticator, Authy, Microsoft Authenticator)**:
+Generate a time-based one-time password (TOTP) that changes every 30 seconds. Better than SMS because it doesn't rely on phone networks.
+
+**Moderate — Push notifications**:
+Your phone receives a "Was this you?" prompt. Convenient, but vulnerable to "MFA fatigue" attacks where attackers spam you with prompts until you accidentally approve one.
+
+**Least secure — SMS codes**:
+A code sent via text message. Vulnerable to SIM swapping (attacker convinces your carrier to transfer your number to their SIM). Use this only when no other option exists.
+
+## Where to enable MFA (priority order)
+
+1. Work email and collaboration tools
+2. Password manager
+3. Banking and financial accounts
+4. Personal email (often used for password resets)
+5. Social media accounts
+6. Any account with access to sensitive data`,
+    },
+  ],
+  quiz: {
+    title: "Password Security Assessment",
+    description: "Test your knowledge of password security and authentication best practices.",
+    passingScore: 70,
+    timeLimitMins: 8,
+    questions: [
+      {
+        text: "Which password is the STRONGEST?",
+        explanation: "A passphrase of four random, unrelated words is the strongest option. It has high entropy (randomness) due to length while being memorable. The others are all common patterns attackers check first.",
+        order: 1,
+        options: [
+          { text: "P@ssw0rd123!", isCorrect: false, order: 1 },
+          { text: "marble penguin telescope furnace", isCorrect: true, order: 2 },
+          { text: "JohnSmith1990!", isCorrect: false, order: 3 },
+          { text: "Qwerty!@#$%", isCorrect: false, order: 4 },
+        ],
+      },
+      {
+        text: "What is the PRIMARY risk of reusing passwords across accounts?",
+        explanation: "When you reuse passwords, a breach at one service exposes all your other accounts. Attackers routinely test leaked credentials against banking, email, and corporate systems — this is called credential stuffing.",
+        order: 2,
+        options: [
+          { text: "It makes passwords harder to remember", isCorrect: false, order: 1 },
+          { text: "A breach at one service compromises all accounts using that password", isCorrect: true, order: 2 },
+          { text: "It slows down login speed", isCorrect: false, order: 3 },
+          { text: "It violates most websites' terms of service", isCorrect: false, order: 4 },
+        ],
+      },
+      {
+        text: "Which MFA method is MOST resistant to phishing attacks?",
+        explanation: "Hardware security keys (like YubiKey) verify the identity of the website before responding, making them immune to phishing. Even if you're on a fake login page, the key won't respond because the domain doesn't match.",
+        order: 3,
+        options: [
+          { text: "SMS codes sent to your phone", isCorrect: false, order: 1 },
+          { text: "Email verification codes", isCorrect: false, order: 2 },
+          { text: "Hardware security keys (YubiKey)", isCorrect: true, order: 3 },
+          { text: "Security questions", isCorrect: false, order: 4 },
+        ],
+      },
+      {
+        text: "Why is SMS-based MFA considered the least secure MFA option?",
+        explanation: "SMS messages can be intercepted through SIM swapping, where an attacker convinces your mobile carrier to transfer your phone number to their device. This gives them access to all your SMS codes.",
+        order: 4,
+        options: [
+          { text: "SMS codes expire too quickly", isCorrect: false, order: 1 },
+          { text: "SMS codes are too short", isCorrect: false, order: 2 },
+          { text: "SMS is vulnerable to SIM swapping and interception", isCorrect: true, order: 3 },
+          { text: "SMS only works with certain phone brands", isCorrect: false, order: 4 },
+        ],
+      },
+      {
+        text: "What is the recommended way to handle security questions (e.g., 'What is your mother's maiden name')?",
+        explanation: "Security question answers are often publicly available (social media, public records). Using random, generated answers stored in your password manager prevents attackers from guessing or researching the answers.",
+        order: 5,
+        options: [
+          { text: "Answer truthfully for easy recall", isCorrect: false, order: 1 },
+          { text: "Use variations of the real answer", isCorrect: false, order: 2 },
+          { text: "Generate random answers and store them in your password manager", isCorrect: true, order: 3 },
+          { text: "Use the same answer for all security questions", isCorrect: false, order: 4 },
+        ],
+      },
+    ],
+  },
+};
+
+// =============================================================================
+// MODULES 3-10: Defined with the same level of detail
+// =============================================================================
+
+const module3: ModuleSeed = {
+  title: "Social Engineering Awareness",
+  description: "Understand how attackers manipulate human psychology to bypass security. Learn to recognize pretexting, baiting, tailgating, and other manipulation techniques used in the workplace.",
+  category: "SOCIAL_ENGINEERING",
+  difficulty: "INTERMEDIATE",
+  durationMins: 20,
+  order: 3,
+  keyTakeaways: [
+    "Verify identity through official channels before sharing information",
+    "Social engineers exploit helpfulness, authority, and urgency",
+    "Physical security is part of information security — challenge unfamiliar people in secure areas",
+    "Never let someone pressure you into bypassing security procedures",
+    "If a request feels unusual, trust your instincts and verify",
+  ],
+  realExamples: [
+    "The 2020 Twitter hack: an attacker called Twitter employees, posed as IT support, and convinced them to enter credentials on a fake internal VPN page.",
+    "Frank Abagnale (Catch Me If You Can) impersonated pilots, doctors, and lawyers using nothing but confidence and forged documents.",
+    "In the MGM Resorts 2023 attack, an attacker called the help desk posing as an employee using details found on LinkedIn, then got them to reset MFA credentials.",
+  ],
+  lessons: [
+    {
+      title: "The social engineering playbook",
+      description: "Core tactics attackers use to manipulate people",
+      type: "READING", durationMins: 6, order: 1,
+      content: `# The social engineering playbook
+
+Social engineering attacks all follow a predictable pattern: research, build rapport, exploit, and exit.
+
+## Phase 1: Research (Reconnaissance)
+
+Before contacting you, an attacker gathers information. Sources include LinkedIn profiles (job titles, reporting chains, team members), company websites (org charts, leadership names, office locations), social media (personal interests, recent events, vacation posts), job postings (which technologies and tools a company uses), and public records.
+
+## Phase 2: Build rapport (Pretexting)
+
+The attacker creates a believable scenario. They might pose as a new IT contractor, a vendor, a fellow employee from a different office, or a delivery person. The pretext gives them a reason to be talking to you and asking questions.
+
+## Phase 3: Exploit
+
+With trust established, the attacker makes their move. This could be asking for credentials to "fix a system issue," requesting a door be held open, asking you to install software for "troubleshooting," or requesting a wire transfer or sensitive document.
+
+## Phase 4: Exit
+
+The attacker disappears before anyone realizes what happened. They may create a reason to leave quickly ("I have another meeting") or maintain the pretext long enough to complete their objective.
+
+## Common social engineering techniques
+
+**Pretexting**: Creating a fabricated scenario to engage a victim. "Hi, I'm from the audit team and I need to verify your access permissions."
+
+**Baiting**: Leaving infected USB drives in parking lots, lobbies, or on desks. Curiosity drives people to plug them in.
+
+**Tailgating/Piggybacking**: Following an authorized person through a secure door. "Hey, can you hold the door? My badge is in my other jacket."
+
+**Quid pro quo**: Offering something in exchange for information. "I'm doing a survey for HR — complete it and you'll be entered to win a $500 gift card."
+
+**Watering hole**: Compromising a website frequently visited by the target group rather than attacking individuals directly.`,
+    },
+    {
+      title: "Recognizing manipulation in real time",
+      description: "Red flags that indicate social engineering attempts",
+      type: "READING", durationMins: 6, order: 2,
+      content: `# Recognizing manipulation in real time
+
+## Verbal red flags
+
+Watch for these in phone calls, in-person conversations, and messages:
+
+**Unusual urgency**: "I need this done in the next 10 minutes or we'll lose the deal." Legitimate requests allow time for verification.
+
+**Name-dropping**: "I was just on the phone with [CEO name] and she told me to contact you directly." Verify by calling the named person.
+
+**Vague credentials**: "I'm with IT" or "I'm from corporate" without a name, employee ID, or ticket number.
+
+**Resistance to verification**: "I don't have time for you to call my manager." Legitimate people welcome verification.
+
+**Emotional pressure**: Flattery ("You're the only person who can help me"), sympathy ("I'll lose my job if this isn't fixed"), or intimidation ("I'll have to escalate this to your VP").
+
+**Request escalation**: Starting with a small, innocent request, then gradually escalating. "Can you tell me which floor the server room is on?" → "Can you let me in? I left my badge upstairs."
+
+## How to respond
+
+1. **Slow down**: Don't let urgency override your judgment
+2. **Verify identity**: Ask for their name, department, employee ID, and ticket number. Call them back on a verified number
+3. **Check authorization**: "Let me verify this request with my manager"
+4. **Document**: Note what was asked, when, and by whom
+5. **Report**: Tell your security team, even if you're not sure it was an attack`,
+    },
+    {
+      title: "Physical social engineering",
+      description: "Protecting against in-person manipulation and unauthorized access",
+      type: "READING", durationMins: 5, order: 3,
+      content: `# Physical social engineering
+
+## Tailgating and piggybacking
+
+An attacker waits near a secure entrance and follows an authorized person through. They might carry boxes (to look like a delivery), wear a hi-vis vest (to look like maintenance), or simply ask you to hold the door.
+
+**Defense**: Always badge in individually. Don't hold doors for people you don't recognize. If someone says they forgot their badge, direct them to reception — don't let them in yourself.
+
+## Shoulder surfing
+
+Watching someone enter their password, PIN, or read sensitive information on their screen, often in coffee shops, airports, or open-plan offices.
+
+**Defense**: Use a privacy screen filter on your laptop. Be aware of who can see your screen in public. Shield PIN pads when entering codes.
+
+## Dumpster diving
+
+Searching through trash for documents containing sensitive information: org charts, client lists, printed emails, network diagrams, discarded hardware.
+
+**Defense**: Shred sensitive documents before disposal. Wipe hard drives and USB devices before discarding. Use secure disposal bins.
+
+## Baiting (USB drops)
+
+Attackers leave USB drives labeled "Salary Data Q4" or "Layoff Plans" in parking lots and common areas. Curiosity drives people to plug them into their work computers, which can install malware immediately.
+
+**Defense**: Never plug in USB drives you find. Report found USB drives to your security team. Disable USB auto-run in your organization's policy.
+
+## The clean desk policy
+
+At the end of each day, lock away sensitive documents, lock your computer (Win+L or Cmd+Control+Q), and don't leave sticky notes with passwords on your monitor. An after-hours cleaning crew, visitor, or tailgater can photograph everything on an unattended desk.`,
+    },
+  ],
+  quiz: {
+    title: "Social Engineering Assessment",
+    description: "Test your ability to recognize and respond to social engineering attempts.",
+    passingScore: 70, timeLimitMins: 10,
+    questions: [
+      { text: "Someone calls claiming to be from IT support and asks for your password to 'fix a problem.' What should you do?", explanation: "Legitimate IT support will never ask for your password. They have admin tools that don't require it. Always verify the caller's identity through official IT channels.", order: 1,
+        options: [
+          { text: "Give them the password since IT needs it", isCorrect: false, order: 1 },
+          { text: "Refuse and report the call to your actual IT department", isCorrect: true, order: 2 },
+          { text: "Give them a wrong password to test them", isCorrect: false, order: 3 },
+          { text: "Ask them to email you instead", isCorrect: false, order: 4 },
+        ],
+      },
+      { text: "You find a USB drive labeled 'Confidential - Salary Data' in the parking lot. What should you do?", explanation: "USB baiting is a common social engineering tactic. Plugging in an unknown USB drive can install malware instantly. Turn found drives over to your security team.", order: 2,
+        options: [
+          { text: "Plug it into your computer to find the owner", isCorrect: false, order: 1 },
+          { text: "Turn it in to your security team without plugging it in", isCorrect: true, order: 2 },
+          { text: "Plug it into a non-work computer to check it safely", isCorrect: false, order: 3 },
+          { text: "Throw it in the trash", isCorrect: false, order: 4 },
+        ],
+      },
+      { text: "A well-dressed person carrying equipment says 'Can you hold the door? I'm with the HVAC contractor and my hands are full.' What's the correct response?", explanation: "Tailgating is a common physical social engineering technique. Even if someone looks legitimate, they should have their own access. Direct them to reception where their identity and authorization can be verified.", order: 3,
+        options: [
+          { text: "Hold the door — they're clearly a contractor", isCorrect: false, order: 1 },
+          { text: "Ask to see their badge or contractor pass", isCorrect: false, order: 2 },
+          { text: "Politely direct them to reception to get proper access", isCorrect: true, order: 3 },
+          { text: "Ignore them and let the door close", isCorrect: false, order: 4 },
+        ],
+      },
+      { text: "Which phase of social engineering involves an attacker researching your LinkedIn profile and company website?", explanation: "Reconnaissance is the first phase where attackers gather information about their targets. LinkedIn is a goldmine for attackers — it reveals org charts, job titles, technologies used, and personal connections.", order: 4,
+        options: [
+          { text: "Exploitation", isCorrect: false, order: 1 },
+          { text: "Pretexting", isCorrect: false, order: 2 },
+          { text: "Reconnaissance", isCorrect: true, order: 3 },
+          { text: "Exit", isCorrect: false, order: 4 },
+        ],
+      },
+      { text: "What is the biggest red flag that a phone call might be a social engineering attempt?", explanation: "Legitimate business interactions always allow time for verification. Urgency is the attacker's most powerful tool — it prevents you from thinking critically or checking with colleagues.", order: 5,
+        options: [
+          { text: "The caller knows your name", isCorrect: false, order: 1 },
+          { text: "The caller creates extreme urgency and resists verification", isCorrect: true, order: 2 },
+          { text: "The caller has an unfamiliar accent", isCorrect: false, order: 3 },
+          { text: "The call comes from an unknown number", isCorrect: false, order: 4 },
+        ],
+      },
+    ],
+  },
+};
+
+const module4: ModuleSeed = {
+  title: "Data Protection & Classification",
+  description: "Learn how to handle, store, share, and dispose of sensitive data according to classification levels. Understand your role in protecting customer data, intellectual property, and personal information.",
+  category: "DATA_PROTECTION",
+  difficulty: "INTERMEDIATE",
+  durationMins: 18,
+  order: 4,
+  keyTakeaways: [
+    "Classify data before sharing — not all information requires the same protection",
+    "Encrypt sensitive files before sending them externally",
+    "Use approved tools for file sharing — not personal email or consumer cloud storage",
+    "Follow the principle of least privilege — only access data you need for your role",
+    "Properly dispose of sensitive information — shred paper, wipe devices",
+  ],
+  realExamples: [
+    "In 2019, Capital One suffered a breach exposing 100 million customer records because a misconfigured firewall allowed access to an AWS S3 bucket containing unclassified sensitive data.",
+    "A Morgan Stanley employee improperly disposed of hard drives containing customer data in 2020, leading to a $35 million fine from the SEC.",
+    "The 2017 Equifax breach exposed the personal data of 147 million people, partly because sensitive data was stored unencrypted in systems that lacked adequate access controls.",
+  ],
+  lessons: [
+    { title: "Understanding data classification", description: "The four levels of data sensitivity and how to apply them", type: "READING", durationMins: 5, order: 1,
+      content: `# Understanding data classification
+
+## Why classify data?
+
+Not all data needs the same level of protection. Treating everything as top-secret is impractical — treating nothing as sensitive is dangerous. Classification helps you make the right decisions about how to store, share, and dispose of information.
+
+## The four classification levels
+
+**Public** — Information intended for or safe for public consumption. Examples: marketing materials, published blog posts, job postings, press releases. Protection: none required beyond accuracy.
+
+**Internal** — Information for employees only, but not sensitive enough to cause significant harm if disclosed. Examples: internal newsletters, meeting notes, organizational charts, general policies. Protection: keep within the organization; don't post externally.
+
+**Confidential** — Sensitive information that could cause harm to the organization or individuals if disclosed. Examples: financial reports, employee records, customer lists, business strategies, contracts, source code. Protection: encrypted storage, access controls, approved sharing tools only.
+
+**Restricted** — Highly sensitive information with legal, regulatory, or critical business impact. Examples: Social Security numbers, credit card data, medical records, trade secrets, encryption keys, authentication credentials. Protection: strong encryption, strict access controls, logging of all access, regulatory compliance requirements.
+
+## How to classify
+
+Ask yourself: "What would happen if this information was leaked to the public?" If the answer is "nothing" — it's Public. If "some embarrassment" — Internal. If "financial or reputational damage" — Confidential. If "legal liability, regulatory fines, or existential business risk" — Restricted.`,
+    },
+    { title: "Handling data safely day to day", description: "Practical rules for storing, sharing, and disposing of data at each classification level", type: "READING", durationMins: 6, order: 2,
+      content: `# Handling data safely day to day
+
+## Storage
+
+**Public/Internal**: Company-approved cloud storage (Google Drive, SharePoint, OneDrive) with default access settings.
+
+**Confidential**: Encrypted storage. Use company-approved platforms with access controls. Never store on personal devices, USB drives, or consumer cloud services (personal Dropbox, Google Drive with a personal account).
+
+**Restricted**: Encrypted at rest and in transit. Access logged. Stored only in approved systems with audit trails. Your organization likely has specific systems designated for restricted data.
+
+## Sharing
+
+**The golden rule**: Use the most secure method appropriate for the classification level.
+
+- Public: Any method
+- Internal: Company email, internal chat, company file sharing
+- Confidential: Company-approved secure file sharing with access controls. Encrypt attachments. Verify recipient authorization. Never use personal email.
+- Restricted: Encrypted transfer only. Verify recipient identity and authorization. Log the transfer. Some restricted data may never leave specific systems.
+
+**Email is not secure for sensitive data.** Email is transmitted in plain text between servers. If you must email confidential data, encrypt the file first and send the password through a different channel (e.g., phone call or text).
+
+## Disposal
+
+**Paper documents**: Cross-cut shred confidential and restricted documents. Internal documents should go in secure recycling bins.
+
+**Digital files**: Simply deleting a file doesn't destroy the data — it remains recoverable. Use secure deletion tools for confidential data. For restricted data, follow your organization's data destruction policy.
+
+**Hardware**: Hard drives, USB drives, phones, and laptops must be properly wiped or physically destroyed before disposal. Formatting is NOT sufficient — data can be recovered from formatted drives.`,
+    },
+    { title: "Privacy regulations and your responsibilities", description: "Key privacy laws and what they mean for employees", type: "READING", durationMins: 5, order: 3,
+      content: `# Privacy regulations and your responsibilities
+
+## Key regulations
+
+**GDPR (General Data Protection Regulation)** — Applies to any data from EU residents, regardless of where your company is based. Key principles: data minimization (collect only what you need), purpose limitation (use data only for the stated purpose), and the right to erasure (individuals can request deletion of their data).
+
+**CCPA/CPRA (California Consumer Privacy Act)** — Similar rights for California residents. Requires disclosure of what data you collect and how it's used.
+
+**HIPAA (Health Insurance Portability and Accountability Act)** — Protects medical information in the US. If you handle any health data, even an employee's doctor's note, HIPAA may apply.
+
+**PCI DSS (Payment Card Industry Data Security Standard)** — Applies if your organization processes, stores, or transmits credit card data. Extremely strict requirements around encryption, access, and logging.
+
+## Your individual responsibilities
+
+You don't need to be a privacy lawyer, but you do need to understand these principles:
+
+1. **Collect only what's needed**: Don't gather data "just in case." If you don't need someone's date of birth, don't ask for it.
+
+2. **Use data only for its intended purpose**: Customer email addresses collected for invoicing shouldn't be used for marketing without consent.
+
+3. **Respect data retention policies**: Delete data when it's no longer needed. Don't hoard old spreadsheets of customer data.
+
+4. **Report breaches immediately**: If you discover or suspect that personal data has been exposed, report it to your security team immediately. Many regulations require notification within 72 hours.
+
+5. **Honor access requests**: If someone asks what data you hold about them or requests deletion, escalate to your privacy team.`,
+    },
+  ],
+  quiz: {
+    title: "Data Protection Assessment",
+    description: "Test your understanding of data classification, handling, and privacy regulations.",
+    passingScore: 70, timeLimitMins: 10,
+    questions: [
+      { text: "A spreadsheet containing customer names, email addresses, and purchase history should be classified as:", explanation: "Customer personal data and purchase history is Confidential. Its exposure could cause reputational damage and potentially trigger privacy regulation violations (GDPR, CCPA).", order: 1,
+        options: [ { text: "Public", isCorrect: false, order: 1 }, { text: "Internal", isCorrect: false, order: 2 }, { text: "Confidential", isCorrect: true, order: 3 }, { text: "Restricted", isCorrect: false, order: 4 } ],
+      },
+      { text: "What is the safest way to share a confidential document with an external partner?", explanation: "Company-approved secure file sharing ensures encryption, access controls, and audit trails. Personal email and consumer cloud storage lack these protections.", order: 2,
+        options: [ { text: "Attach it to a personal Gmail", isCorrect: false, order: 1 }, { text: "Upload to a personal Dropbox and share the link", isCorrect: false, order: 2 }, { text: "Use a company-approved secure file sharing platform with access controls", isCorrect: true, order: 3 }, { text: "Print it and mail a physical copy", isCorrect: false, order: 4 } ],
+      },
+      { text: "Under GDPR, how quickly must a data breach be reported to the supervisory authority?", explanation: "GDPR requires notification to the supervisory authority within 72 hours of becoming aware of a breach, unless the breach is unlikely to result in a risk to individuals' rights and freedoms.", order: 3,
+        options: [ { text: "24 hours", isCorrect: false, order: 1 }, { text: "72 hours", isCorrect: true, order: 2 }, { text: "1 week", isCorrect: false, order: 3 }, { text: "30 days", isCorrect: false, order: 4 } ],
+      },
+      { text: "Why is simply deleting a file or formatting a hard drive NOT sufficient for disposing of confidential data?", explanation: "Deleting a file only removes the file system's reference to the data. The actual data remains on the disk until overwritten and can be recovered with freely available tools.", order: 4,
+        options: [ { text: "It takes too much time", isCorrect: false, order: 1 }, { text: "The data remains on the disk and can be recovered", isCorrect: true, order: 2 }, { text: "It requires admin privileges", isCorrect: false, order: 3 }, { text: "Regulatory rules prohibit deletion", isCorrect: false, order: 4 } ],
+      },
+      { text: "What does the principle of 'data minimization' mean?", explanation: "Data minimization is a core principle of GDPR and good privacy practice. Collecting only necessary data reduces risk — data you don't have can't be breached.", order: 5,
+        options: [ { text: "Compress all data to minimize storage costs", isCorrect: false, order: 1 }, { text: "Collect only the data that is necessary for a specific, stated purpose", isCorrect: true, order: 2 }, { text: "Delete all data after 30 days", isCorrect: false, order: 3 }, { text: "Store data in the smallest possible file format", isCorrect: false, order: 4 } ],
+      },
+    ],
+  },
+};
+
+const module5: ModuleSeed = {
+  title: "Remote Work Security",
+  description: "Secure your home office environment. Learn to protect company data on personal networks, use VPNs properly, and maintain security when working from anywhere.",
+  category: "BROWSING", difficulty: "BEGINNER", durationMins: 15, order: 5,
+  keyTakeaways: [ "Always use the company VPN when accessing work resources", "Secure your home WiFi with WPA3/WPA2 and a strong password", "Lock your screen when stepping away, even at home", "Never use public WiFi for work without a VPN", "Keep work data on work devices — avoid personal device shortcuts" ],
+  realExamples: [ "During the COVID-19 shift to remote work, phishing attacks increased by 600% as attackers exploited employees' unfamiliarity with remote access tools.", "A 2021 survey found that 56% of remote employees used personal devices for work, and 25% didn't know what security protocols their company had for remote work.", "In 2022, Cisco was breached after an employee's personal Google account (which synced saved passwords) was compromised, giving attackers VPN access." ],
+  lessons: [
+    { title: "Securing your home network", description: "Protect the network your work device connects to", type: "READING", durationMins: 5, order: 1,
+      content: `# Securing your home network\n\n## Your router is the front door\n\nYour home router controls all traffic between your devices and the internet. If it's compromised, every device on your network is at risk.\n\n**Essential router security steps**:\n\n1. **Change the default admin password**: Routers ship with passwords like 'admin/admin' or 'admin/password'. These are publicly known. Set a strong, unique admin password.\n\n2. **Use WPA3 or WPA2 encryption**: Check your router settings — if it says WEP or 'Open', your WiFi traffic is readable by anyone nearby. WPA3 is best; WPA2 is acceptable.\n\n3. **Set a strong WiFi password**: At least 16 characters. Your WiFi password is different from your router admin password.\n\n4. **Update firmware**: Router manufacturers release security patches. Check for updates quarterly.\n\n5. **Disable WPS (WiFi Protected Setup)**: The 'easy connect' button on routers has known vulnerabilities.\n\n6. **Create a guest network**: If your router supports it, put IoT devices (smart speakers, cameras, thermostats) on a separate guest network from your work devices.\n\n## Public WiFi: just don't\n\nCoffee shop, hotel, airport WiFi is unencrypted and potentially monitored. If you must work remotely from a public location, use your phone's hotspot or ensure your VPN is active before doing anything work-related.` },
+    { title: "VPN and secure access", description: "How and when to use VPN for remote work", type: "READING", durationMins: 4, order: 2,
+      content: `# VPN and secure access\n\n## What a VPN does\n\nA VPN (Virtual Private Network) creates an encrypted tunnel between your device and your company's network. All your traffic travels through this tunnel, making it unreadable to anyone monitoring the network.\n\n**When to use the VPN**:\n- Always when accessing internal company systems (email, intranet, databases)\n- When connected to any network you don't fully control (hotel, coworking space, café)\n- When accessing sensitive documents or customer data\n\n**Common mistakes**:\n- Disconnecting the VPN because it's slow — talk to IT about split-tunnel options\n- Assuming HTTPS alone is sufficient — HTTPS protects data in transit to a website, but your DNS queries and traffic metadata are still visible without a VPN\n- Using a personal VPN service instead of the company VPN — personal VPN providers can see and log your traffic\n\n## Device security essentials\n\n- **Lock your screen**: Win+L (Windows) or Cmd+Ctrl+Q (Mac) every time you step away\n- **Enable full-disk encryption**: BitLocker (Windows) or FileVault (Mac)\n- **Keep OS and software updated**: Enable auto-updates\n- **Use company antivirus/EDR**: Don't disable it even if it slows things down\n- **Don't let family use your work device**: Children downloading games or partners checking email can introduce malware` },
+    { title: "Physical security at home and in public", description: "Protecting devices and data outside the office", type: "READING", durationMins: 4, order: 3,
+      content: `# Physical security outside the office\n\n## At home\n\n- **Dedicated workspace**: If possible, work in a room where your screen isn't visible to visitors, delivery people, or through windows\n- **Secure documents**: Don't leave printed work documents on the kitchen table. Shred them when done.\n- **Smart speakers**: Consider whether Alexa, Google Home, or Siri should be in your workspace. They are always listening for wake words and may capture sensitive conversations\n- **Video calls**: Be aware of what's visible on camera. Whiteboards with strategy notes, sticky notes with passwords, or sensitive documents in the background are visible to everyone on the call\n\n## Traveling\n\n- **Never leave devices unattended**: Not in hotel rooms (use the safe), not at airport gates, not in car seats (lock in trunk or take with you)\n- **Disable Bluetooth when not in use**: Bluetooth can be exploited for device tracking and data interception\n- **Use a privacy screen**: Prevents shoulder surfing on planes and trains\n- **Report lost devices immediately**: Call IT the moment a device goes missing — they can remotely wipe it, but only if you report quickly\n- **Avoid charging stations**: Public USB charging stations can be compromised (juice jacking). Use your own charger plugged into a power outlet, or a USB data blocker` },
+  ],
+  quiz: { title: "Remote Work Security Assessment", description: "Test your knowledge of remote work security practices.", passingScore: 70, timeLimitMins: 8,
+    questions: [
+      { text: "When should you connect to your company VPN?", explanation: "The VPN should be used whenever you access company resources, especially on networks you don't control. It encrypts your traffic and protects against network monitoring.", order: 1,
+        options: [ { text: "Only when working from a coffee shop", isCorrect: false, order: 1 }, { text: "Whenever accessing company systems or sensitive data", isCorrect: true, order: 2 }, { text: "Only when your home WiFi is slow", isCorrect: false, order: 3 }, { text: "Only when IT reminds you", isCorrect: false, order: 4 } ] },
+      { text: "What is the FIRST thing you should do if your work laptop is stolen?", explanation: "Immediately reporting a lost device allows IT to remotely wipe it, protecting company data. The faster you report, the less time an attacker has to access the device.", order: 2,
+        options: [ { text: "Try to find it by retracing your steps", isCorrect: false, order: 1 }, { text: "Report it to IT immediately so they can remotely wipe it", isCorrect: true, order: 2 }, { text: "Change your passwords first", isCorrect: false, order: 3 }, { text: "File a police report", isCorrect: false, order: 4 } ] },
+      { text: "Why should IoT devices be on a separate network from your work computer?", explanation: "IoT devices (smart speakers, cameras, thermostats) often have weak security and rarely receive updates. If compromised, they could be used to attack other devices on the same network, including your work computer.", order: 3,
+        options: [ { text: "To improve WiFi speed", isCorrect: false, order: 1 }, { text: "To prevent compromised IoT devices from accessing your work computer", isCorrect: true, order: 2 }, { text: "IoT devices use too much bandwidth", isCorrect: false, order: 3 }, { text: "It's a legal requirement", isCorrect: false, order: 4 } ] },
+      { text: "What is 'juice jacking'?", explanation: "Juice jacking involves compromised USB charging stations that can install malware or steal data when you connect your device. Use your own charger with a wall outlet, or a USB data blocker.", order: 4,
+        options: [ { text: "Stealing electricity from a neighbor's outlet", isCorrect: false, order: 1 }, { text: "Data theft through compromised public USB charging stations", isCorrect: true, order: 2 }, { text: "Overcharging a battery to cause damage", isCorrect: false, order: 3 }, { text: "Using someone else's charger without permission", isCorrect: false, order: 4 } ] },
+    ],
+  },
+};
+
+const module6: ModuleSeed = {
+  title: "Ransomware Prevention & Response",
+  description: "Understand how ransomware works, how it spreads, and what to do if you suspect an infection. Learn the preventive measures that stop ransomware before it encrypts your files.",
+  category: "MALWARE", difficulty: "INTERMEDIATE", durationMins: 18, order: 6,
+  keyTakeaways: [ "Ransomware enters primarily through phishing emails and unpatched software", "Regular backups (3-2-1 rule) are your best defense against ransomware", "Never pay the ransom — it funds criminals and doesn't guarantee data recovery", "Disconnect from the network immediately if you suspect ransomware", "Report suspicious behavior to IT before opening unknown files" ],
+  realExamples: [ "The WannaCry ransomware attack in 2017 affected over 200,000 computers across 150 countries, crippling the UK's National Health Service and costing an estimated $4 billion globally.", "In 2021, the Colonial Pipeline paid $4.4 million in ransom after attackers accessed systems through a compromised VPN password. The attack caused fuel shortages across the US East Coast.", "The city of Baltimore was hit by ransomware in 2019, disrupting city services for weeks and costing over $18 million in recovery — far more than the $76,000 ransom demanded." ],
+  lessons: [
+    { title: "How ransomware works", description: "Understanding the ransomware attack chain", type: "READING", durationMins: 5, order: 1,
+      content: `# How ransomware works\n\n## The attack chain\n\n**Step 1 — Initial access**: The attacker gets a foothold. Most commonly through phishing emails (malicious attachments or links), exploiting unpatched software vulnerabilities, compromised remote access (RDP with weak passwords), or infected websites (drive-by downloads).\n\n**Step 2 — Lateral movement**: Once inside, the ransomware spreads to other systems on the network. It looks for file shares, network drives, backup servers, and other connected systems.\n\n**Step 3 — Data exfiltration (double extortion)**: Modern ransomware gangs steal your data before encrypting it. This means even if you have backups, they threaten to publish your sensitive data unless you pay.\n\n**Step 4 — Encryption**: The ransomware encrypts files on every system it has reached. Documents, databases, images, spreadsheets — anything it can access. Files become unreadable without the decryption key.\n\n**Step 5 — Ransom demand**: A note appears demanding payment (usually in cryptocurrency) in exchange for the decryption key. Demands range from thousands to millions of dollars depending on the target.\n\n## Types of ransomware\n\n**Crypto ransomware**: Encrypts your files. The most common type. Examples: LockBit, BlackCat, Clop.\n\n**Locker ransomware**: Locks you out of your entire device. Less common but more disruptive.\n\n**Wiper disguised as ransomware**: Destroys data permanently while pretending to be ransomware. No key exists. Examples: NotPetya (2017) caused $10 billion in damage while posing as ransomware.` },
+    { title: "Prevention and backup strategy", description: "Practical steps to prevent ransomware and ensure recovery", type: "READING", durationMins: 5, order: 2,
+      content: `# Prevention and backup strategy\n\n## Prevention (your part)\n\n1. **Don't open suspicious attachments**: If you weren't expecting a file, don't open it — especially .zip, .exe, .docm, .xlsm, .js, .vbs, or .scr files\n2. **Keep software updated**: Enable auto-updates on your OS and applications. Many ransomware attacks exploit known vulnerabilities that patches already fix\n3. **Don't enable macros**: If a document asks you to "Enable Content" or "Enable Macros," close it and report it to IT\n4. **Use strong, unique passwords**: Especially for remote access tools (VPN, RDP)\n5. **Be cautious with USB drives**: Unknown USB drives can carry ransomware\n\n## The 3-2-1 backup rule\n\n- **3 copies** of your data (the original + 2 backups)\n- **2 different types** of storage media (e.g., hard drive + cloud)\n- **1 copy offsite** (cloud backup or physically separate location)\n\nCritical: at least one backup must be **offline** (air-gapped). Ransomware that reaches your network will also encrypt any connected backup drives.\n\n## What your organization should have\n\n- Endpoint detection and response (EDR) on all devices\n- Network segmentation to limit lateral movement\n- Email filtering to block malicious attachments\n- Regular backup testing (backups are useless if they don't restore)\n- Incident response plan that everyone knows about BEFORE an attack happens` },
+    { title: "What to do during an attack", description: "Immediate response steps if you suspect ransomware", type: "READING", durationMins: 5, order: 3,
+      content: `# What to do during a ransomware attack\n\nSpeed matters. The faster you act, the less damage occurs.\n\n## If you see signs of ransomware\n\nSigns: unusual file extensions appearing (.encrypted, .locked, .cry), files won't open, a ransom note appears on screen, unusually slow system performance, antivirus alerts.\n\n## Immediate steps (do these in order)\n\n1. **DISCONNECT from the network**: Unplug the Ethernet cable and turn off WiFi. This prevents the ransomware from spreading to other systems. If on VPN, disconnect immediately.\n\n2. **DON'T turn off the computer**: Forensic information in memory can help the response team. Leave it on but disconnected.\n\n3. **CALL IT/Security immediately**: Use your phone, not your computer. Report what you saw and when. Don't try to fix it yourself.\n\n4. **DON'T pay the ransom**: Paying doesn't guarantee you'll get your data back. It funds criminal operations. It marks you as a willing payer for future attacks. In some jurisdictions, paying ransoms to sanctioned groups is illegal.\n\n5. **DOCUMENT what happened**: Write down what you were doing when you noticed the problem, any emails or files you opened recently, and the exact time.\n\n6. **DON'T attempt recovery yourself**: Don't try to decrypt files, run antivirus scans, or restore from backups. The incident response team needs to analyze the situation first to prevent reinfection.\n\n## After the incident\n\nYour organization's incident response team will handle containment, investigation, and recovery. Your role is to be available to answer their questions, cooperate fully, and follow their instructions for getting back to work safely.` },
+  ],
+  quiz: { title: "Ransomware Assessment", description: "Test your understanding of ransomware threats and response procedures.", passingScore: 70, timeLimitMins: 8,
+    questions: [
+      { text: "What is the FIRST action you should take if you suspect your computer has been infected with ransomware?", explanation: "Disconnecting from the network is the top priority. Ransomware spreads laterally across network connections. Every second you stay connected, it can encrypt files on more systems.", order: 1,
+        options: [ { text: "Run a full antivirus scan", isCorrect: false, order: 1 }, { text: "Disconnect from the network immediately", isCorrect: true, order: 2 }, { text: "Try to identify the ransomware type", isCorrect: false, order: 3 }, { text: "Shut down the computer", isCorrect: false, order: 4 } ] },
+      { text: "Why should you NOT pay a ransomware demand?", explanation: "Paying ransoms funds criminal enterprises, doesn't guarantee data recovery, marks your org as a future target, and may violate sanctions laws. Organizations with good backups can recover without paying.", order: 2,
+        options: [ { text: "Payment guarantees data recovery", isCorrect: false, order: 1 }, { text: "It funds criminal operations and doesn't guarantee recovery", isCorrect: true, order: 2 }, { text: "The ransom amount is always too high", isCorrect: false, order: 3 }, { text: "The police will find the criminals anyway", isCorrect: false, order: 4 } ] },
+      { text: "What does the '3-2-1 backup rule' specify?", explanation: "The 3-2-1 rule ensures that no single failure point can destroy all your data. Three copies on two different media types with one offsite means ransomware, hardware failure, and natural disasters are all survivable.", order: 3,
+        options: [ { text: "3 backups per day, 2 antivirus scans, 1 firewall", isCorrect: false, order: 1 }, { text: "3 copies of data, 2 different media types, 1 copy offsite", isCorrect: true, order: 2 }, { text: "3 password changes, 2 MFA methods, 1 VPN connection", isCorrect: false, order: 3 }, { text: "3 security tools, 2 encryption methods, 1 backup", isCorrect: false, order: 4 } ] },
+      { text: "What is 'double extortion' in ransomware attacks?", explanation: "Double extortion means attackers steal your data before encrypting it. Even if you have backups and can restore, they threaten to publish the stolen data unless you pay. This makes backups alone insufficient — prevention is critical.", order: 4,
+        options: [ { text: "Demanding ransom from two different departments", isCorrect: false, order: 1 }, { text: "Encrypting data AND threatening to publish stolen data", isCorrect: true, order: 2 }, { text: "Using two different types of encryption", isCorrect: false, order: 3 }, { text: "Attacking twice with different ransomware variants", isCorrect: false, order: 4 } ] },
+      { text: "Which is the MOST common way ransomware initially enters an organization?", explanation: "Phishing emails remain the #1 initial access vector for ransomware. A single employee clicking a malicious attachment or link can lead to an organization-wide encryption event.", order: 5,
+        options: [ { text: "Physical break-in to server rooms", isCorrect: false, order: 1 }, { text: "Phishing emails with malicious attachments or links", isCorrect: true, order: 2 }, { text: "Hacking through the firewall", isCorrect: false, order: 3 }, { text: "Insider threats from disgruntled employees", isCorrect: false, order: 4 } ] },
+    ],
+  },
+};
+
+const module7: ModuleSeed = {
+  title: "Email Security Best Practices",
+  description: "Go beyond phishing recognition. Learn to use email securely for daily communication, handle sensitive information in emails, and configure email security settings.",
+  category: "PHISHING", difficulty: "BEGINNER", durationMins: 12, order: 7,
+  keyTakeaways: [ "Verify recipient addresses before sending sensitive information", "Use BCC for large distribution lists to protect recipients' privacy", "Never send passwords or credentials via email", "Be cautious with auto-complete — it can send emails to the wrong person", "Check email rules/forwarding periodically — attackers set up silent forwarding" ],
+  realExamples: [ "In 2020, a UK law firm accidentally sent confidential merger documents to the wrong client due to email auto-complete, resulting in a potential insider trading investigation.", "A common post-compromise tactic: attackers set up email forwarding rules to silently copy all incoming emails to an external address, maintaining persistent access even after password changes." ],
+  lessons: [
+    { title: "Sending email safely", description: "Prevent accidental data leaks through email", type: "READING", durationMins: 4, order: 1,
+      content: `# Sending email safely\n\n## Double-check before you send\n\n**Verify recipients**: Auto-complete is dangerous. "John Smith (Marketing)" and "John Smith (External Client)" are one misclick apart. For sensitive emails, manually verify every address in the To, CC, and BCC fields.\n\n**Use BCC for mass communications**: When emailing a large group (customers, vendors, external contacts), use BCC to prevent exposing everyone's email address. CC shows every recipient to everyone.\n\n**Check attachments**: Before sending, open the attachment one more time. Is it the right version? Does it contain hidden sheets (in Excel) or tracked changes (in Word) with sensitive information? Use "Inspect Document" in Office to remove hidden data.\n\n## Rules for sensitive content\n\n- **Never email passwords, API keys, or credentials**. Use a password manager's sharing feature or an encrypted channel.\n- **Encrypt sensitive attachments** before sending. Use your organization's approved encryption tool. Send the password through a different channel (phone, text).\n- **Mark sensitive emails appropriately**: Use your email client's sensitivity labels (if available) to flag confidential content.\n- **Be cautious with "Reply All"**: Not everyone on the thread needs your response. Ask yourself: does everyone in this chain need to see this?` },
+    { title: "Protecting your email account", description: "Settings and habits that prevent email compromise", type: "READING", durationMins: 4, order: 2,
+      content: `# Protecting your email account\n\n## Account security\n\n1. **Enable MFA**: Your email is the master key to your digital life. Most password resets go to email. If your email is compromised, everything else follows.\n\n2. **Use a unique, strong password**: Your email password should never be reused anywhere else.\n\n3. **Check connected apps periodically**: Revoke access for apps you no longer use. Each connected app is a potential entry point.\n\n## Post-compromise checks\n\nIf you suspect your email was compromised (or periodically as hygiene):\n\n- **Check email forwarding rules**: Attackers set up rules to silently forward emails to external addresses. In Outlook: File → Rules → Manage Rules. In Gmail: Settings → Forwarding.\n- **Review sent items**: Look for emails you didn't send.\n- **Check connected devices**: Remove any devices or sessions you don't recognize.\n- **Change your password and review MFA settings**.\n\n## Email encryption\n\nStandard email is sent in plain text between servers. For sensitive communications:\n- Use your organization's email encryption feature (e.g., Microsoft 365 Message Encryption)\n- Encrypt file attachments before sending\n- For highly sensitive discussions, consider whether email is the right channel at all — an encrypted messaging platform may be more appropriate` },
+    { title: "Business email compromise (BEC)", description: "Understanding the most financially devastating email attack", type: "READING", durationMins: 4, order: 3,
+      content: `# Business email compromise (BEC)\n\nBEC is the most financially damaging type of cyber attack. The FBI reports BEC losses exceeding $50 billion globally since 2013.\n\n## How BEC works\n\nUnlike phishing which targets many people with generic emails, BEC targets specific individuals with carefully crafted, personalized messages. The attacker typically:\n\n1. Compromises or spoofs a real executive's email account\n2. Studies the organization's communication patterns and ongoing transactions\n3. Sends a convincing request to someone with financial authority\n\n## Common BEC scenarios\n\n**CEO fraud**: "I'm in a meeting and need you to wire $50,000 to this vendor immediately. I'll explain later."\n\n**Vendor impersonation**: "Our banking details have changed. Please update our payment information to this new account." (Sent from a compromised or spoofed vendor email)\n\n**Payroll diversion**: "Hi HR, I've changed banks. Please update my direct deposit to this account number." (Sent from a compromised employee email)\n\n**Attorney impersonation**: "I'm handling a confidential acquisition. Please wire the escrow funds to this account. This is time-sensitive and must remain confidential."\n\n## Defense\n\n- **Verify all financial requests** through a separate channel (phone call to a known number)\n- **Establish approval workflows**: No single person should be able to authorize large transfers\n- **Be suspicious of urgency and secrecy**: "Do this now" + "Keep this confidential" = red flag\n- **Check the actual email address**, not just the display name\n- **Flag external emails**: Many organizations add banners to emails from outside the organization` },
+  ],
+  quiz: { title: "Email Security Assessment", description: "Test your knowledge of email security practices.", passingScore: 70, timeLimitMins: 8,
+    questions: [
+      { text: "You need to send a spreadsheet containing employee salary data to the HR director. What is the safest approach?", explanation: "Sensitive data should be encrypted before email transmission. The encryption password should be communicated through a different channel to prevent interception.", order: 1,
+        options: [ { text: "Attach it to a regular email", isCorrect: false, order: 1 }, { text: "Encrypt the file and email it, then send the password via phone or text", isCorrect: true, order: 2 }, { text: "Upload it to your personal cloud and share the link", isCorrect: false, order: 3 }, { text: "Print it and hand-deliver it", isCorrect: false, order: 4 } ] },
+      { text: "After a suspected email compromise, what should you check for in your email settings?", explanation: "A common persistence technique: attackers create forwarding rules that silently copy all incoming mail to an external address. Changing your password alone doesn't stop this.", order: 2,
+        options: [ { text: "Spam filter settings", isCorrect: false, order: 1 }, { text: "Forwarding rules and connected apps", isCorrect: true, order: 2 }, { text: "Email signature", isCorrect: false, order: 3 }, { text: "Theme and appearance settings", isCorrect: false, order: 4 } ] },
+      { text: "What makes BEC (Business Email Compromise) different from regular phishing?", explanation: "BEC is highly targeted and personalized. Attackers research specific individuals and organizations, often compromising real accounts to make requests appear authentic. Unlike mass phishing, BEC may have no malicious links or attachments.", order: 3,
+        options: [ { text: "BEC always contains malware attachments", isCorrect: false, order: 1 }, { text: "BEC targets specific individuals with personalized, researched requests", isCorrect: true, order: 2 }, { text: "BEC only targets large corporations", isCorrect: false, order: 3 }, { text: "BEC is always sent from external domains", isCorrect: false, order: 4 } ] },
+      { text: "When sending an email to 200 external contacts about a company event, which field should you use for their addresses?", explanation: "BCC (Blind Carbon Copy) hides recipients from each other. Using CC or To would expose all 200 email addresses to everyone, which is a privacy violation and gives attackers a harvested contact list.", order: 4,
+        options: [ { text: "To", isCorrect: false, order: 1 }, { text: "CC", isCorrect: false, order: 2 }, { text: "BCC", isCorrect: true, order: 3 }, { text: "It doesn't matter", isCorrect: false, order: 4 } ] },
+    ],
+  },
+};
+
+const module8: ModuleSeed = {
+  title: "Incident Reporting & Response",
+  description: "Learn when and how to report security incidents. Understand that early reporting is the most valuable thing any employee can do to minimize damage from a security event.",
+  category: "GENERAL", difficulty: "BEGINNER", durationMins: 12, order: 8,
+  keyTakeaways: [ "Report security incidents immediately — minutes matter", "It's always better to report a false alarm than to stay silent about a real threat", "You will never be punished for reporting a suspected incident in good faith", "Know your organization's reporting channels before an incident occurs", "Document what you observed: what happened, when, and what you did" ],
+  realExamples: [ "The Target breach of 2013 exposed 40 million credit card numbers. Security alerts were triggered weeks before the breach was discovered, but reports weren't escalated.", "Studies show the average time to identify a breach is 207 days. Organizations with strong reporting cultures reduce this to under 50 days, saving millions in damage." ],
+  lessons: [
+    { title: "What counts as a security incident", description: "Recognizing events that need to be reported", type: "READING", durationMins: 4, order: 1,
+      content: `# What counts as a security incident\n\nAn incident is any event that threatens the confidentiality, integrity, or availability of information or systems. Many employees hesitate to report because they're unsure if something qualifies. When in doubt, report it.\n\n## Definite incidents (report immediately)\n\n- You clicked a link or opened an attachment in a suspicious email\n- You see a ransom note or your files have been encrypted\n- You notice unauthorized access to accounts or systems\n- You accidentally sent sensitive data to the wrong person\n- A device containing company data was lost or stolen\n- You shared your password with someone\n- You notice someone in a restricted area without authorization\n\n## Probable incidents (report promptly)\n\n- Your computer is behaving unusually (slow, pop-ups, unknown programs)\n- You received a phone call asking for sensitive information\n- You found an unknown USB drive\n- A colleague's account appears to be sending strange emails\n- You notice data or files that have been modified unexpectedly\n\n## The golden rule\n\n**If you're asking yourself "Should I report this?" — the answer is yes.** Your security team would rather investigate 100 false alarms than miss one real incident. There is no penalty for reporting something that turns out to be benign.` },
+    { title: "How to report an incident", description: "Step-by-step reporting process", type: "READING", durationMins: 4, order: 2,
+      content: `# How to report an incident\n\n## Step 1: Stop and contain\n\nDon't try to fix it yourself. If you suspect malware, disconnect from the network. If you sent data to the wrong person, don't try to recall the email (recalls often fail and alert the recipient). If you clicked a suspicious link, close the browser but don't clear history (forensics may need it).\n\n## Step 2: Report through official channels\n\nUse your organization's designated reporting method:\n- **Phishing report button** in your email client (for suspicious emails)\n- **IT help desk** phone number or ticket system (for general incidents)\n- **Security team direct line** (for urgent incidents)\n- **Manager** (if you can't reach IT/Security)\n\n## Step 3: Provide key information\n\nWhen reporting, include:\n- **What happened**: Describe what you observed in simple terms\n- **When**: Date and time as precisely as possible\n- **What you did**: Did you click a link, open an attachment, enter credentials?\n- **Affected systems**: Which device, which account, which data\n- **Current state**: Is the problem ongoing? Have you disconnected?\n\n## Step 4: Follow instructions\n\nThe security team may ask you to preserve evidence (don't delete emails or clear browser history), change passwords, run specific scans, or provide additional information.\n\n## Step 5: Learn from it\n\nAfter the incident is resolved, take any recommended training. Incidents are learning opportunities, not failures.` },
+    { title: "Building a reporting culture", description: "Why organizations with strong reporting cultures are more secure", type: "READING", durationMins: 3, order: 3,
+      content: `# Building a reporting culture\n\n## Why speed matters\n\nThe difference between a minor incident and a catastrophic breach is often just hours. The faster a security team knows about a problem, the faster they can contain it.\n\n- **0-1 hours**: Attacker may still be on a single system. Containment is straightforward.\n- **1-24 hours**: Attacker has likely moved laterally. Multiple systems may be affected.\n- **Days-weeks**: Attacker has established persistence, exfiltrated data, and may have encrypted systems.\n\nYour early report can be the difference between categories one and three.\n\n## Overcoming barriers to reporting\n\n**"I'll get in trouble"**: A healthy security culture never punishes the reporter. Clicking a phishing link is human. Not reporting it is a problem.\n\n**"It's probably nothing"**: The security team is trained to assess severity. Let them decide — that's their job.\n\n**"I can handle it myself"**: Well-intentioned troubleshooting can destroy forensic evidence, spread malware further, or alert an attacker that they've been detected.\n\n**"I'm too busy"**: A 2-minute report now can prevent weeks of incident response later.\n\n**"I don't know who to contact"**: This is an organizational failure, not yours. But find out now, before you need it. Save the IT security help desk number in your phone today.` },
+  ],
+  quiz: { title: "Incident Reporting Assessment", description: "Test your understanding of security incident reporting.", passingScore: 70, timeLimitMins: 7,
+    questions: [
+      { text: "You accidentally sent a spreadsheet with customer data to someone outside the company. What should you do FIRST?", explanation: "Reporting immediately allows the security team to assess the exposure and take appropriate action (contacting the recipient, legal review). Trying to recall the email rarely works and wastes critical time.", order: 1,
+        options: [ { text: "Try to recall the email", isCorrect: false, order: 1 }, { text: "Report it to your security team immediately", isCorrect: true, order: 2 }, { text: "Email the recipient asking them to delete it", isCorrect: false, order: 3 }, { text: "Wait to see if anyone notices", isCorrect: false, order: 4 } ] },
+      { text: "You clicked a link in an email that now seems suspicious. The page asked for your password but you didn't enter it. Should you report this?", explanation: "Yes — clicking a phishing link can be enough to compromise your system, even without entering credentials. The page may have downloaded malware or exploited a browser vulnerability.", order: 2,
+        options: [ { text: "No — you didn't enter your password so no harm done", isCorrect: false, order: 1 }, { text: "Yes — clicking the link alone may have been enough to compromise your system", isCorrect: true, order: 2 }, { text: "Only if your antivirus flags something", isCorrect: false, order: 3 }, { text: "No — just clear your browser history and move on", isCorrect: false, order: 4 } ] },
+      { text: "Why is it important NOT to try fixing a suspected malware infection yourself?", explanation: "Amateur troubleshooting can destroy forensic evidence the security team needs, spread the infection to clean systems, or alert the attacker that they've been detected, causing them to accelerate their attack.", order: 3,
+        options: [ { text: "It might violate company policy", isCorrect: false, order: 1 }, { text: "It could destroy forensic evidence, spread the infection, or alert the attacker", isCorrect: true, order: 2 }, { text: "Only IT has the right antivirus software", isCorrect: false, order: 3 }, { text: "It wastes your time", isCorrect: false, order: 4 } ] },
+      { text: "What is the ideal timeframe for reporting a suspected security incident?", explanation: "The difference between a contained incident and a major breach is often hours. Report immediately — your security team can triage and determine if it's a real threat. A false alarm costs minutes; a delayed report can cost millions.", order: 4,
+        options: [ { text: "Within 24 hours", isCorrect: false, order: 1 }, { text: "Immediately", isCorrect: true, order: 2 }, { text: "At the end of the work day", isCorrect: false, order: 3 }, { text: "During the next team meeting", isCorrect: false, order: 4 } ] },
+    ],
+  },
+};
+
+const module9: ModuleSeed = {
+  title: "Safe Web Browsing",
+  description: "Navigate the web safely. Learn to evaluate website legitimacy, manage browser security settings, and avoid common web-based threats like drive-by downloads and malvertising.",
+  category: "BROWSING", difficulty: "BEGINNER", durationMins: 12, order: 9,
+  keyTakeaways: [ "Check for HTTPS and valid certificates — but know HTTPS alone doesn't mean a site is safe", "Keep your browser and extensions updated", "Be cautious with browser extensions — they can read all your browsing data", "Avoid downloading software from unofficial sources", "Use your organization's approved browser and settings" ],
+  realExamples: [ "In 2023, malicious ads on Google search results for popular software (Slack, Zoom, OBS) redirected users to convincing fake download pages that installed malware.", "The SolarWinds attack of 2020 started when attackers compromised the software update mechanism, highlighting the risk of even trusted download sources." ],
+  lessons: [
+    { title: "Evaluating website legitimacy", description: "How to verify a website is genuine before entering information", type: "READING", durationMins: 4, order: 1,
+      content: `# Evaluating website legitimacy\n\n## The URL is your first defense\n\nBefore entering any information on a website, check the URL carefully:\n\n**Check the domain**: The domain is the core part of the URL. In https://login.microsoft.com/oauth, the domain is microsoft.com. In https://microsoft.com.evil-site.com/login, the domain is evil-site.com.\n\n**How to find the real domain**: Read the URL right-to-left from the first single slash (/). The domain is the last two segments before that slash: amazon.com, google.com, bankofamerica.com.\n\n**HTTPS is necessary but not sufficient**: A padlock icon means the connection is encrypted — it does NOT mean the website is legitimate. Attackers get HTTPS certificates for their phishing sites. HTTPS protects data in transit; it doesn't verify who runs the site.\n\n**Watch for look-alike domains**: paypa1.com (with a number 1), arnazon.com (rn looks like m), gooogle.com (extra o), microsoft-support.com (added word).\n\n## Before entering credentials\n\n1. Did you navigate here yourself, or did a link bring you here?\n2. Does the URL match exactly what you expect?\n3. If you're unsure, close the tab and navigate to the site directly by typing the URL or using a bookmark` },
+    { title: "Browser security settings", description: "Configuring your browser for safety without sacrificing usability", type: "READING", durationMins: 4, order: 2,
+      content: `# Browser security settings\n\n## Essential settings\n\n- **Keep your browser updated**: Enable auto-updates. Browser updates patch security vulnerabilities\n- **Enable safe browsing**: Chrome, Firefox, and Edge all have built-in protections that warn about dangerous sites. Keep them enabled.\n- **Block pop-ups**: Pop-ups are a common vector for fake alerts and malware downloads\n- **Don't save passwords in the browser**: Use a dedicated password manager instead. Browser password storage is less secure.\n\n## Browser extensions: handle with care\n\nExtensions can read and modify everything you see in the browser. A malicious or compromised extension can steal credentials, inject ads, track browsing, or exfiltrate data.\n\n**Rules for extensions**:\n- Install only extensions approved by your IT department\n- Review permissions before installing — does a weather extension really need access to "all your data on all websites"?\n- Remove extensions you no longer use\n- Keep extensions updated\n\n## Downloads\n\n- Only download software from official sources (vendor websites, official app stores)\n- Be wary of search engine ads for software — attackers buy ads for popular software names\n- Verify downloaded files when possible (check file hash against the vendor's published hash)\n- Don't ignore browser download warnings` },
+    { title: "Malvertising and drive-by downloads", description: "Web-based attacks that require no user interaction", type: "READING", durationMins: 3, order: 3,
+      content: `# Malvertising and drive-by downloads\n\n## Malvertising\n\nMalicious advertisements on legitimate websites. Attackers buy ad space on popular sites, and the ads either redirect to malicious sites or exploit browser vulnerabilities directly. You don't have to click the ad — just loading the page can be enough.\n\n**Defense**: Keep your browser updated, use an ad blocker (if permitted by your organization), and ensure your browser's built-in protections are enabled.\n\n## Drive-by downloads\n\nMalware that downloads and installs automatically when you visit a compromised website, without you clicking anything. These exploit vulnerabilities in browsers, plugins, or operating systems.\n\n**Defense**: The single most effective protection is keeping your software updated. Most drive-by downloads exploit known vulnerabilities that patches have already fixed.\n\n## Fake browser alerts\n\n"Your computer is infected! Call this number immediately!" or "Your browser needs an urgent update. Click here."\n\nThese are scams. Real browser updates happen automatically. Real virus alerts come from your antivirus software, not from a website.\n\n**Defense**: Close the tab. If the tab won't close, use Task Manager (Ctrl+Shift+Esc) to force-close the browser. Never call a phone number displayed in a browser alert.` },
+  ],
+  quiz: { title: "Safe Browsing Assessment", description: "Test your understanding of web browsing security.", passingScore: 70, timeLimitMins: 7,
+    questions: [
+      { text: "A website has a padlock icon (HTTPS) in the address bar. Does this mean the website is safe and legitimate?", explanation: "HTTPS only means the connection between your browser and the server is encrypted. Attackers can and do obtain HTTPS certificates for phishing sites. You must also verify the domain name.", order: 1,
+        options: [ { text: "Yes — HTTPS guarantees the site is legitimate", isCorrect: false, order: 1 }, { text: "No — HTTPS means the connection is encrypted, not that the site is trustworthy", isCorrect: true, order: 2 }, { text: "Yes — only legitimate sites can get HTTPS certificates", isCorrect: false, order: 3 }, { text: "It depends on the type of certificate", isCorrect: false, order: 4 } ] },
+      { text: "What is 'malvertising'?", explanation: "Malvertising uses legitimate advertising networks to distribute malicious ads. Even reputable websites can unknowingly serve malicious ads because they use third-party ad networks.", order: 2,
+        options: [ { text: "Advertising for malware products", isCorrect: false, order: 1 }, { text: "Malicious advertisements served through legitimate ad networks on real websites", isCorrect: true, order: 2 }, { text: "Email advertisements with viruses", isCorrect: false, order: 3 }, { text: "Pop-up ads that slow down your computer", isCorrect: false, order: 4 } ] },
+      { text: "You see a browser pop-up saying 'Your computer is infected! Call 1-800-XXX-XXXX for Microsoft support.' What should you do?", explanation: "Real virus alerts come from your installed antivirus software, not from websites. These are tech support scams. Close the tab (or force-close the browser), do not call the number.", order: 3,
+        options: [ { text: "Call the number immediately", isCorrect: false, order: 1 }, { text: "Close the tab — it's a scam. Real alerts come from your antivirus software", isCorrect: true, order: 2 }, { text: "Run a virus scan from the pop-up window", isCorrect: false, order: 3 }, { text: "Write down the number for later reference", isCorrect: false, order: 4 } ] },
+      { text: "Why is it risky to install many browser extensions?", explanation: "Extensions often have broad permissions to read and modify web page content, including passwords and sensitive data. Each extension is a potential attack surface — if compromised, it can silently steal data from every site you visit.", order: 4,
+        options: [ { text: "They slow down the browser", isCorrect: false, order: 1 }, { text: "They can read and modify all your browsing data, including credentials", isCorrect: true, order: 2 }, { text: "They use too much memory", isCorrect: false, order: 3 }, { text: "They conflict with each other", isCorrect: false, order: 4 } ] },
+    ],
+  },
+};
+
+const module10: ModuleSeed = {
+  title: "Mobile Device Security",
+  description: "Protect company data on smartphones and tablets. Learn about mobile-specific threats, secure device configuration, and safe app practices for both company-owned and BYOD devices.",
+  category: "MOBILE", difficulty: "BEGINNER", durationMins: 12, order: 10,
+  keyTakeaways: [ "Enable device encryption and a strong screen lock (PIN, biometric)", "Only install apps from official app stores", "Keep your device OS and apps updated", "Be cautious with app permissions — a flashlight app doesn't need access to your contacts", "Enable remote wipe capability on any device with company data" ],
+  realExamples: [ "The Jeff Bezos phone hack in 2019 reportedly started with a malicious video file sent via WhatsApp from the Saudi Crown Prince's account, exploiting a vulnerability in the messaging app.", "In 2023, the Pegasus spyware was found on phones of journalists and activists worldwide, installed through zero-click exploits that required no user interaction — just receiving a message was enough." ],
+  lessons: [
+    { title: "Mobile threat landscape", description: "Understanding threats unique to mobile devices", type: "READING", durationMins: 4, order: 1,
+      content: `# Mobile threat landscape\n\nMobile devices face unique security challenges because they're always connected, always with you, and mix personal and work use.\n\n## Mobile-specific threats\n\n**Malicious apps**: Apps that look legitimate but steal data, display ads, or install backdoors. Even official app stores occasionally host malicious apps before detection.\n\n**Unsecured WiFi**: Your phone automatically connects to known networks. Attackers create networks with common names ("Starbucks WiFi", "Airport Free WiFi") to intercept your traffic.\n\n**SMS phishing (smishing)**: Text messages with malicious links. Mobile browsers show less of the URL, making it harder to verify legitimacy.\n\n**Lost and stolen devices**: A phone without a strong lock screen gives instant access to email, corporate apps, saved passwords, photos, and authentication tokens.\n\n**Outdated software**: Many phone users delay updates for weeks or months. Each delay is a window for attackers exploiting known vulnerabilities.\n\n**Excessive app permissions**: Apps requesting access to contacts, location, camera, microphone, and storage beyond what they need for their stated function.` },
+    { title: "Securing your device", description: "Essential security settings for smartphones and tablets", type: "READING", durationMins: 4, order: 2,
+      content: `# Securing your device\n\n## Lock screen\n\n- Use a 6-digit PIN minimum, or a strong alphanumeric password\n- Enable biometric authentication (fingerprint or face recognition) for convenience\n- Set auto-lock to 1-2 minutes maximum\n- Disable lock screen notification previews for sensitive apps (email, messaging)\n\n## Device encryption\n\nModern iOS devices are encrypted by default. Android devices may need encryption enabled manually (Settings → Security → Encrypt device). Encryption means a stolen phone's data is unreadable without the unlock code.\n\n## App security\n\n- Install apps ONLY from official stores (Apple App Store, Google Play)\n- Review permissions before installing: does this app genuinely need access to your camera, location, and contacts?\n- Periodically review and revoke unnecessary permissions\n- Delete apps you no longer use\n- Keep apps updated — enable auto-updates\n\n## Network security\n\n- Turn off WiFi and Bluetooth when not in use\n- Remove saved networks you no longer use\n- Don't auto-join open networks\n- Use your company VPN when accessing work resources on mobile\n\n## Remote management\n\n- Enable Find My iPhone / Find My Device\n- Ensure your IT department can remotely wipe the device if lost\n- Register your device with your company's MDM (Mobile Device Management) if required\n\n## BYOD considerations\n\nIf using your personal phone for work, your company may require an MDM profile that can separate work data from personal data, enforce security policies, and wipe work data if you leave the company (without affecting personal data).` },
+    { title: "Safe mobile practices", description: "Daily habits for mobile security", type: "READING", durationMins: 3, order: 3,
+      content: `# Safe mobile practices\n\n## Communication hygiene\n\n- Don't click links in text messages from unknown numbers\n- Be wary of unexpected messages even from known contacts — their phone may be compromised\n- Don't send sensitive information (passwords, financial data) via SMS — texts are not encrypted\n- Use your organization's approved messaging apps for work communication\n\n## Physical security\n\n- Never leave your phone unattended in public\n- Be aware of shoulder surfers when entering PINs or passwords\n- Don't lend your unlocked phone to strangers\n- Use a screen privacy filter for sensitive work in public places\n\n## If your phone is lost or stolen\n\n1. Use Find My iPhone/Device to locate it\n2. If it can't be recovered, remotely lock and wipe it\n3. Report to your IT department immediately if it has access to company data\n4. Change passwords for any accounts logged in on the device\n5. Contact your mobile carrier to suspend the SIM\n6. Monitor your accounts for suspicious activity` },
+  ],
+  quiz: { title: "Mobile Security Assessment", description: "Test your knowledge of mobile device security.", passingScore: 70, timeLimitMins: 7,
+    questions: [
+      { text: "A free flashlight app requests access to your contacts, location, and microphone. What should you do?", explanation: "A flashlight only needs camera/flash access. Requesting contacts, location, and microphone permissions is a strong indicator the app is harvesting personal data. Deny these permissions or choose a different app.", order: 1,
+        options: [ { text: "Allow all permissions — the app needs them to function", isCorrect: false, order: 1 }, { text: "Deny unnecessary permissions — a flashlight doesn't need contacts or microphone access", isCorrect: true, order: 2 }, { text: "Allow them temporarily and revoke later", isCorrect: false, order: 3 }, { text: "It doesn't matter for free apps", isCorrect: false, order: 4 } ] },
+      { text: "What is the FIRST thing you should do if your work phone is lost or stolen?", explanation: "Time is critical. IT can remotely wipe the device to prevent data access. Simultaneously, use Find My Device to try locating it, but don't delay the IT notification.", order: 2,
+        options: [ { text: "Retrace your steps to find it", isCorrect: false, order: 1 }, { text: "Notify your IT department so they can remotely wipe it", isCorrect: true, order: 2 }, { text: "File a police report", isCorrect: false, order: 3 }, { text: "Buy a new phone", isCorrect: false, order: 4 } ] },
+      { text: "Why should you avoid auto-joining open WiFi networks?", explanation: "Attackers create fake WiFi networks with common names. If your phone auto-joins these networks, all your unencrypted traffic can be intercepted, including login credentials for apps that don't use end-to-end encryption.", order: 3,
+        options: [ { text: "Open networks are always slow", isCorrect: false, order: 1 }, { text: "Attackers create fake networks with common names to intercept your traffic", isCorrect: true, order: 2 }, { text: "It drains your battery faster", isCorrect: false, order: 3 }, { text: "It uses too much mobile data", isCorrect: false, order: 4 } ] },
+      { text: "What is the security benefit of disabling lock screen notification previews?", explanation: "Lock screen previews can display sensitive information (email contents, authentication codes, meeting details) to anyone who can see your phone — even without unlocking it.", order: 4,
+        options: [ { text: "It saves battery life", isCorrect: false, order: 1 }, { text: "It prevents sensitive information from being visible without unlocking the device", isCorrect: true, order: 2 }, { text: "It reduces spam notifications", isCorrect: false, order: 3 }, { text: "It makes the phone faster", isCorrect: false, order: 4 } ] },
+    ],
+  },
+};
+
+// =============================================================================
+// SEED FUNCTION
+// =============================================================================
+
+const allModules: ModuleSeed[] = [
+  module1, module2, module3, module4, module5,
+  module6, module7, module8, module9, module10,
+];
+
+async function seedModules(organizationId: string): Promise<{ modules: any[], quizzes: any[] }> {
+  console.log("🌱 Seeding 10 training modules...\n");
+
+  const createdModules: any[] = [];
+  const createdQuizzes: any[] = [];
+
+  for (const mod of allModules) {
+    // Create the module
+    const createdModule = await prisma.module.create({
       data: {
         title: mod.title,
         description: mod.description,
@@ -469,520 +1354,77 @@ async function main() {
         durationMins: mod.durationMins,
         order: mod.order,
         isPublished: true,
-        organizationId: organization.id,
-        isGlobal: true,
-      }
+        organizationId,
+        keyTakeaways: mod.keyTakeaways,
+        realExamples: mod.realExamples,
+      },
     });
-    for (const les of mod.lessons) {
+
+    console.log(`  ✅ Module: ${mod.title}`);
+
+    // Create lessons
+    for (const lesson of mod.lessons) {
       await prisma.lesson.create({
         data: {
-          title: les.title,
-          description: les.description,
-          type: les.type,
-          durationMins: les.durationMins,
-          order: les.order,
-          content: les.content,
-          moduleId: module.id,
-        }
+          title: lesson.title,
+          description: lesson.description,
+          type: lesson.type,
+          content: lesson.content,
+          durationMins: lesson.durationMins,
+          order: lesson.order,
+          moduleId: createdModule.id,
+        },
       });
     }
-    createdModules.push(module);
-  }
-  console.log("Created " + createdModules.length + " modules with lessons");
+    console.log(`     📄 ${mod.lessons.length} lessons created`);
+    createdModules.push(createdModule);
 
-  // =============================================
-  // QUIZZES WITH REAL QUESTIONS
-  // =============================================
-  interface OptionInput { text: string; isCorrect: boolean; }
-  interface QuestionInput { text: string; explanation: string; options: OptionInput[]; }
-  interface QuizInput { title: string; description: string; category: ModuleCategory; difficulty: Difficulty; passingScore: number; timeLimitMins: number; moduleIndex: number; questions: QuestionInput[]; }
-
-  const quizzesData: QuizInput[] = [
-    {
-      title: "Phishing Detection Assessment",
-      description: "Test your ability to identify and respond to phishing attacks across email, SMS, and voice channels.",
-      category: ModuleCategory.PHISHING, difficulty: Difficulty.BEGINNER, passingScore: 70, timeLimitMins: 15, moduleIndex: 0,
-      questions: [
-        { text: "You receive an email from 'IT-Support@yourcompany.securityupdate.com' asking you to verify your credentials. What should you do?", explanation: "The domain 'securityupdate.com' is not your company's domain. The real IT department would use your company's official domain. This is a phishing attempt using a subdomain trick.", options: [
-          { text: "Click the link since it mentions your company name", isCorrect: false },
-          { text: "Reply asking if it is legitimate", isCorrect: false },
-          { text: "Report it as phishing - the sender domain is suspicious", isCorrect: true },
-          { text: "Forward it to colleagues to check", isCorrect: false },
-        ]},
-        { text: "Which of the following is the MOST reliable indicator of a phishing email?", explanation: "While all can be indicators, checking the actual sender email address (not just the display name) is the most reliable first check. Display names can be easily spoofed.", options: [
-          { text: "The email contains a company logo", isCorrect: false },
-          { text: "The sender's full email address does not match the claimed organization", isCorrect: true },
-          { text: "The email was received during business hours", isCorrect: false },
-          { text: "The email is written in formal language", isCorrect: false },
-        ]},
-        { text: "You receive a text message saying your bank account has been locked and you must click a link immediately. What is the best action?", explanation: "Banks will never ask you to click links in text messages for account issues. Always contact your bank directly through their official app or phone number.", options: [
-          { text: "Click the link to check your account status", isCorrect: false },
-          { text: "Call the number provided in the text message", isCorrect: false },
-          { text: "Ignore the text and contact your bank through official channels", isCorrect: true },
-          { text: "Reply STOP to unsubscribe", isCorrect: false },
-        ]},
-        { text: "A phishing email creates urgency by saying your account will be deleted in 24 hours. This technique exploits which psychological principle?", explanation: "Creating artificial time pressure is a scarcity/urgency tactic that bypasses rational thinking and pushes victims to act without verification.", options: [
-          { text: "Authority", isCorrect: false },
-          { text: "Reciprocity", isCorrect: false },
-          { text: "Social proof", isCorrect: false },
-          { text: "Urgency and scarcity", isCorrect: true },
-        ]},
-        { text: "You accidentally clicked a link in a suspicious email. The page looks like your company login. What should you do FIRST?", explanation: "If you clicked a phishing link but have not entered credentials, close the page immediately and report to IT. Do not enter any information on the suspicious page.", options: [
-          { text: "Enter your credentials to see if it works", isCorrect: false },
-          { text: "Close the page immediately and report to IT security", isCorrect: true },
-          { text: "Take a screenshot and post it on social media", isCorrect: false },
-          { text: "Ignore it since you only clicked the link", isCorrect: false },
-        ]},
-        { text: "What is spear phishing?", explanation: "Spear phishing targets specific individuals using personalized information gathered from social media, company websites, or previous breaches to make the attack more convincing.", options: [
-          { text: "Mass emails sent to thousands of random recipients", isCorrect: false },
-          { text: "Targeted attacks customized for specific individuals using personal information", isCorrect: true },
-          { text: "Phone-based phishing attacks", isCorrect: false },
-          { text: "Attacks that only target fishing industry employees", isCorrect: false },
-        ]},
-        { text: "Which attachment type poses the HIGHEST risk when received via email from an unknown sender?", explanation: "Executable files (.exe) can run malicious code directly on your computer when opened. While other file types can contain malware, executables are the most directly dangerous.", options: [
-          { text: ".jpg image file", isCorrect: false },
-          { text: ".txt text file", isCorrect: false },
-          { text: ".exe executable file", isCorrect: true },
-          { text: ".pdf document", isCorrect: false },
-        ]},
-        { text: "Your CEO sends an urgent email from a Gmail address asking you to purchase gift cards. What type of attack is this?", explanation: "Business Email Compromise (BEC) involves impersonating executives to authorize fraudulent transactions. A CEO would never use a personal Gmail for official business requests.", options: [
-          { text: "Legitimate executive request", isCorrect: false },
-          { text: "Business Email Compromise (BEC)", isCorrect: true },
-          { text: "Internal communication", isCorrect: false },
-          { text: "Spam email", isCorrect: false },
-        ]},
-      ]
-    },
-    {
-      title: "Password Security Mastery",
-      description: "Evaluate your knowledge of password creation, management, and protection strategies.",
-      category: ModuleCategory.PASSWORDS, difficulty: Difficulty.BEGINNER, passingScore: 70, timeLimitMins: 12, moduleIndex: 1,
-      questions: [
-        { text: "Which password is the STRONGEST?", explanation: "Length is the most important factor in password strength. A long passphrase of random words is much harder to crack than a short complex password.", options: [
-          { text: "P@ssw0rd!", isCorrect: false },
-          { text: "Correct-Horse-Battery-Staple-7!", isCorrect: true },
-          { text: "Admin2024", isCorrect: false },
-          { text: "Qwerty123$", isCorrect: false },
-        ]},
-        { text: "Why is password reuse across multiple services dangerous?", explanation: "When one service is breached, attackers use those credentials on other services (credential stuffing). If you reuse passwords, one breach compromises all your accounts.", options: [
-          { text: "It makes passwords easier to forget", isCorrect: false },
-          { text: "A breach on one service compromises all accounts using the same password", isCorrect: true },
-          { text: "It slows down your computer", isCorrect: false },
-          { text: "It is only dangerous if you use simple passwords", isCorrect: false },
-        ]},
-        { text: "What is the primary benefit of using a password manager?", explanation: "Password managers generate, store, and auto-fill unique complex passwords for every account. You only need to remember one master password.", options: [
-          { text: "It makes the internet faster", isCorrect: false },
-          { text: "It stores unique strong passwords for every account securely", isCorrect: true },
-          { text: "It replaces the need for any passwords", isCorrect: false },
-          { text: "It prevents all types of cyberattacks", isCorrect: false },
-        ]},
-        { text: "How long would it take to crack a 6-character lowercase password using modern hardware?", explanation: "Modern GPUs can test billions of combinations per second. A 6-character lowercase password has only about 300 million combinations, crackable in under 1 second.", options: [
-          { text: "Several years", isCorrect: false },
-          { text: "A few months", isCorrect: false },
-          { text: "Less than 1 second", isCorrect: true },
-          { text: "About 1 hour", isCorrect: false },
-        ]},
-        { text: "Your IT department asks for your password over the phone to fix an issue. What should you do?", explanation: "Legitimate IT departments never need your password. They have administrative access to reset passwords or fix issues without your credentials. This is likely social engineering.", options: [
-          { text: "Provide it since they are from IT", isCorrect: false },
-          { text: "Refuse and report this as a potential social engineering attempt", isCorrect: true },
-          { text: "Give them a fake password to test them", isCorrect: false },
-          { text: "Email them your password instead for security", isCorrect: false },
-        ]},
-        { text: "Which is the BEST practice for your password manager master password?", explanation: "Your master password protects all other passwords, so it must be long (20+ characters), unique, and memorable. A passphrase meets all these criteria.", options: [
-          { text: "Use your birthday so you never forget it", isCorrect: false },
-          { text: "Write it on a sticky note on your monitor", isCorrect: false },
-          { text: "Use a long memorable passphrase of 20+ characters unique to this purpose", isCorrect: true },
-          { text: "Use the same password as your email for convenience", isCorrect: false },
-        ]},
-      ]
-    },
-    {
-      title: "Multi-Factor Authentication Quiz",
-      description: "Test your understanding of MFA methods, setup procedures, and security implications.",
-      category: ModuleCategory.PASSWORDS, difficulty: Difficulty.BEGINNER, passingScore: 70, timeLimitMins: 10, moduleIndex: 2,
-      questions: [
-        { text: "Which MFA method provides the STRONGEST protection against phishing?", explanation: "Hardware security keys like YubiKey use cryptographic protocols that verify the actual website domain, making them immune to phishing attacks that redirect to fake sites.", options: [
-          { text: "SMS text message codes", isCorrect: false },
-          { text: "Email verification codes", isCorrect: false },
-          { text: "Hardware security keys (e.g., YubiKey)", isCorrect: true },
-          { text: "Security questions", isCorrect: false },
-        ]},
-        { text: "You receive 15 MFA push notifications you did not initiate. What is happening?", explanation: "MFA fatigue attacks flood you with approval requests hoping you will accidentally approve one. Never approve prompts you did not initiate, and report this immediately.", options: [
-          { text: "Your authenticator app is malfunctioning", isCorrect: false },
-          { text: "This is an MFA fatigue attack - report it immediately", isCorrect: true },
-          { text: "Someone is testing the system", isCorrect: false },
-          { text: "Approve one to stop the notifications", isCorrect: false },
-        ]},
-        { text: "Why is SMS-based MFA considered less secure than authenticator apps?", explanation: "SMS messages can be intercepted through SIM swapping, SS7 protocol vulnerabilities, and social engineering of mobile carrier employees.", options: [
-          { text: "SMS codes expire too quickly", isCorrect: false },
-          { text: "SMS can be intercepted through SIM swapping and network vulnerabilities", isCorrect: true },
-          { text: "SMS codes are too short", isCorrect: false },
-          { text: "SMS does not work without internet", isCorrect: false },
-        ]},
-        { text: "What should you do with MFA backup codes after setting up MFA?", explanation: "Backup codes are your recovery method if you lose your MFA device. Store them securely in your password manager or printed in a physical safe.", options: [
-          { text: "Delete them since you have the authenticator app", isCorrect: false },
-          { text: "Save them in a text file on your desktop", isCorrect: false },
-          { text: "Store them securely in your password manager or a physical safe", isCorrect: true },
-          { text: "Share them with a trusted colleague", isCorrect: false },
-        ]},
-        { text: "Which account should be your HIGHEST priority for enabling MFA?", explanation: "Your email account is the gateway to password resets for virtually all other accounts. If attackers control your email, they can reset passwords everywhere.", options: [
-          { text: "Social media accounts", isCorrect: false },
-          { text: "Shopping websites", isCorrect: false },
-          { text: "Email account", isCorrect: true },
-          { text: "Gaming platforms", isCorrect: false },
-        ]},
-      ]
-    },
-    {
-      title: "Social Engineering Defense Assessment",
-      description: "Evaluate your ability to recognize and resist social engineering manipulation techniques.",
-      category: ModuleCategory.SOCIAL_ENGINEERING, difficulty: Difficulty.INTERMEDIATE, passingScore: 75, timeLimitMins: 15, moduleIndex: 3,
-      questions: [
-        { text: "A caller claims to be from your bank's fraud department and knows your name and last four digits of your card. They ask you to verify your full card number. What should you do?", explanation: "Partial information like your name and last four digits can be obtained from previous breaches. Always hang up and call your bank directly using the number on your card.", options: [
-          { text: "Provide the information since they already know partial details", isCorrect: false },
-          { text: "Hang up and call your bank using the official number on your card", isCorrect: true },
-          { text: "Ask them to prove they are from the bank", isCorrect: false },
-          { text: "Give a wrong number to test them", isCorrect: false },
-        ]},
-        { text: "You find a USB drive labeled 'Q4 Salary Adjustments - Confidential' in your office parking lot. What should you do?", explanation: "USB drop attacks use enticing labels to trick people into inserting malicious drives. The curiosity factor makes this attack very effective. Turn it in to security.", options: [
-          { text: "Plug it into your computer to find the owner", isCorrect: false },
-          { text: "Turn it in to IT security without plugging it in", isCorrect: true },
-          { text: "Plug it into a non-networked computer to check", isCorrect: false },
-          { text: "Leave it where you found it", isCorrect: false },
-        ]},
-        { text: "Which psychological principle is exploited when an attacker impersonates your CEO in an email?", explanation: "Authority principle - people tend to comply with requests from authority figures without questioning them. Attackers exploit this by impersonating executives.", options: [
-          { text: "Reciprocity", isCorrect: false },
-          { text: "Authority", isCorrect: true },
-          { text: "Likability", isCorrect: false },
-          { text: "Scarcity", isCorrect: false },
-        ]},
-        { text: "Someone carrying heavy boxes asks you to hold the secure door open. They say they forgot their badge. What is the correct response?", explanation: "This is a classic tailgating scenario. Politely offer to call reception or security to help them. Never compromise physical access controls regardless of the situation.", options: [
-          { text: "Hold the door open to be helpful", isCorrect: false },
-          { text: "Ask them to set down the boxes and badge in", isCorrect: false },
-          { text: "Offer to call reception or security to assist them", isCorrect: true },
-          { text: "Ask a colleague to verify them", isCorrect: false },
-        ]},
-        { text: "What is pretexting in the context of social engineering?", explanation: "Pretexting involves creating a fabricated scenario or identity to manipulate the victim. The attacker builds a believable context to extract information or gain access.", options: [
-          { text: "Sending mass spam emails", isCorrect: false },
-          { text: "Creating a fabricated scenario to gain trust and extract information", isCorrect: true },
-          { text: "Installing malware through USB drives", isCorrect: false },
-          { text: "Breaking into buildings at night", isCorrect: false },
-        ]},
-        { text: "The Pause Principle in social engineering defense recommends asking yourself four questions before acting. Which is NOT one of them?", explanation: "The Pause Principle asks: Was this expected? Can I verify the sender? Is there unusual urgency? Would this be normal through official channels? Technical sophistication of the email is not part of this framework.", options: [
-          { text: "Did I expect this communication?", isCorrect: false },
-          { text: "Can I independently verify the sender?", isCorrect: false },
-          { text: "How technically sophisticated is this email?", isCorrect: true },
-          { text: "Is there unusual urgency?", isCorrect: false },
-        ]},
-      ]
-    },
-    {
-      title: "Malware & Ransomware Knowledge Check",
-      description: "Test your understanding of malware types, ransomware tactics, and proper incident response.",
-      category: ModuleCategory.MALWARE, difficulty: Difficulty.INTERMEDIATE, passingScore: 75, timeLimitMins: 15, moduleIndex: 6,
-      questions: [
-        { text: "What distinguishes ransomware from other types of malware?", explanation: "Ransomware specifically encrypts files and demands payment for the decryption key. Modern variants also exfiltrate data for double extortion.", options: [
-          { text: "It only targets mobile devices", isCorrect: false },
-          { text: "It encrypts your files and demands payment for decryption", isCorrect: true },
-          { text: "It always spreads through USB drives", isCorrect: false },
-          { text: "It only affects Windows computers", isCorrect: false },
-        ]},
-        { text: "Your computer suddenly shows a message saying all files are encrypted and you must pay 2 Bitcoin within 48 hours. What is your FIRST action?", explanation: "Disconnecting from the network prevents the ransomware from spreading to other systems and stops data exfiltration. Then contact IT security immediately.", options: [
-          { text: "Pay the ransom to recover your files", isCorrect: false },
-          { text: "Shut down the computer immediately", isCorrect: false },
-          { text: "Disconnect from the network and contact IT security", isCorrect: true },
-          { text: "Try to find the ransomware and delete it", isCorrect: false },
-        ]},
-        { text: "What is fileless malware?", explanation: "Fileless malware operates entirely in memory using legitimate system tools (like PowerShell), leaving no traditional files on disk. This makes it extremely difficult for traditional antivirus to detect.", options: [
-          { text: "Malware that deletes all files on your computer", isCorrect: false },
-          { text: "Malware that operates in memory without writing files to disk", isCorrect: true },
-          { text: "A virus that only affects files but not programs", isCorrect: false },
-          { text: "Malware that is too small to be detected", isCorrect: false },
-        ]},
-        { text: "Which is the MOST effective protection against ransomware?", explanation: "Regular offline backups that are tested for restoration are the most effective defense. If ransomware encrypts your files, you can restore from a clean backup without paying.", options: [
-          { text: "Antivirus software alone", isCorrect: false },
-          { text: "Regular tested offline backups", isCorrect: true },
-          { text: "A strong firewall", isCorrect: false },
-          { text: "Paying the ransom quickly", isCorrect: false },
-        ]},
-        { text: "What is double extortion in ransomware attacks?", explanation: "Modern ransomware gangs first steal sensitive data, then encrypt files. If the victim does not pay, they threaten to publish the stolen data publicly.", options: [
-          { text: "Encrypting files twice with different keys", isCorrect: false },
-          { text: "Attacking two companies simultaneously", isCorrect: false },
-          { text: "Stealing data before encrypting and threatening to publish it", isCorrect: true },
-          { text: "Demanding payment in two different cryptocurrencies", isCorrect: false },
-        ]},
-        { text: "You notice your antivirus has been disabled without your action. What does this indicate?", explanation: "Malware often disables security software to avoid detection. Disabled antivirus you did not turn off is a strong indicator of compromise requiring immediate investigation.", options: [
-          { text: "A normal Windows update occurred", isCorrect: false },
-          { text: "Your antivirus license expired", isCorrect: false },
-          { text: "Possible malware infection - report to IT security immediately", isCorrect: true },
-          { text: "Nothing to worry about, just re-enable it", isCorrect: false },
-        ]},
-      ]
-    },
-    {
-      title: "Safe Browsing & Internet Security Quiz",
-      description: "Assess your knowledge of web-based threats and secure browsing practices.",
-      category: ModuleCategory.BROWSING, difficulty: Difficulty.BEGINNER, passingScore: 70, timeLimitMins: 10, moduleIndex: 4,
-      questions: [
-        { text: "What does the padlock icon in your browser address bar indicate?", explanation: "The padlock indicates an HTTPS connection with a valid SSL/TLS certificate. Traffic between you and the site is encrypted, but it does not guarantee the site itself is safe.", options: [
-          { text: "The website is completely safe and trustworthy", isCorrect: false },
-          { text: "The connection is encrypted with a valid SSL certificate", isCorrect: true },
-          { text: "The website has been verified by the government", isCorrect: false },
-          { text: "Your antivirus is active", isCorrect: false },
-        ]},
-        { text: "What is a drive-by download attack?", explanation: "Drive-by downloads automatically install malware when you visit a compromised website, requiring no clicks or interaction. Keeping browsers updated is the primary defense.", options: [
-          { text: "Downloading files while driving", isCorrect: false },
-          { text: "Malware that downloads automatically when visiting a compromised website", isCorrect: true },
-          { text: "Downloading software from a USB drive", isCorrect: false },
-          { text: "A fast internet download technique", isCorrect: false },
-        ]},
-        { text: "Which browser extension practice is MOST dangerous?", explanation: "Extensions from unknown sources can contain malware, spyware, or credential stealers. Only install from official browser stores and review permissions carefully.", options: [
-          { text: "Using an ad blocker from the official store", isCorrect: false },
-          { text: "Installing extensions from third-party websites", isCorrect: true },
-          { text: "Using a password manager extension", isCorrect: false },
-          { text: "Having fewer than five extensions installed", isCorrect: false },
-        ]},
-        { text: "You see a URL that looks like 'www.arnazon.com' in an email. What is suspicious about it?", explanation: "This is a typosquatting attack. The URL uses 'rn' which looks like 'm' at a glance. The real domain is amazon.com. Always read URLs carefully character by character.", options: [
-          { text: "Nothing, it looks normal", isCorrect: false },
-          { text: "The domain uses 'rn' instead of 'm' to mimic a legitimate site", isCorrect: true },
-          { text: "It starts with www", isCorrect: false },
-          { text: "It does not have https", isCorrect: false },
-        ]},
-        { text: "What is the safest way to access your bank's website?", explanation: "Typing the URL directly or using a saved bookmark eliminates the risk of clicking malicious links that redirect to fake banking sites.", options: [
-          { text: "Click a link in an email from the bank", isCorrect: false },
-          { text: "Search for it on Google and click the first result", isCorrect: false },
-          { text: "Type the URL directly or use a saved bookmark", isCorrect: true },
-          { text: "Follow a link shared on social media", isCorrect: false },
-        ]},
-      ]
-    },
-    {
-      title: "Email Security Best Practices Quiz",
-      description: "Test your knowledge of secure email handling, attachment safety, and data leakage prevention.",
-      category: ModuleCategory.PHISHING, difficulty: Difficulty.INTERMEDIATE, passingScore: 75, timeLimitMins: 12, moduleIndex: 5,
-      questions: [
-        { text: "A colleague sends you an unexpected Word document asking you to 'Enable Macros' to view the content. What should you do?", explanation: "Macros can execute malicious code. If you did not expect the document, verify with the sender through a separate channel before enabling anything.", options: [
-          { text: "Enable macros since it is from a colleague", isCorrect: false },
-          { text: "Contact the colleague through a separate channel to verify they sent it", isCorrect: true },
-          { text: "Forward it to other colleagues for their opinion", isCorrect: false },
-          { text: "Open it on your phone instead", isCorrect: false },
-        ]},
-        { text: "What is the biggest risk of using BCC incorrectly when sending emails?", explanation: "Using CC instead of BCC exposes all recipient email addresses to everyone, potentially violating privacy regulations like GDPR and revealing contacts to unintended parties.", options: [
-          { text: "The email might be slower to deliver", isCorrect: false },
-          { text: "Accidentally exposing all recipient email addresses via CC", isCorrect: true },
-          { text: "The email might go to spam", isCorrect: false },
-          { text: "BCC emails cannot include attachments", isCorrect: false },
-        ]},
-        { text: "Why should you never forward work emails to your personal email account?", explanation: "Personal email lacks corporate security controls, encryption, and data loss prevention. Forwarding work data creates compliance risks and potential data breaches.", options: [
-          { text: "Personal email is slower", isCorrect: false },
-          { text: "It creates a security and compliance risk by moving data outside corporate controls", isCorrect: true },
-          { text: "It uses more storage", isCorrect: false },
-          { text: "It is only a problem for executives", isCorrect: false },
-        ]},
-        { text: "You need to send a sensitive contract to a client. What is the MOST secure method?", explanation: "Encrypted file sharing via approved platforms provides access controls, audit logging, link expiration, and encryption that regular email cannot match.", options: [
-          { text: "Regular email attachment", isCorrect: false },
-          { text: "Post it on social media as a private message", isCorrect: false },
-          { text: "Use your organization's encrypted file sharing platform with link expiration", isCorrect: true },
-          { text: "Send it via personal WhatsApp", isCorrect: false },
-        ]},
-        { text: "An email appears to come from your CEO requesting an urgent wire transfer. The email address looks correct. What should you do?", explanation: "Email addresses can be spoofed to look identical. For financial requests, always verify through a separate communication channel such as a phone call to the known number.", options: [
-          { text: "Process it immediately since the CEO requested it urgently", isCorrect: false },
-          { text: "Reply to the email asking for confirmation", isCorrect: false },
-          { text: "Verify the request by calling the CEO directly using a known phone number", isCorrect: true },
-          { text: "Forward it to the finance team to handle", isCorrect: false },
-        ]},
-      ]
-    },
-    {
-      title: "Remote Work Security Assessment",
-      description: "Evaluate your knowledge of secure remote work practices including home network security and VPN usage.",
-      category: ModuleCategory.NETWORK, difficulty: Difficulty.INTERMEDIATE, passingScore: 70, timeLimitMins: 12, moduleIndex: 9,
-      questions: [
-        { text: "What is the FIRST thing you should do before accessing work resources from home?", explanation: "A VPN encrypts all traffic between your device and your organization's network, protecting work data even on your home network.", options: [
-          { text: "Check social media", isCorrect: false },
-          { text: "Connect to your organization's VPN", isCorrect: true },
-          { text: "Open your email directly in the browser", isCorrect: false },
-          { text: "Restart your computer", isCorrect: false },
-        ]},
-        { text: "What encryption standard should your home WiFi use?", explanation: "WPA3 is the latest and most secure WiFi encryption. WPA2 is acceptable. WEP is severely outdated and can be cracked in minutes.", options: [
-          { text: "WEP", isCorrect: false },
-          { text: "No encryption needed at home", isCorrect: false },
-          { text: "WPA3 or WPA2", isCorrect: true },
-          { text: "Open network for convenience", isCorrect: false },
-        ]},
-        { text: "Why should IoT devices (smart speakers, cameras) be on a separate network from your work devices?", explanation: "IoT devices often have poor security and rarely receive updates. If compromised, an attacker on the same network could access your work devices.", options: [
-          { text: "IoT devices use too much bandwidth", isCorrect: false },
-          { text: "Compromised IoT devices could provide attackers access to your work devices", isCorrect: true },
-          { text: "It makes the internet faster", isCorrect: false },
-          { text: "IoT devices do not work on the same network", isCorrect: false },
-        ]},
-        { text: "You are on a video call discussing confidential business strategy. What precaution is MOST important?", explanation: "Ensuring no unauthorized people can see or hear your confidential discussions prevents information leakage through physical observation.", options: [
-          { text: "Use the highest video resolution", isCorrect: false },
-          { text: "Ensure you are in a private space where no one can overhear", isCorrect: true },
-          { text: "Keep the meeting under 30 minutes", isCorrect: false },
-          { text: "Use a virtual background", isCorrect: false },
-        ]},
-        { text: "A family member asks to use your work laptop to check their email. What should you do?", explanation: "Work devices contain sensitive data and have security configurations. Family members could accidentally install malware, access confidential data, or compromise security settings.", options: [
-          { text: "Let them use it briefly", isCorrect: false },
-          { text: "Create a guest account for them", isCorrect: false },
-          { text: "Politely decline - work devices should only be used by authorized employees", isCorrect: true },
-          { text: "Let them use it but supervise them", isCorrect: false },
-        ]},
-      ]
-    },
-    {
-      title: "Data Classification & Protection Quiz",
-      description: "Test your understanding of data classification levels, handling procedures, and regulatory compliance.",
-      category: ModuleCategory.DATA_PROTECTION, difficulty: Difficulty.INTERMEDIATE, passingScore: 75, timeLimitMins: 12, moduleIndex: 10,
-      questions: [
-        { text: "Which data classification level requires the STRICTEST access controls?", explanation: "Restricted data includes trade secrets, encryption keys, and regulated personal data. It requires the highest level of protection including encryption, MFA, and audit logging.", options: [
-          { text: "Public", isCorrect: false },
-          { text: "Internal", isCorrect: false },
-          { text: "Confidential", isCorrect: false },
-          { text: "Restricted", isCorrect: true },
-        ]},
-        { text: "You accidentally sent a confidential document to the wrong email recipient. What should you do FIRST?", explanation: "Immediately notifying your security team allows them to take action such as requesting deletion, assessing impact, and documenting the incident for compliance.", options: [
-          { text: "Hope they do not open it", isCorrect: false },
-          { text: "Send a follow-up email asking them to delete it", isCorrect: false },
-          { text: "Report the incident to your security team immediately", isCorrect: true },
-          { text: "Recall the email using the email recall feature", isCorrect: false },
-        ]},
-        { text: "What does GDPR's 'Right to Erasure' mean?", explanation: "GDPR gives individuals the right to request deletion of their personal data. Organizations must comply within specific timeframes when the legal basis for processing no longer applies.", options: [
-          { text: "Companies must use erasable storage only", isCorrect: false },
-          { text: "Individuals can request their personal data be deleted", isCorrect: true },
-          { text: "All data must be encrypted", isCorrect: false },
-          { text: "Companies must erase data every 30 days", isCorrect: false },
-        ]},
-        { text: "Why is standard file deletion NOT sufficient for sensitive data disposal?", explanation: "Standard deletion only removes the directory entry pointing to the file. The actual data remains on disk and can be recovered using forensic tools.", options: [
-          { text: "It is too slow", isCorrect: false },
-          { text: "The data remains on disk and can be recovered with forensic tools", isCorrect: true },
-          { text: "It only works on small files", isCorrect: false },
-          { text: "It requires administrator access", isCorrect: false },
-        ]},
-        { text: "Which scenario represents a data classification violation?", explanation: "Uploading confidential financial data to a personal Dropbox moves it outside corporate security controls, violating data handling policies for confidential information.", options: [
-          { text: "Sharing a public press release on social media", isCorrect: false },
-          { text: "Sending internal meeting notes to a colleague via corporate email", isCorrect: false },
-          { text: "Uploading confidential financial reports to a personal Dropbox account", isCorrect: true },
-          { text: "Printing a public document on the office printer", isCorrect: false },
-        ]},
-      ]
-    },
-    {
-      title: "Incident Reporting Readiness Quiz",
-      description: "Verify you know how to recognize, report, and respond to security incidents.",
-      category: ModuleCategory.COMPLIANCE, difficulty: Difficulty.BEGINNER, passingScore: 70, timeLimitMins: 10, moduleIndex: 11,
-      questions: [
-        { text: "Which of the following IS a security incident that should be reported?", explanation: "Receiving a phishing email is a security incident even if you did not click anything. Reporting it helps the security team warn others and block the attack.", options: [
-          { text: "Your computer takes a few seconds to start an application", isCorrect: false },
-          { text: "You receive a phishing email even though you did not click it", isCorrect: true },
-          { text: "A colleague asks you for directions to the cafeteria", isCorrect: false },
-          { text: "Your monitor brightness changed", isCorrect: false },
-        ]},
-        { text: "You suspect your computer has malware. What is the correct order of actions?", explanation: "The priority is: stop the spread (disconnect), get expert help (contact IT), provide information (document what happened). Never try to fix it yourself.", options: [
-          { text: "Try to remove the malware, then tell your manager", isCorrect: false },
-          { text: "Disconnect from network, contact IT security, document what you observed", isCorrect: true },
-          { text: "Shut down the computer and go home", isCorrect: false },
-          { text: "Continue working and report it tomorrow", isCorrect: false },
-        ]},
-        { text: "Why is it important to report security incidents even if no damage occurred?", explanation: "Failed attacks provide intelligence about attacker techniques, help identify vulnerabilities, and allow the security team to strengthen defenses before a successful attack occurs.", options: [
-          { text: "It is not important if no damage occurred", isCorrect: false },
-          { text: "For entertainment purposes", isCorrect: false },
-          { text: "It helps identify attack patterns and strengthen defenses before damage occurs", isCorrect: true },
-          { text: "To make the IT team look busy", isCorrect: false },
-        ]},
-        { text: "You accidentally clicked a link and entered your password on a suspicious site. How quickly should you report this?", explanation: "Every minute counts after credentials are compromised. Attackers can use stolen credentials within minutes to access accounts, steal data, or move laterally.", options: [
-          { text: "Within the next week", isCorrect: false },
-          { text: "At the end of the business day", isCorrect: false },
-          { text: "Immediately - time is critical", isCorrect: true },
-          { text: "Only if you notice suspicious activity later", isCorrect: false },
-        ]},
-        { text: "During an incident investigation, the security team asks you to keep your potentially infected laptop running. Why?", explanation: "Volatile evidence in RAM (running processes, network connections, encryption keys) is lost when a computer shuts down. This evidence is crucial for forensic investigation.", options: [
-          { text: "So you can continue working", isCorrect: false },
-          { text: "To preserve forensic evidence in memory that would be lost on shutdown", isCorrect: true },
-          { text: "The shutdown process would spread the malware", isCorrect: false },
-          { text: "It is easier to clean malware on a running system", isCorrect: false },
-        ]},
-      ]
-    },
-    {
-      title: "Insider Threat Awareness Assessment",
-      description: "Test your ability to recognize insider threat indicators and understand prevention strategies.",
-      category: ModuleCategory.SOCIAL_ENGINEERING, difficulty: Difficulty.ADVANCED, passingScore: 80, timeLimitMins: 15, moduleIndex: 14,
-      questions: [
-        { text: "Which scenario is MOST likely an indicator of an insider threat?", explanation: "Downloading large amounts of data shortly before leaving is a classic indicator of data theft. While each indicator alone may be innocent, this pattern is highly suspicious.", options: [
-          { text: "An employee taking their lunch break off-site", isCorrect: false },
-          { text: "An employee downloading large data files two weeks before their resignation date", isCorrect: true },
-          { text: "An employee asking for help with a new software tool", isCorrect: false },
-          { text: "An employee working from home on approved days", isCorrect: false },
-        ]},
-        { text: "What percentage of data breaches involve insiders according to industry research?", explanation: "Industry research consistently shows that approximately 60% of data breaches involve insider actions, whether malicious, negligent, or through compromised credentials.", options: [
-          { text: "Less than 10%", isCorrect: false },
-          { text: "About 25%", isCorrect: false },
-          { text: "About 60%", isCorrect: true },
-          { text: "Over 90%", isCorrect: false },
-        ]},
-        { text: "Which type of insider threat is the MOST common?", explanation: "Negligent insiders who cause breaches through carelessness (falling for phishing, mishandling data, ignoring policies) account for the majority of insider incidents.", options: [
-          { text: "Malicious insiders seeking financial gain", isCorrect: false },
-          { text: "Negligent insiders causing accidental breaches", isCorrect: true },
-          { text: "Ideologically motivated insiders", isCorrect: false },
-          { text: "Foreign intelligence operatives", isCorrect: false },
-        ]},
-        { text: "You notice a colleague accessing systems outside their job role after hours. What should you do?", explanation: "Report through proper channels allows trained investigators to assess the situation. Do not confront the individual or investigate yourself as this could compromise an investigation.", options: [
-          { text: "Confront them directly and ask what they are doing", isCorrect: false },
-          { text: "Ignore it since they are your colleague", isCorrect: false },
-          { text: "Report it through your organization's confidential reporting channel", isCorrect: true },
-          { text: "Tell other colleagues about it", isCorrect: false },
-        ]},
-        { text: "What is the principle of least privilege and why does it help prevent insider threats?", explanation: "Least privilege means users only have access to the minimum resources needed for their role. This limits the damage any insider can cause, whether malicious or negligent.", options: [
-          { text: "Giving everyone the same level of access for fairness", isCorrect: false },
-          { text: "Restricting access to the minimum needed for each role, limiting potential damage", isCorrect: true },
-          { text: "Only allowing managers to access systems", isCorrect: false },
-          { text: "Requiring approval for every action", isCorrect: false },
-        ]},
-      ]
-    },
-  ];
-
-  // Create quizzes with questions and options in DB
-  const createdQuizzes = [];
-  for (const q of quizzesData) {
-    const quiz = await prisma.quiz.create({
+    // Create quiz
+    const createdQuiz = await prisma.quiz.create({
       data: {
-        title: q.title,
-        description: q.description,
-        category: q.category,
-        difficulty: q.difficulty,
-        passingScore: q.passingScore,
-        timeLimitMins: q.timeLimitMins,
-        status: QuizStatus.PUBLISHED,
-        moduleId: createdModules[q.moduleIndex]?.id,
-        organizationId: organization.id,
-      }
+        title: mod.quiz.title,
+        description: mod.quiz.description,
+        moduleId: createdModule.id,
+        difficulty: mod.difficulty,
+        category: mod.category,
+        passingScore: mod.quiz.passingScore,
+        timeLimitMins: mod.quiz.timeLimitMins,
+        status: "PUBLISHED" as QuizStatus,
+        isCustom: false,
+        organizationId,
+      },
     });
-    for (let qi = 0; qi < q.questions.length; qi++) {
-      const qData = q.questions[qi];
-      const question = await prisma.question.create({
+
+    // Create questions with options
+    for (const q of mod.quiz.questions) {
+      await prisma.question.create({
         data: {
-          text: qData.text,
-          explanation: qData.explanation,
-          order: qi + 1,
-          quizId: quiz.id,
-        }
+          quizId: createdQuiz.id,
+          text: q.text,
+          explanation: q.explanation,
+          order: q.order,
+          options: {
+            create: q.options.map((opt) => ({
+              text: opt.text,
+              isCorrect: opt.isCorrect,
+              order: opt.order,
+            })),
+          },
+        },
       });
-      for (let oi = 0; oi < qData.options.length; oi++) {
-        await prisma.questionOption.create({
-          data: {
-            text: qData.options[oi].text,
-            isCorrect: qData.options[oi].isCorrect,
-            order: oi + 1,
-            questionId: question.id,
-          }
-        });
-      }
     }
-    createdQuizzes.push(quiz);
+    createdQuizzes.push(createdQuiz);
+    console.log(`     📝 Quiz: ${mod.quiz.questions.length} questions created`);
+    console.log("");
   }
-  console.log("Created " + createdQuizzes.length + " quizzes with questions");
+
+  console.log("✅ All 10 modules seeded successfully!\n");
+
+  return { modules: createdModules, quizzes: createdQuizzes };
+}
+
+  const { modules: createdModules, quizzes: createdQuizzes } = await seedModules(organization.id);
+  console.log("Created " + createdModules.length + " modules and " + createdQuizzes.length + " quizzes");
 
   // =============================================
   // PHISHING EXAMPLES
@@ -1166,7 +1608,7 @@ async function main() {
         quizId: createdQuizzes[i].id,
         score: 80 + i * 5,
         passed: true,
-        timeTaken: (quizzesData[i].timeLimitMins - 3) * 60,
+        timeTaken: (createdQuizzes[i]?.timeLimitMins || 15 - 3) * 60,
         answers: [],
       }
     });
