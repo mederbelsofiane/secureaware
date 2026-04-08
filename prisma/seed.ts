@@ -1427,6 +1427,157 @@ async function seedModules(organizationId: string): Promise<{ modules: any[], qu
   console.log("Created " + createdModules.length + " modules and " + createdQuizzes.length + " quizzes");
 
   // =============================================
+  // PHISHING SIMULATION TEMPLATES
+  // =============================================
+  const phishingTemplates = [
+    {
+      name: "IT Password Reset",
+      subject: "Urgent: Your Password Expires Today",
+      senderName: "IT Help Desk",
+      senderEmail: "it-helpdesk@{{companyDomain}}",
+      difficulty: "BEGINNER" as Difficulty,
+      category: "PHISHING" as ModuleCategory,
+      bodyHtml: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: #1a73e8; padding: 15px 20px; border-radius: 8px 8px 0 0;">
+    <h2 style="color: white; margin: 0;">IT Security Alert</h2>
+  </div>
+  <div style="border: 1px solid #ddd; border-top: none; padding: 20px; border-radius: 0 0 8px 8px;">
+    <p>Dear {{firstName}},</p>
+    <p>Our security system has detected that your password will expire in <strong>24 hours</strong>. To avoid losing access to your account, please update your password immediately.</p>
+    <p style="text-align: center; margin: 30px 0;">
+      <a href="{{clickUrl}}" style="background: #1a73e8; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">Reset Password Now</a>
+    </p>
+    <p style="color: #666; font-size: 13px;">If you did not request this change, please contact IT support at ext. 4357.</p>
+    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+    <p style="color: #999; font-size: 11px;">This is an automated message from IT Help Desk.<br>Do not reply to this email.</p>
+  </div>
+  <img src="{{trackingUrl}}" width="1" height="1" style="display:none" />
+</div>`,
+      landingPageHtml: `<h2>🔐 Password Reset Phishing</h2><p>This email impersonated your IT department to trick you into entering credentials on a fake page.</p><h3>Red Flags:</h3><ul><li>Urgency tactics: "expires in 24 hours"</li><li>Generic greeting instead of your full name</li><li>The sender domain doesn't match your real IT department</li><li>Hover over the link — the URL doesn't go to your company's real domain</li></ul>`,
+    },
+    {
+      name: "CEO Wire Transfer Request",
+      subject: "Confidential: Urgent Wire Transfer Needed",
+      senderName: "CEO Office",
+      senderEmail: "ceo@{{companyDomain}}",
+      difficulty: "INTERMEDIATE" as Difficulty,
+      category: "SOCIAL_ENGINEERING" as ModuleCategory,
+      bodyHtml: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <p>Hi {{firstName}},</p>
+  <p>I need you to handle something urgently and confidentially. We have an acquisition deal closing today and I need a wire transfer processed immediately.</p>
+  <p>I'm in back-to-back meetings and can't call right now. Please click the link below to view the transfer details and process it ASAP.</p>
+  <p style="text-align: center; margin: 30px 0;">
+    <a href="{{clickUrl}}" style="background: #333; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px;">View Transfer Details</a>
+  </p>
+  <p>Please keep this confidential — do not discuss with anyone else until the deal is announced.</p>
+  <p>Thanks,<br>Sent from my iPhone</p>
+  <img src="{{trackingUrl}}" width="1" height="1" style="display:none" />
+</div>`,
+      landingPageHtml: `<h2>🏦 CEO Fraud / BEC Attack</h2><p>This is a classic Business Email Compromise (BEC) attack where an attacker impersonates a CEO or executive.</p><h3>Red Flags:</h3><ul><li>Urgency and pressure: "handle something urgently"</li><li>Request for confidentiality: "do not discuss with anyone"</li><li>Financial request via email (wire transfers should always be verified by phone)</li><li>"Sent from my iPhone" — used to excuse informal tone and typos</li><li>The email address may look similar but isn't your real CEO's address</li></ul>`,
+    },
+    {
+      name: "Microsoft 365 Login Alert",
+      subject: "Unusual Sign-in Activity on Your Account",
+      senderName: "Microsoft Security",
+      senderEmail: "security@microsoft-alerts.com",
+      difficulty: "BEGINNER" as Difficulty,
+      category: "PHISHING" as ModuleCategory,
+      bodyHtml: `<div style="font-family: Segoe UI, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f5f5f5;">
+  <div style="background: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <div style="text-align: center; margin-bottom: 20px;">
+      <img src="https://img-prod-cms-rt-microsoft-com.akamaized.net/cms/api/am/imageFileData/RE1Mu3b?ver=5c31" width="120" alt="Microsoft" style="display:inline-block">
+    </div>
+    <h2 style="color: #333; text-align: center;">Unusual Sign-in Activity</h2>
+    <p>Dear {{firstName}} {{lastName}},</p>
+    <p>We detected a sign-in attempt to your Microsoft 365 account from an unusual location:</p>
+    <div style="background: #f8f8f8; border-left: 4px solid #e74c3c; padding: 15px; margin: 20px 0;">
+      <p style="margin: 5px 0;"><strong>Location:</strong> Lagos, Nigeria</p>
+      <p style="margin: 5px 0;"><strong>IP Address:</strong> 197.210.xx.xx</p>
+      <p style="margin: 5px 0;"><strong>Device:</strong> Unknown Android Device</p>
+      <p style="margin: 5px 0;"><strong>Time:</strong> Today at 3:42 AM</p>
+    </div>
+    <p>If this wasn't you, please secure your account immediately:</p>
+    <p style="text-align: center; margin: 25px 0;">
+      <a href="{{clickUrl}}" style="background: #0078d4; color: white; padding: 12px 40px; text-decoration: none; border-radius: 4px; font-weight: 600;">Review Activity</a>
+    </p>
+    <p style="color: #999; font-size: 12px;">If you recognize this activity, you can safely ignore this message.</p>
+  </div>
+  <p style="color: #999; font-size: 11px; text-align: center; margin-top: 15px;">Microsoft Corporation, One Microsoft Way, Redmond, WA 98052</p>
+  <img src="{{trackingUrl}}" width="1" height="1" style="display:none" />
+</div>`,
+      landingPageHtml: `<h2>🔑 Fake Microsoft Login Alert</h2><p>This email mimics Microsoft's security alerts to steal your credentials.</p><h3>Red Flags:</h3><ul><li>Sender domain "microsoft-alerts.com" is NOT a real Microsoft domain</li><li>Real Microsoft emails come from @accountprotection.microsoft.com</li><li>Scary details (Lagos, Nigeria) designed to trigger panic</li><li>The "Review Activity" button leads to a fake login page</li><li>Always go directly to account.microsoft.com instead of clicking email links</li></ul>`,
+    },
+    {
+      name: "HR Benefits Enrollment",
+      subject: "Action Required: Open Enrollment Closes Tomorrow",
+      senderName: "HR Benefits Team",
+      senderEmail: "benefits@{{companyDomain}}",
+      difficulty: "INTERMEDIATE" as Difficulty,
+      category: "SOCIAL_ENGINEERING" as ModuleCategory,
+      bodyHtml: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 20px; border-radius: 8px 8px 0 0;">
+    <h2 style="color: white; margin: 0;">Benefits Open Enrollment</h2>
+    <p style="color: rgba(255,255,255,0.8); margin: 5px 0 0 0;">Annual Benefits Selection Period</p>
+  </div>
+  <div style="border: 1px solid #ddd; border-top: none; padding: 20px; border-radius: 0 0 8px 8px;">
+    <p>Dear {{firstName}},</p>
+    <p>This is a <strong>final reminder</strong> that the open enrollment period for your 2025 benefits closes <strong>tomorrow at 11:59 PM</strong>.</p>
+    <p>If you don't complete your selections, you will be automatically enrolled in the <strong>minimum coverage plan</strong>, which may result in higher out-of-pocket costs.</p>
+    <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 5px; padding: 15px; margin: 20px 0;">
+      <p style="margin: 0; color: #856404;">⚠️ <strong>Important:</strong> You must verify your identity before making selections.</p>
+    </div>
+    <p style="text-align: center; margin: 25px 0;">
+      <a href="{{clickUrl}}" style="background: #667eea; color: white; padding: 14px 35px; text-decoration: none; border-radius: 5px; font-weight: bold;">Complete Enrollment Now</a>
+    </p>
+    <p style="color: #666;">Thank you,<br>HR Benefits Team</p>
+  </div>
+  <img src="{{trackingUrl}}" width="1" height="1" style="display:none" />
+</div>`,
+      landingPageHtml: `<h2>📋 Fake HR Benefits Enrollment</h2><p>This phishing email exploits the urgency of benefits enrollment deadlines to trick employees.</p><h3>Red Flags:</h3><ul><li>Artificial urgency: "closes tomorrow"</li><li>Threat of negative consequences: "minimum coverage plan"</li><li>Request to "verify your identity" — HR already knows who you are</li><li>Always access benefits through your company's official HR portal, never through email links</li><li>When in doubt, call HR directly to confirm</li></ul>`,
+    },
+    {
+      name: "Delivery Notification Scam",
+      subject: "Your Package Could Not Be Delivered — Action Required",
+      senderName: "DHL Express Delivery",
+      senderEmail: "tracking@dhl-delivery-notice.com",
+      difficulty: "BEGINNER" as Difficulty,
+      category: "PHISHING" as ModuleCategory,
+      bodyHtml: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: #ffcc00; padding: 15px 20px; border-radius: 8px 8px 0 0;">
+    <h2 style="color: #c60a00; margin: 0;">📦 DHL Express</h2>
+  </div>
+  <div style="border: 1px solid #ddd; border-top: none; padding: 20px; border-radius: 0 0 8px 8px;">
+    <p>Dear Customer,</p>
+    <p>We attempted to deliver your package today but were unable to complete the delivery. Your package is being held at our distribution center.</p>
+    <div style="background: #f8f8f8; padding: 15px; border-radius: 5px; margin: 15px 0;">
+      <p style="margin: 5px 0;"><strong>Tracking Number:</strong> DHL-7829451036{{firstName}}</p>
+      <p style="margin: 5px 0;"><strong>Status:</strong> Delivery Failed — Address Verification Required</p>
+      <p style="margin: 5px 0;"><strong>Delivery Fee:</strong> $2.99 (re-delivery charge)</p>
+    </div>
+    <p>Please confirm your delivery address and pay the re-delivery fee to schedule a new delivery:</p>
+    <p style="text-align: center; margin: 25px 0;">
+      <a href="{{clickUrl}}" style="background: #c60a00; color: white; padding: 12px 35px; text-decoration: none; border-radius: 5px; font-weight: bold;">Schedule Re-Delivery</a>
+    </p>
+    <p style="color: #999; font-size: 11px;">If not resolved within 48 hours, the package will be returned to sender.</p>
+  </div>
+  <img src="{{trackingUrl}}" width="1" height="1" style="display:none" />
+</div>`,
+      landingPageHtml: `<h2>📦 Fake Delivery Notification</h2><p>Package delivery scams are extremely common and use urgency to trick you into providing payment information.</p><h3>Red Flags:</h3><ul><li>Sender domain "dhl-delivery-notice.com" is NOT the real DHL domain (dhl.com)</li><li>Generic greeting: "Dear Customer" instead of your name</li><li>Request for payment via email — legitimate couriers don't do this</li><li>Fake tracking number containing your name</li><li>48-hour deadline creates artificial urgency</li><li>Always track packages directly on the official courier website</li></ul>`,
+    },
+  ];
+
+  for (const t of phishingTemplates) {
+    await prisma.phishingTemplate.create({
+      data: {
+        ...t,
+        organizationId: organization.id,
+        isActive: true,
+      },
+    });
+  }
+  console.log("Created " + phishingTemplates.length + " phishing simulation templates");
+
+  // =============================================
   // PHISHING EXAMPLES
   // =============================================
   const phishingData = [

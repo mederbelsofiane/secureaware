@@ -95,7 +95,7 @@ export default function PhishingDashboardPage() {
       <div className="bg-dark-800/50 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-white">Recent Campaigns</h2>
-          <Link href="/admin/phishing/campaigns/new" className="text-cyan-400 hover:text-cyan-300 text-sm flex items-center gap-1">
+          <Link href="/admin/phishing/campaigns" className="text-cyan-400 hover:text-cyan-300 text-sm flex items-center gap-1">
             View All <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

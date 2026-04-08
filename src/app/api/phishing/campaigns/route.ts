@@ -2,6 +2,74 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgRole, orgWhere, unauthorized, forbidden, noOrganization, badRequest, serverError, success } from "@/lib/server-auth";
 
+export async function GET(req: NextRequest) {
+  try {
+    const user = await requireOrgRole(["ADMIN", "SUPER_ADMIN"]);
+    const { searchParams } = new URL(req.url);
+    const status = searchParams.get("status");
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "20");
+
+    const where: any = {
+      ...orgWhere(user),
+      type: "PHISHING_SIMULATION",
+    };
+    if (status) where.status = status;
+
+    const [campaigns, total] = await Promise.all([
+      prisma.campaign.findMany({
+        where,
+        include: {
+          _count: { select: { campaignUsers: true, phishingEvents: true } },
+          phishingEvents: {
+            select: {
+              emailSentAt: true,
+              emailOpenedAt: true,
+              linkClickedAt: true,
+              reportedAt: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.campaign.count({ where }),
+    ]);
+
+    // Calculate stats for each campaign
+    const campaignsWithStats = campaigns.map((c) => {
+      const events = c.phishingEvents;
+      const sent = events.filter((e) => e.emailSentAt).length;
+      const opened = events.filter((e) => e.emailOpenedAt).length;
+      const clicked = events.filter((e) => e.linkClickedAt).length;
+      const reported = events.filter((e) => e.reportedAt).length;
+      return {
+        id: c.id,
+        name: c.name,
+        description: c.description,
+        status: c.status,
+        startDate: c.startDate,
+        endDate: c.endDate,
+        createdAt: c.createdAt,
+        targets: c._count.campaignUsers,
+        sent,
+        openRate: sent > 0 ? Math.round((opened / sent) * 100) : 0,
+        clickRate: sent > 0 ? Math.round((clicked / sent) * 100) : 0,
+        reportRate: sent > 0 ? Math.round((reported / sent) * 100) : 0,
+      };
+    });
+
+    return success({ campaigns: campaignsWithStats, total, page, limit });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    if (message === "UNAUTHORIZED") return unauthorized();
+    if (message === "FORBIDDEN") return forbidden();
+    if (message === "NO_ORGANIZATION") return noOrganization();
+    return serverError();
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const user = await requireOrgRole(["ADMIN", "SUPER_ADMIN"]);
