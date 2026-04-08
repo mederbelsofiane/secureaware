@@ -7,7 +7,7 @@ import Image from "next/image";
 import {
   Shield, LayoutDashboard, BookOpen, FileQuestion, Fish,
   Trophy, User, Award, LogOut, Settings, Users,
-  BarChart3, Megaphone, MessageSquare, PenTool, ChevronLeft, ChevronRight,
+  BarChart3, Megaphone, PenTool, ChevronLeft, ChevronRight,
   Sun, Moon, CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -74,7 +74,6 @@ export function Sidebar() {
     { href: "/admin/phishing", label: "Phishing Sim", icon: Fish },
     { href: "/admin/quizzes", label: t.sidebar.quizManager, icon: PenTool },
     { href: "/admin/reports", label: t.sidebar.reports, icon: BarChart3 },
-    { href: "/admin/contacts", label: t.sidebar.contactRequests, icon: MessageSquare },
     { href: "/admin/subscription", label: "Subscription", icon: CreditCard },
     { href: "/admin/settings", label: t.sidebar.settings, icon: Settings },
   ];

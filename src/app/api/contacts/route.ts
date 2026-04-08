@@ -5,7 +5,7 @@ import { paginationSchema, contactSchema } from "@/lib/validations";
 
 export async function GET(req: NextRequest) {
   try {
-    await requireRole(["ADMIN"]);
+    await requireRole(["SUPER_ADMIN"]);
     const returnAll = req.nextUrl.searchParams.get("all") === "true";
 
     const searchParams = Object.fromEntries(req.nextUrl.searchParams);

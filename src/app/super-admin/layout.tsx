@@ -14,11 +14,13 @@ import {
   ScrollText,
   LogOut,
   Crown,
+  Mail,
 } from "lucide-react";
 
 const navLinks = [
   { href: "/super-admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/super-admin/organizations", label: "Organizations", icon: Building2 },
+  { href: "/super-admin/contacts", label: "Contact Requests", icon: Mail },
   { href: "/super-admin/audit-logs", label: "Audit Logs", icon: ScrollText },
 ];
 
