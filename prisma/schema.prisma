@@ -148,6 +148,7 @@ model Organization {
   settings      OrgSetting[]
   invitations   Invitation[]
   subscriptionEvents SubscriptionEvent[]
+  phishingTemplates PhishingTemplate[]
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
   @@index([slug])
@@ -210,6 +211,7 @@ model User {
   activities      Activity[]
   campaignUsers   CampaignUser[]
   quizAssignments QuizAssignment[]
+  phishingEvents  PhishingEvent[]
 
   // Audit fields
   lastLoginAt   DateTime?
@@ -465,6 +467,7 @@ model Campaign {
   campaignUsers       CampaignUser[]
   campaignDepartments CampaignDepartment[]
   campaignQuizzes     CampaignQuiz[]
+  phishingEvents      PhishingEvent[]
 
   createdBy       String?
   createdAt       DateTime        @default(now())
@@ -586,6 +589,53 @@ model PhishingExample {
 
   @@index([organizationId])
 }
+
+model PhishingTemplate {
+  id              String      @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  name            String
+  subject         String
+  senderName      String
+  senderEmail     String
+  bodyHtml        String      @db.Text
+  landingPageHtml String?     @db.Text
+  difficulty      Difficulty  @default(INTERMEDIATE)
+  category        String      @default("email")
+  isActive        Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  phishingEvents  PhishingEvent[]
+
+  @@index([organizationId])
+}
+
+model PhishingEvent {
+  id              String      @id @default(cuid())
+  campaignId      String
+  campaign        Campaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templateId      String
+  template        PhishingTemplate @relation(fields: [templateId], references: [id])
+  organizationId  String
+  token           String      @unique @default(cuid())
+  emailSentAt     DateTime?
+  emailOpenedAt   DateTime?
+  linkClickedAt   DateTime?
+  reportedAt      DateTime?
+  userAgent       String?
+  ipAddress       String?
+  createdAt       DateTime    @default(now())
+
+  @@index([campaignId])
+  @@index([userId])
+  @@index([organizationId])
+  @@index([token])
+}
+
 
 // ============================================
 // ACTIVITY & AUDIT
