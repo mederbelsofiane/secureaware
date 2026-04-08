@@ -22,6 +22,8 @@ async function main() {
   await prisma.campaignQuiz.deleteMany();
   await prisma.campaignModule.deleteMany();
   await prisma.campaignUser.deleteMany();
+  await prisma.phishingEvent.deleteMany();
+  await prisma.phishingTemplate.deleteMany();
   await prisma.campaignDepartment.deleteMany();
   await prisma.campaign.deleteMany();
   await prisma.certificate.deleteMany();
