@@ -41,6 +41,8 @@ export default withAuth(
           pathname === "/" ||
           pathname === "/login" ||
           pathname === "/register" ||
+          pathname === "/forgot-password" ||
+          pathname === "/reset-password" ||
           pathname === "/maintenance" ||
           pathname.startsWith("/about") ||
           pathname.startsWith("/features") ||
@@ -64,6 +66,8 @@ export const config = {
     "/",
     "/login",
     "/register",
+    "/forgot-password",
+    "/reset-password",
     "/maintenance",
     "/about",
     "/features",
