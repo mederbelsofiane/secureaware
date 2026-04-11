@@ -212,10 +212,10 @@ export default function FeaturesPage() {
             <motion.p
               variants={fadeInUp}
               custom={2}
-              className="text-lg text-dark-400 leading-relaxed"
+              className="text-lg text-dark-300 leading-relaxed"
             >
               A unified platform covering the full lifecycle of security
-              awareness\u2014from simulated attacks and interactive training to
+              awareness—from simulated attacks and interactive training to
               risk analytics and compliance reporting.
             </motion.p>
           </motion.div>
@@ -253,7 +253,7 @@ export default function FeaturesPage() {
                   <p className="text-accent-blue text-sm font-medium mb-4">
                     {feature.subtitle}
                   </p>
-                  <p className="text-dark-400 leading-relaxed mb-6">
+                  <p className="text-dark-300 leading-relaxed mb-6">
                     {feature.description}
                   </p>
                   <ul className="space-y-3">
@@ -325,7 +325,7 @@ export default function FeaturesPage() {
             <motion.p
               variants={fadeInUp}
               custom={2}
-              className="text-dark-400 text-lg max-w-2xl mx-auto"
+              className="text-dark-300 text-lg max-w-2xl mx-auto"
             >
               SecureAware connects natively with your identity providers, email
               platforms, SIEM tools, and HR systems for frictionless deployment.
@@ -382,7 +382,7 @@ export default function FeaturesPage() {
             <motion.p
               variants={fadeInUp}
               custom={1}
-              className="text-dark-400 text-lg mb-10 leading-relaxed"
+              className="text-dark-300 text-lg mb-10 leading-relaxed"
             >
               Start your free trial today and experience the full power of
               SecureAware. No credit card required.
