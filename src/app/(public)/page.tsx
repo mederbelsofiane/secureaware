@@ -226,7 +226,7 @@ export default function HomePage() {
   return (
     <div className="relative overflow-hidden">
       {/* ============ HERO SECTION ============ */}
-      <section className="relative min-h-[90vh] flex items-center">
+      <section className="relative min-h-[70vh] flex items-center">
         {/* Background effects */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(rgba(99,102,241,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.4) 1px, transparent 1px)', backgroundSize: '80px 80px' }} />
@@ -262,7 +262,7 @@ export default function HomePage() {
             <motion.p
               variants={fadeInUp}
               custom={2}
-              className="text-lg sm:text-xl text-dark-400 max-w-2xl mx-auto mb-10 leading-relaxed"
+              className="text-lg sm:text-xl text-dark-300 max-w-2xl mx-auto mb-10 leading-relaxed"
             >
               Transform your workforce into your strongest security asset.
               SecureAware delivers intelligent phishing simulations, adaptive
@@ -310,7 +310,7 @@ export default function HomePage() {
                   )}
                   <stat.icon className="w-6 h-6 text-accent-blue mb-2" />
                   <span className="text-3xl font-bold text-white">{stat.value}</span>
-                  <span className="text-sm text-dark-400 mt-1">{stat.label}</span>
+                  <span className="text-sm text-dark-300 mt-1">{stat.label}</span>
                 </motion.div>
               ))}
             </div>
@@ -335,7 +335,7 @@ export default function HomePage() {
               Everything You Need to{' '}
               <span className="gradient-text">Secure</span> Your Team
             </motion.h2>
-            <motion.p variants={fadeInUp} custom={2} className="text-dark-400 text-lg max-w-2xl mx-auto">
+            <motion.p variants={fadeInUp} custom={2} className="text-dark-300 text-lg max-w-2xl mx-auto">
               A complete suite of tools designed to assess, educate, and monitor
               your organization&apos;s security awareness from onboarding to ongoing defense.
             </motion.p>
@@ -363,7 +363,7 @@ export default function HomePage() {
                 <h3 className="text-xl font-semibold text-white mb-3">
                   {feature.title}
                 </h3>
-                <p className="text-dark-400 leading-relaxed">
+                <p className="text-dark-300 leading-relaxed">
                   {feature.description}
                 </p>
               </motion.div>
@@ -389,7 +389,7 @@ export default function HomePage() {
             <motion.h2 variants={fadeInUp} custom={1} className="text-4xl sm:text-5xl font-bold text-white mt-3 mb-4">
               Up and Running in <span className="gradient-text">Three Steps</span>
             </motion.h2>
-            <motion.p variants={fadeInUp} custom={2} className="text-dark-400 text-lg max-w-2xl mx-auto">
+            <motion.p variants={fadeInUp} custom={2} className="text-dark-300 text-lg max-w-2xl mx-auto">
               Getting started with SecureAware is straightforward. No complex
               integrations or lengthy setup processes.
             </motion.p>
@@ -422,7 +422,7 @@ export default function HomePage() {
                   <h3 className="text-2xl font-bold text-white mb-3">
                     {step.title}
                   </h3>
-                  <p className="text-dark-400 leading-relaxed">
+                  <p className="text-dark-300 leading-relaxed">
                     {step.description}
                   </p>
                 </div>
@@ -495,7 +495,7 @@ export default function HomePage() {
             <motion.h2 variants={fadeInUp} custom={1} className="text-4xl sm:text-5xl font-bold text-white mt-3 mb-4">
               Choose the Right <span className="gradient-text">Plan</span> for Your Team
             </motion.h2>
-            <motion.p variants={fadeInUp} custom={2} className="text-dark-400 text-lg max-w-2xl mx-auto">
+            <motion.p variants={fadeInUp} custom={2} className="text-dark-300 text-lg max-w-2xl mx-auto">
               From startups to enterprises, we have a plan that scales with your security awareness needs.
             </motion.p>
           </motion.div>
@@ -587,7 +587,7 @@ export default function HomePage() {
               Ready to Strengthen Your{' '}
               <span className="gradient-text">Security Culture</span>?
             </motion.h2>
-            <motion.p variants={fadeInUp} custom={2} className="text-dark-400 text-lg mb-10 leading-relaxed">
+            <motion.p variants={fadeInUp} custom={2} className="text-dark-300 text-lg mb-10 leading-relaxed">
               Join thousands of organizations that trust SecureAware to protect
               their people and their data. Start building your human firewall
               today.
